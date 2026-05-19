@@ -536,12 +536,38 @@ async function fetchMeteoActuelle(ville) {
 
 async function fetchPrevisions(ville) {
   try {
-    var url = CONFIG.OPENWEATHER_BASE_URL + '/forecast?q=' + encodeURIComponent(ville) + '&appid=' + CONFIG.OPENWEATHER_API_KEY + '&units=metric&lang=fr&cnt=5';
+    var url = CONFIG.OPENWEATHER_BASE_URL + '/forecast?q=' + encodeURIComponent(ville) + '&appid=' + CONFIG.OPENWEATHER_API_KEY + '&units=metric&lang=fr';
     var reponse = await fetch(url);
     if (!reponse.ok) throw new Error('API erreur');
     var data = await reponse.json();
     var jours = joursFrancais();
-    return data.list.map(function(item) { var date = new Date(item.dt_txt); return { jour: jours[date.getDay()], tempMax: Math.round(item.main.temp_max), tempMin: Math.round(item.main.temp_min), icone: convertirIconeOpenWeather(item.weather[0].icon) }; });
+    var jourMap = {};
+    for (var i = 0; i < data.list.length; i++) {
+      var item = data.list[i];
+      var d = new Date(item.dt_txt);
+      var key = d.getFullYear() + '-' + ('0' + (d.getMonth() + 1)).slice(-2) + '-' + ('0' + d.getDate()).slice(-2);
+      if (!jourMap[key]) {
+        jourMap[key] = { jour: jours[d.getDay()], tempMax: item.main.temp_max, tempMin: item.main.temp_min, icone: item.weather[0].icon, count: 1 };
+      } else {
+        if (item.main.temp_max > jourMap[key].tempMax) jourMap[key].tempMax = item.main.temp_max;
+        if (item.main.temp_min < jourMap[key].tempMin) jourMap[key].tempMin = item.main.temp_min;
+        jourMap[key].count++;
+        if (jourMap[key].count === 4) jourMap[key].icone = item.weather[0].icon;
+      }
+    }
+    var result = [];
+    var todayKey = new Date().getFullYear() + '-' + ('0' + (new Date().getMonth() + 1)).slice(-2) + '-' + ('0' + new Date().getDate()).slice(-2);
+    for (var k in jourMap) {
+      if (k !== todayKey) {
+        result.push({
+          jour: jourMap[k].jour,
+          tempMax: Math.round(jourMap[k].tempMax),
+          tempMin: Math.round(jourMap[k].tempMin),
+          icone: convertirIconeOpenWeather(jourMap[k].icone)
+        });
+      }
+    }
+    return result.slice(0, 5);
   } catch (err) { console.warn('Fallback previsions :', err.message); return METEO_FALLBACK.previsions; }
 }
 
