@@ -7,5 +7,8 @@ choses a faire apres, a se rappeler :
 - a l'arrivée de l'utilisateur sur la carte, ça zoome automatiquement la carte pour qu'on voit ses propores parcelles, qu'il n'ai pas a la rechercher.
 - quand on crée une parcelle, apres avoir fini de la dessiner, ça affiche un petit popup stylisé qui colle avec la da de l'app ou on peut mettre les infos de la parcelle (dropdown pour le type de culture, type de sol, nom de la parcelle, etc)
 - remplacer l'intégralité deds sigles "Agr'ia" apr "Agria" qui est un vrai nom d'app, et plus un jeu de mots.
+- quand on dessine une parcelle, il faut que le message qui dit de double cliquer pour terminer disparaisse, il ne sert plus a rien car maintenant on temrine la parcelle autrement.
+- souci: nos parcelles de s'affichent pas dans la page d'accueil, dans "mes parcelles" il n'y a rien, peut etre parce qu'on ne les voit pas, ou parce qu'elles ne sont juste pas crées.
 
+- faire en sorte que en mode desktop, la page soit au meme format que au format telephne, juste centrée au milieu de l'ecran et autour ce sera juste vide. comme ça on a la meme vue sur les deux plateformes.
 

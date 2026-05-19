@@ -1,4 +1,4 @@
-# Agr'IA
+# Agria
 
 Assistant agricole intelligent pour la gestion de parcelles, le diagnostic de cultures et la météo.
 

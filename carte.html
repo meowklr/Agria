@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
   <meta name="theme-color" content="#606E52">
-  <title>Agr'IA — Carte</title>
+  <title>Agria — Carte</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
@@ -92,7 +92,7 @@
   <div id="search-results"></div>
 </div>
 
-<div id="draw-hint">Dessinez votre parcelle. Double-clic pour terminer.</div>
+<div id="draw-hint">Cliquez pour tracer. Recliquez sur le 1er point pour fermer.</div>
 <div id="draw-surface-floating"></div>
 
 <div id="float-toolbar">
@@ -268,7 +268,7 @@ function startDrawing() {
   closePanel();
 }
 
-function stopDrawing(finalize) {
+async function stopDrawing(finalize) {
   if (!drawing) return;
   drawing = false;
   document.getElementById('btn-draw').classList.remove('active');
@@ -278,7 +278,7 @@ function stopDrawing(finalize) {
   if (drawLine) { map.removeLayer(drawLine); drawLine = null; }
   for (var m = 0; m < drawMarkers.length; m++) map.removeLayer(drawMarkers[m]);
   drawMarkers = [];
-  if (finalize && drawPoints.length >= 3) finalizeDraw();
+  if (finalize && drawPoints.length >= 3) await finalizeDraw();
   drawPoints = [];
 }
 
@@ -327,32 +327,65 @@ function calculateAreaLL(latlngs) {
   return Math.abs(area) * 6371000 * 6371000 * Math.PI / 360 / 10000;
 }
 
-async function finalizeDraw() {
+function finalizeDraw() {
   var coords = drawPoints.map(function(ll) { return [ll.lat, ll.lng]; });
   var ha = calculateAreaLL(drawPoints);
 
-  var newParcel = {
-    id: Date.now().toString(36)+Math.random().toString(36).slice(2),
-    nom: 'Nouvelle parcelle',
-    culture: 'Ble',
-    typeSol: 'Limoneux',
-    stade: 'Semis',
-    surface: ha.toFixed(2),
-    dateSemis: new Date().toISOString().split('T')[0],
-    dureeJours: 270,
-    notes: '',
-    polygonCoords: coords
-  };
+  var html =
+    '<h2 class="sheet-title">Nouvelle parcelle</h2>' +
+    '<div class="form-group"><label class="form-label">Nom</label><input type="text" class="input-field" id="drawNom" placeholder="Ex: Parcelle Sud" value="Nouvelle parcelle"></div>' +
+    '<div class="form-group"><label class="form-label">Culture</label><select class="input-field" id="drawCulture"><option>Ble</option><option>Mais</option><option>Tournesol</option><option>Colza</option><option>Vigne</option><option>Jachere</option><option>Lavande</option><option>Sorgho</option></select></div>' +
+    '<div class="form-group"><label class="form-label">Type de sol</label><select class="input-field" id="drawTypeSol"><option>Limoneux</option><option>Argileux</option><option>Sableux</option><option>Calcaire</option><option>Humifere</option></select></div>' +
+    '<div class="form-group"><label class="form-label">Stade</label><select class="input-field" id="drawStade"><option>Semis</option><option>Levee</option><option>Croissance</option><option>Floraison</option><option>Recolte</option></select></div>' +
+    '<div class="form-group"><label class="form-label">Surface</label><input type="text" class="input-field" id="drawSurface" value="' + ha.toFixed(2) + ' ha" readonly></div>' +
+    '<div class="form-group"><label class="form-label">Notes</label><textarea class="input-field" id="drawNotes" style="min-height:60px;padding:12px" maxlength="200" placeholder="Optionnel"></textarea></div>' +
+    '<button type="button" class="btn-primary" id="btnConfirmDraw"><i class="fa-solid fa-check"></i> Creer la parcelle</button>' +
+    '<button type="button" class="btn-secondary" id="btnCancelDraw" style="margin-top:10px">Annuler</button>';
 
-  undoStack.push({ action: 'create', parcel: newParcel });
-  await saveMyParcel(newParcel);
-  await loadParcels();
-  renderAllParcels();
-  showUndo('Parcelle creee');
+  openSheet(html);
 
-  for (var i = 0; i < allParcels.length; i++) {
-    if (allParcels[i].data.id === newParcel.id) { selectParcel(allParcels[i], parcelLayers[newParcel.id]); break; }
-  }
+  setTimeout(function() {
+    var btnConfirm = document.getElementById('btnConfirmDraw');
+    var btnCancel = document.getElementById('btnCancelDraw');
+
+    if (btnCancel) btnCancel.addEventListener('click', function() {
+      closeSheet();
+      if (typeof drawLine !== 'undefined' && drawLine) { map.removeLayer(drawLine); drawLine = null; }
+      for (var m = 0; m < drawMarkers.length; m++) map.removeLayer(drawMarkers[m]);
+      drawMarkers = [];
+    });
+
+    if (btnConfirm) btnConfirm.addEventListener('click', async function() {
+      var nom = document.getElementById('drawNom').value.trim() || 'Nouvelle parcelle';
+      var culture = document.getElementById('drawCulture').value;
+      var typeSol = document.getElementById('drawTypeSol').value;
+      var stade = document.getElementById('drawStade').value;
+
+      var newParcel = {
+        id: Date.now().toString(36)+Math.random().toString(36).slice(2),
+        nom: nom,
+        culture: culture,
+        typeSol: typeSol,
+        stade: stade,
+        surface: ha.toFixed(2),
+        dateSemis: new Date().toISOString().split('T')[0],
+        dureeJours: CROP_DATA && CROP_DATA[culture] ? CROP_DATA[culture].duree_cycle_jours : 270,
+        notes: document.getElementById('drawNotes').value || '',
+        polygonCoords: coords
+      };
+
+      undoStack.push({ action: 'create', parcel: newParcel });
+      await saveMyParcel(newParcel);
+      await loadParcels();
+      renderAllParcels();
+      closeSheet();
+      showUndo('Parcelle "' + nom + '" creee');
+
+      for (var i = 0; i < allParcels.length; i++) {
+        if (allParcels[i].data.id === newParcel.id) { selectParcel(allParcels[i], parcelLayers[newParcel.id]); break; }
+      }
+    });
+  }, 100);
 }
 
 /* ---- MAP CLICK HANDLING ---- */
@@ -577,6 +610,16 @@ searchInput.addEventListener('blur', function() { setTimeout(function(){searchRe
 window._carteInlineLoaded = true;
 loadAllParcels().then(function() {
   renderAllParcels();
+  var myCoords = [];
+  for (var i = 0; i < allParcels.length; i++) {
+    if (allParcels[i].owner === myUserId && allParcels[i].data.polygonCoords && allParcels[i].data.polygonCoords.length > 0) {
+      myCoords = myCoords.concat(allParcels[i].data.polygonCoords);
+    }
+  }
+  if (myCoords.length > 0) {
+    var bounds = L.latLngBounds(myCoords.map(function(c){ return [c[0], c[1]]; }));
+    map.fitBounds(bounds, { padding: [50, 50], maxZoom: 14 });
+  }
 });
 
 var hideToolbarTimer;

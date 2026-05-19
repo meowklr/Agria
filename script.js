@@ -657,24 +657,31 @@ async function saveChamps(champs) {
 
 async function addChamp(champ) {
   champ.id = champ.id || generateId();
-  var champs = await loadChamps();
+  var key = getChampsKey();
+  var champs = [];
+  try { champs = JSON.parse(localStorage.getItem(key)) || []; } catch(e) {}
   champs.push(champ);
-  await saveChamps(champs);
+  localStorage.setItem(key, JSON.stringify(champs));
+  try { await dpSave(key, champs); } catch(e) {}
   return champ;
 }
 
 async function updateChamp(id, data) {
-  var champs = await loadChamps();
-  for (var i = 0; i < champs.length; i++) {
-    if (champs[i].id === id) { champs[i] = data; break; }
-  }
-  await saveChamps(champs);
+  var key = getChampsKey();
+  var champs = [];
+  try { champs = JSON.parse(localStorage.getItem(key)) || []; } catch(e) {}
+  for (var i = 0; i < champs.length; i++) { if (champs[i].id === id) { champs[i] = data; break; } }
+  localStorage.setItem(key, JSON.stringify(champs));
+  try { await dpSave(key, champs); } catch(e) {}
 }
 
 async function deleteChamp(id) {
-  var champs = await loadChamps();
+  var key = getChampsKey();
+  var champs = [];
+  try { champs = JSON.parse(localStorage.getItem(key)) || []; } catch(e) {}
   champs = champs.filter(function(c) { return c.id !== id; });
-  await saveChamps(champs);
+  localStorage.setItem(key, JSON.stringify(champs));
+  try { await dpSave(key, champs); } catch(e) {}
   return champs;
 }
 
