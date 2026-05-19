@@ -11,9 +11,9 @@ var CONFIG = {
 /* ---------- SUPABASE CONFIG ---------- */
 
 var SUPABASE_CONFIG = {
-  URL: "REMPLACER_PAR_VOTRE_URL_SUPABASE",
-  ANON_KEY: "REMPLACER_PAR_VOTRE_CLE_ANON_SUPABASE",
-  ENABLED: false
+  URL: "https://vqpxnibyljhoftbhtnjx.supabase.co",
+  ANON_KEY: "sb_publishable_W9Nk_fRKHx2Et7mgwy4PGQ_06F0Y_ai",
+  ENABLED: true
 };
 
 /* ---------- CROP_DATA ---------- */
@@ -147,10 +147,24 @@ var supabaseClient = null;
 function getSupabase() {
   if (!SUPABASE_CONFIG.ENABLED) return null;
   if (supabaseClient) return supabaseClient;
-  if (typeof window.supabase !== 'undefined') {
+  
+  // Chercher la bibiliothèque Supabase dans window
+  if (typeof window.supabase !== 'undefined' && window.supabase.createClient) {
     supabaseClient = window.supabase.createClient(SUPABASE_CONFIG.URL, SUPABASE_CONFIG.ANON_KEY);
     return supabaseClient;
   }
+  
+  // Fallback : créer le client directement si disponible
+  if (typeof window.supabase !== 'undefined' && typeof window.supabase === 'object') {
+    try {
+      supabaseClient = supabase.createClient(SUPABASE_CONFIG.URL, SUPABASE_CONFIG.ANON_KEY);
+      return supabaseClient;
+    } catch(e) {
+      console.warn('Supabase non chargé correctement', e);
+      return null;
+    }
+  }
+  
   return null;
 }
 
