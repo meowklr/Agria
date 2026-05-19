@@ -1622,6 +1622,49 @@ body::before {
 
 .diagnostic-reco-liste li:last-child { border-bottom: none; }
 
+/* ---------- DIAGNOSTIC HISTORY ---------- */
+
+.diag-history-item {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 10px;
+  cursor: pointer;
+  padding: 14px 16px;
+  transition: transform 0.15s var(--ease-smooth), box-shadow 0.15s var(--ease-smooth), border-color 0.15s var(--ease-smooth);
+}
+
+.diag-history-item:hover {
+  transform: translateX(3px);
+  border-color: var(--tertiary);
+  box-shadow: var(--shadow-sm);
+}
+
+.diag-history-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.diag-history-date {
+  font-size: 11px;
+  color: var(--text-muted);
+  flex-shrink: 0;
+}
+
+.diag-history-meta {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.diag-history-empty {
+  text-align: center;
+  padding: 24px;
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
 .diagnostic-reco-liste li:hover {
   transform: translateX(4px);
 }

@@ -849,6 +849,74 @@ function genererRecommandations(maladie) {
   return recos[maladie] || ['Consulter un technicien agricole.','Mettre en place une surveillance renforcee.','Prevoir un traitement adapte selon l\'evolution.'];
 }
 
+/* ---------- MODULE HISTORIQUE DIAGNOSTICS ---------- */
+
+function getDiagKey() { return 'agria_diagnostics_' + getUserId(); }
+
+async function loadDiagnostics() {
+  return await dpLoad(getDiagKey(), []);
+}
+
+async function saveDiagnostics(diags) {
+  await dpSave(getDiagKey(), diags);
+}
+
+async function addDiagnostic(diagData) {
+  var diags = await loadDiagnostics();
+  diags.unshift(diagData);
+  if (diags.length > 20) diags = diags.slice(0, 20);
+  await saveDiagnostics(diags);
+}
+
+function renderDiagnosticHistory() {
+  var container = document.getElementById('diagHistoryList');
+  if (!container) return;
+  loadDiagnostics().then(function(diags) {
+    container.innerHTML = '';
+    if (diags.length === 0) {
+      container.innerHTML = '<p class="diag-history-empty">Aucun diagnostic enregistre.</p>';
+      return;
+    }
+    for (var i = 0; i < diags.length; i++) {
+      var d = diags[i];
+      var badgeClass = d.gravite === 'danger' ? 'badge-danger' : d.gravite === 'warning' ? 'badge-warning' : 'badge-info';
+      var item = document.createElement('div');
+      item.className = 'card diag-history-item reveal';
+      item.innerHTML =
+        '<div class="diag-history-header">' +
+        '<span class="badge ' + badgeClass + '">' + d.nom + '</span>' +
+        '<span class="diag-history-date">' + (d.date || '') + '</span>' +
+        '</div>' +
+        '<div class="diag-history-meta">' + (d.culture || '?') + ' · ' + (d.ville || '?') + ' · ' + (d.symptomes ? d.symptomes.length + ' symptomes' : '') + '</div>';
+      (function(diag) {
+        item.addEventListener('click', function() { showDiagDetail(diag); });
+      })(d);
+      container.appendChild(item);
+    }
+    var reveals = container.querySelectorAll('.reveal');
+    for (var r = 0; r < reveals.length; r++) { reveals[r].classList.add('visible'); }
+  });
+}
+
+function showDiagDetail(diag) {
+  var html =
+    '<h2 class="sheet-title">' + diag.nom + '</h2>' +
+    '<div class="form-group"><span class="badge ' + (diag.gravite === 'danger' ? 'badge-danger' : diag.gravite === 'warning' ? 'badge-warning' : 'badge-info') + '">' + (diag.gravite === 'danger' ? 'Urgent' : diag.gravite === 'warning' ? 'Attention' : 'Info') + '</span></div>' +
+    '<div class="form-group"><label class="form-label">Culture</label><p style="font-size:14px;color:var(--text-primary)">' + (diag.culture || '?') + '</p></div>' +
+    '<div class="form-group"><label class="form-label">Ville</label><p style="font-size:14px;color:var(--text-primary)">' + (diag.ville || '?') + '</p></div>' +
+    '<div class="form-group"><label class="form-label">Date</label><p style="font-size:14px;color:var(--text-primary)">' + (diag.date || '?') + '</p></div>' +
+    '<div class="form-group"><label class="form-label">Symptomes</label><p style="font-size:14px;color:var(--text-primary)">' + (diag.symptomes ? diag.symptomes.join(', ') : '?') + '</p></div>' +
+    '<div class="form-group"><label class="form-label">Explication</label><p style="font-size:13px;color:var(--text-secondary);line-height:1.6">' + (diag.explication || '?') + '</p></div>' +
+    '<div class="form-group"><label class="form-label">Recommandations</label><ul class="diagnostic-reco-liste">';
+  if (diag.recommandations) {
+    for (var i = 0; i < diag.recommandations.length; i++) {
+      html += '<li><i class="fa-solid fa-circle-check"></i>' + diag.recommandations[i] + '</li>';
+    }
+  }
+  html += '</ul></div><button type="button" class="btn-secondary" onclick="closeSheet()">Fermer</button>';
+  openSheet(html);
+}
+
 function renderResultat(diagnostic) {
   var badge = document.getElementById('diagBadge');
   if (badge) {
@@ -1597,7 +1665,20 @@ function initDiagnostic() {
       btnAnalyser.disabled = true; btnAnalyser.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Analyse en cours...';
       try {
         var coords = await fetchCoordonnees(ville); var meteoData = await fetchOpenMeteo(coords.lat, coords.lon);
-        var diagnostic = genererDiagnostic(cultureChoisie, symptomesChoisis, meteoData); renderResultat(diagnostic);
+        var diagnostic = genererDiagnostic(cultureChoisie, symptomesChoisis, meteoData);
+        var diagToSave = {
+          nom: diagnostic.nom,
+          gravite: diagnostic.gravite,
+          explication: diagnostic.explication,
+          recommandations: diagnostic.recommandations,
+          culture: cultureChoisie,
+          symptomes: symptomesChoisis,
+          ville: ville,
+          date: new Date().toLocaleDateString('fr-FR', {day:'numeric',month:'short',year:'numeric'}) + ' ' + new Date().toLocaleTimeString('fr-FR', {hour:'2-digit',minute:'2-digit'})
+        };
+        addDiagnostic(diagToSave);
+        renderDiagnosticHistory();
+        renderResultat(diagnostic);
         var form = document.getElementById('diagnosticForm'); var resultat = document.getElementById('diagnosticResultat'); var steps = document.getElementById('diagnosticSteps');
         if (form) { form.style.opacity = '0'; form.style.transition = 'opacity 0.15s var(--ease-press)'; }
       if (resultat) { resultat.classList.remove('d-none'); resultat.style.opacity = '0'; resultat.style.transition = 'opacity 0.3s var(--ease-spring)'; }
@@ -1639,6 +1720,8 @@ function initDiagnostic() {
 
   var lastCulture = localStorage.getItem('agria_last_culture');
   if (lastCulture) { var radio = document.querySelector('input[name="culture"][value="' + lastCulture + '"]'); if (radio) radio.checked = true; }
+
+  renderDiagnosticHistory();
 }
 
 /* ---------- INIT ---------- */
