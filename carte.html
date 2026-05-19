@@ -1,0 +1,553 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#606E52">
+  <title>Agr'IA — Carte</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+  <link rel="stylesheet" href="style.css">
+<style>
+:root{--panel-w:380px;--toolbar-h:56px}
+*{box-sizing:border-box;margin:0;padding:0}
+
+/* Map fullscreen */
+#map-wrap{position:fixed;inset:0;bottom:68px;z-index:1}
+#map-base{width:100%;height:100%}
+
+/* Side panel */
+#side-panel{position:fixed;top:0;right:0;bottom:68px;width:var(--panel-w);background:var(--surface);z-index:30;box-shadow:var(--shadow-xl);transform:translateX(105%);transition:transform 0.35s var(--ease-spring);display:flex;flex-direction:column;overflow:hidden}
+#side-panel.open{transform:translateX(0)}
+.panel-handle{width:4px;height:40px;border-radius:2px;background:var(--border);margin:0 auto;cursor:col-resize;position:absolute;left:-4px;top:50%}
+.panel-close{position:absolute;top:14px;right:14px;width:36px;height:36px;border-radius:50%;background:var(--bg);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:14px;color:var(--text-muted);z-index:2}
+.panel-scroll{flex:1;overflow-y:auto;padding:20px 24px 40px}
+.panel-title{font-family:'Cormorant Garamond',serif;font-size:22px;color:var(--primary);margin-bottom:4px}
+.panel-subtitle{font-size:13px;color:var(--text-muted);margin-bottom:20px}
+.panel-section{margin-bottom:20px}
+.panel-section-title{font-size:13px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px}
+.panel-field{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--border-light)}
+.panel-field-label{font-size:14px;color:var(--text-secondary)}
+.panel-field-value{font-size:14px;font-weight:600;color:var(--text-primary);text-align:right;max-width:55%}
+.panel-actions{display:flex;gap:10px;padding:12px 24px;border-top:1px solid var(--border-light);background:var(--surface)}
+.panel-actions button{flex:1;min-height:44px;border-radius:var(--radius-sm);font-size:13px;font-weight:600;cursor:pointer;border:none;font-family:inherit}
+
+/* Floating toolbar */
+#float-toolbar{position:fixed;bottom:76px;left:50%;transform:translateX(-50%);z-index:25;display:flex;gap:10px;transition:opacity 0.3s;padding:2px}
+#float-toolbar.hidden{opacity:0;pointer-events:none}
+.tool-btn{width:48px;height:48px;border-radius:16px;background:rgba(255,255,255,0.94);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border:1.5px solid var(--border);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:18px;color:var(--primary);box-shadow:var(--shadow-md);transition:all 0.18s var(--ease-press)}
+.tool-btn:hover{transform:translateY(-2px);box-shadow:var(--shadow-lg);border-color:var(--secondary)}
+.tool-btn:active{transform:scale(0.94)}
+.tool-btn.active{background:var(--primary);color:#fff;border-color:var(--primary)}
+.tool-btn.danger{color:var(--danger)}
+
+/* Drawing indicator */
+#draw-hint{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:var(--primary);color:#fff;border-radius:20px;padding:12px 24px;font-size:14px;font-family:'Plus Jakarta Sans',sans-serif;z-index:35;pointer-events:none;opacity:0;transition:opacity 0.2s var(--ease-smooth)}
+#draw-hint.visible{opacity:1}
+#draw-surface-floating{position:fixed;z-index:35;pointer-events:none;font-family:'Cormorant Garamond',serif;font-size:18px;font-weight:600;color:var(--primary);background:rgba(255,255,255,0.9);padding:6px 14px;border-radius:12px;box-shadow:var(--shadow-md);opacity:0;transition:opacity 0.15s}
+
+/* Undo toast */
+#undo-toast{position:fixed;bottom:140px;left:50%;transform:translateX(-50%);z-index:40;background:var(--darker);color:#fff;border-radius:14px;padding:12px 20px;font-size:13px;font-family:'Plus Jakarta Sans',sans-serif;display:flex;align-items:center;gap:12px;box-shadow:var(--shadow-lg);opacity:0;pointer-events:none;transition:opacity 0.2s,transform 0.25s var(--ease-spring);transform:translateX(-50%) translateY(8px)}
+#undo-toast.visible{opacity:1;pointer-events:auto;transform:translateX(-50%) translateY(0)}
+#undo-toast button{background:rgba(255,255,255,0.2);color:#fff;border:none;padding:6px 14px;border-radius:8px;cursor:pointer;font-weight:600;font-size:12px;font-family:inherit}
+
+/* Search bar */
+#search-bar{position:fixed;top:16px;left:50%;transform:translateX(-50%);z-index:25;width:min(360px,calc(100vw - 32px));display:flex;gap:8px}
+#search-input{flex:1;min-height:44px;border-radius:14px;padding:0 16px;border:1.5px solid var(--border);font-family:'Plus Jakarta Sans',sans-serif;font-size:14px;background:rgba(255,255,255,0.94);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);box-shadow:var(--shadow-md);outline:none;color:var(--text-primary);transition:border-color 0.2s}
+#search-input:focus{border-color:var(--secondary)}
+#search-results{position:absolute;top:52px;left:0;right:0;background:var(--surface);border-radius:14px;box-shadow:var(--shadow-lg);overflow:hidden;display:none}
+#search-results.visible{display:block}
+.sr-item{padding:12px 16px;cursor:pointer;font-size:13px;color:var(--text-primary);border-bottom:1px solid var(--border-light);display:flex;align-items:center;gap:8px;transition:background 0.12s}
+.sr-item:hover{background:var(--bg-green)}
+.sr-item .sr-badge{font-size:10px;background:var(--bg-green);color:var(--secondary);padding:2px 8px;border-radius:8px;margin-left:auto}
+
+/* Mobile responsive */
+@media(max-width:768px){
+  :root{--panel-w:100vw}
+  #side-panel{bottom:68px;border-radius:var(--radius-xl) var(--radius-xl) 0 0;top:auto;right:0;left:0;width:100%;max-height:50vh;transform:translateY(100%);border-top:1px solid var(--border)}
+  #side-panel.open{transform:translateY(0)}
+  #float-toolbar{bottom:76px}
+  .tool-btn{width:44px;height:44px;border-radius:14px;font-size:16px}
+}
+</style>
+</head>
+<body data-page="carte">
+
+<div id="map-wrap">
+  <div id="map-base"></div>
+</div>
+
+<div id="search-bar">
+  <input type="text" id="search-input" placeholder="Chercher une parcelle, une culture..." autocomplete="off">
+  <div id="search-results"></div>
+</div>
+
+<div id="draw-hint">Dessinez votre parcelle. Double-clic pour terminer.</div>
+<div id="draw-surface-floating"></div>
+
+<div id="float-toolbar">
+  <button class="tool-btn" id="btn-draw" title="Dessiner"><i class="fa-solid fa-draw-polygon"></i></button>
+  <button class="tool-btn" id="btn-fields" title="Mes parcelles"><i class="fa-solid fa-list-check"></i></button>
+  <button class="tool-btn" id="btn-locate" title="Me localiser"><i class="fa-solid fa-location-crosshairs"></i></button>
+  <button class="tool-btn danger" id="btn-delete" title="Supprimer la selection"><i class="fa-solid fa-trash"></i></button>
+</div>
+
+<div id="undo-toast"></div>
+
+<div id="side-panel">
+  <div class="panel-handle"></div>
+  <button class="panel-close" id="panel-close"><i class="fa-solid fa-xmark"></i></button>
+  <div class="panel-scroll" id="panel-content"></div>
+  <div class="panel-actions" id="panel-actions"></div>
+</div>
+
+<nav class="bottom-nav">
+  <a href="dashboard.html" class="bottom-nav-item"><i class="fa-solid fa-house"></i><span>Accueil</span></a>
+  <a href="carte.html" class="bottom-nav-item active"><i class="fa-solid fa-map"></i><span>Carte</span></a>
+  <a href="diagnostic.html" class="bottom-nav-item"><i class="fa-solid fa-magnifying-glass"></i><span>Diagnostic</span></a>
+  <a href="profil.html" class="bottom-nav-item"><i class="fa-solid fa-user"></i><span>Profil</span></a>
+</nav>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="script.js"></script>
+<script>
+/* ==============================
+   AGRI'A — CARTE INTERACTIVE v4
+   Satellite + Canvas + Side Panel
+   ============================== */
+
+var map;
+var myUserId = (function(){try{return JSON.parse(localStorage.getItem('agria_session')).userId}catch(e){return 'local'}})();
+var allParcels = [];
+var drawing = false, drawPoints = [], drawLine = null, drawMarkers = [];
+var parcelLayers = {};
+var selectedParcel = null, selectedLayer = null;
+var undoStack = [];
+var toolTimer;
+
+/* ---- INIT MAP ---- */
+
+map = L.map('map-base', { zoomControl: false, attributionControl: false }).setView([46.5,2.3], 6);
+L.control.zoom({position:'bottomright'}).addTo(map);
+
+L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+  attribution: '', maxZoom: 19
+}).addTo(map);
+
+/* ---- DATA ---- */
+
+function loadParcels() {
+  allParcels = [];
+  var keys = [];
+  for (var i = 0; i < localStorage.length; i++) { var k = localStorage.key(i); if (k && k.indexOf('agria_champs_') === 0) keys.push(k); }
+  for (var j = 0; j < keys.length; j++) {
+    try {
+      var champs = JSON.parse(localStorage.getItem(keys[j]));
+      if (!Array.isArray(champs)) continue;
+      var owner = keys[j].replace('agria_champs_', '');
+      for (var c = 0; c < champs.length; c++) allParcels.push({ data: champs[c], owner: owner });
+    } catch(e) {}
+  }
+}
+
+function saveMyParcel(parcel) {
+  var key = 'agria_champs_' + myUserId;
+  var champs = [];
+  try { champs = JSON.parse(localStorage.getItem(key)) || []; } catch(e) {}
+  champs.push(parcel);
+  localStorage.setItem(key, JSON.stringify(champs));
+}
+
+function updateMyParcel(id, data) {
+  var key = 'agria_champs_' + myUserId;
+  var champs = [];
+  try { champs = JSON.parse(localStorage.getItem(key)) || []; } catch(e) {}
+  for (var i = 0; i < champs.length; i++) { if (champs[i].id === id) { champs[i] = data; break; } }
+  localStorage.setItem(key, JSON.stringify(champs));
+}
+
+function deleteMyParcel(id) {
+  var key = 'agria_champs_' + myUserId;
+  var champs = [];
+  try { champs = JSON.parse(localStorage.getItem(key)) || []; } catch(e) {}
+  champs = champs.filter(function(c) { return c.id !== id; });
+  localStorage.setItem(key, JSON.stringify(champs));
+}
+
+/* ---- RENDER PARCELS ON MAP ---- */
+
+function renderAllParcels() {
+  for (var id in parcelLayers) { map.removeLayer(parcelLayers[id]); }
+  parcelLayers = {};
+
+  for (var i = 0; i < allParcels.length; i++) {
+    var p = allParcels[i];
+    if (!p.data.polygonCoords || p.data.polygonCoords.length < 3) continue;
+    var isMine = p.owner === myUserId;
+    var coords = p.data.polygonCoords.map(function(pt) { return [pt[0], pt[1]]; });
+
+    var poly = L.polygon(coords, {
+      fillColor: isMine ? '#4caf50' : '#b0b0b0',
+      fillOpacity: isMine ? 0.2 : 0.15,
+      color: isMine ? '#4caf50' : '#9e9e9e',
+      weight: isMine ? 2 : 1,
+      id: p.data.id,
+      isMine: isMine
+    }).addTo(map);
+
+    if (isMine) {
+      var cx = coords.reduce(function(a,b){return[a[0]+b[0],a[1]+b[1]]},[0,0]);
+      cx = [cx[0]/coords.length, cx[1]/coords.length];
+      poly.bindTooltip(p.data.nom || 'Parcelle', { permanent: map.getZoom() >= 12, direction: 'center', className: 'parcel-tooltip', offset: [0,0] });
+    }
+
+    (function(parcel, polygon) {
+      poly.on('click', function(e) { L.DomEvent.stopPropagation(e); selectParcel(parcel, polygon); });
+    })(p, poly);
+
+    parcelLayers[p.data.id] = poly;
+  }
+}
+
+function selectParcel(parcel, layer) {
+  if (selectedLayer) selectedLayer.setStyle({ weight: selectedLayer.options.isMine ? 2 : 1, fillOpacity: selectedLayer.options.isMine ? 0.2 : 0.15 });
+  selectedParcel = parcel;
+  selectedLayer = layer;
+  if (layer) layer.setStyle({ weight: 4, fillOpacity: 0.35, color: parcel.owner === myUserId ? '#2e7d32' : '#e65100' });
+  openPanel(parcel);
+}
+
+/* ---- DRAWING (Leaflet natif, pas de canvas) ---- */
+
+function startDrawing() {
+  if (drawing) return;
+  drawing = true;
+  drawPoints = [];
+  drawMarkers = [];
+  document.getElementById('btn-draw').classList.add('active');
+  document.getElementById('draw-hint').classList.add('visible');
+  map.getContainer().style.cursor = 'crosshair';
+  closePanel();
+}
+
+function stopDrawing(finalize) {
+  if (!drawing) return;
+  drawing = false;
+  document.getElementById('btn-draw').classList.remove('active');
+  document.getElementById('draw-hint').classList.remove('visible');
+  document.getElementById('draw-surface-floating').style.opacity = '0';
+  map.getContainer().style.cursor = '';
+  if (drawLine) { map.removeLayer(drawLine); drawLine = null; }
+  for (var m = 0; m < drawMarkers.length; m++) map.removeLayer(drawMarkers[m]);
+  drawMarkers = [];
+  if (finalize && drawPoints.length >= 3) finalizeDraw();
+  drawPoints = [];
+}
+
+function addDrawPoint(latlng) {
+  if (!drawing) return;
+  drawPoints.push(latlng);
+
+  if (drawLine) map.removeLayer(drawLine);
+  if (drawPoints.length >= 2) {
+    drawLine = L.polyline(drawPoints, { color: '#606E52', weight: 3, dashArray: '8 6', opacity: 0.9 }).addTo(map);
+  }
+
+  var mk = L.circleMarker(latlng, { radius: 6, color: '#606E52', fillColor: '#fff', fillOpacity: 1, weight: 3 }).addTo(map);
+  drawMarkers.push(mk);
+
+  updateSurfaceFloating(latlng);
+}
+
+function updateSurfaceFloating(latlng) {
+  if (drawPoints.length < 3) return;
+  var ha = calculateAreaLL(drawPoints);
+  var el = document.getElementById('draw-surface-floating');
+  var pt = map.latLngToContainerPoint(latlng);
+  el.textContent = ha.toFixed(2) + ' ha';
+  el.style.left = (pt.x + 14) + 'px';
+  el.style.top = (pt.y - 36) + 'px';
+  el.style.opacity = '1';
+}
+
+function calculateAreaLL(latlngs) {
+  var area = 0;
+  for (var i = 0; i < latlngs.length; i++) {
+    var j = (i+1)%latlngs.length;
+    area += latlngs[i].lng * latlngs[j].lat;
+    area -= latlngs[j].lng * latlngs[i].lat;
+  }
+  return Math.abs(area) * 6371000 * 6371000 * Math.PI / 180 / 20000;
+}
+
+function finalizeDraw() {
+  var coords = drawPoints.map(function(ll) { return [ll.lat, ll.lng]; });
+  var ha = calculateAreaLL(drawPoints);
+
+  var newParcel = {
+    id: Date.now().toString(36)+Math.random().toString(36).slice(2),
+    nom: 'Nouvelle parcelle',
+    culture: 'Ble',
+    typeSol: 'Limoneux',
+    stade: 'Semis',
+    surface: ha.toFixed(2),
+    dateSemis: new Date().toISOString().split('T')[0],
+    dureeJours: 270,
+    notes: '',
+    polygonCoords: coords
+  };
+
+  undoStack.push({ action: 'create', parcel: newParcel });
+  saveMyParcel(newParcel);
+  loadParcels();
+  renderAllParcels();
+  showUndo('Parcelle creee');
+
+  var p = { data: newParcel, owner: myUserId };
+  selectParcel(p, parcelLayers[newParcel.id]);
+}
+
+/* ---- MAP CLICK HANDLING ---- */
+
+map.on('click', function(e) {
+  if (drawing) { addDrawPoint(e.latlng); return; }
+  closePanel();
+});
+
+map.on('dblclick', function(e) {
+  if (drawing) { L.DomEvent.stopPropagation(e); stopDrawing(true); }
+});
+
+map.on('mousemove', function(e) {
+  if (drawing && drawPoints.length >= 3) {
+    var el = document.getElementById('draw-surface-floating');
+    var pt = map.latLngToContainerPoint(e.latlng);
+    var ha = calculateAreaLL(drawPoints.concat([e.latlng]));
+    el.textContent = ha.toFixed(2) + ' ha';
+    el.style.left = (pt.x + 14) + 'px';
+    el.style.top = (pt.y - 36) + 'px';
+    el.style.opacity = '1';
+  }
+});
+
+/* ---- SIDE PANEL ---- */
+
+function openPanel(parcel) {
+  selectedParcel = parcel;
+  var panel = document.getElementById('side-panel');
+  var content = document.getElementById('panel-content');
+  var actions = document.getElementById('panel-actions');
+
+  var p = parcel.data;
+  var isMine = parcel.owner === myUserId;
+  var pred = typeof generatePredictions === 'function' ? generatePredictions(p) : null;
+
+  var html =
+    '<h2 class="panel-title">' + (p.nom || 'Parcelle') + '</h2>' +
+    '<p class="panel-subtitle">' + (p.surface||'?') + ' ha — ' + (p.culture||'?') + '</p>' +
+
+    '<div class="panel-section"><div class="panel-section-title">Informations</div>' +
+    '<div class="panel-field"><span class="panel-field-label">Culture</span><span class="panel-field-value">' + (p.culture||'?') + '</span></div>' +
+    '<div class="panel-field"><span class="panel-field-label">Type de sol</span><span class="panel-field-value">' + (p.typeSol||'?') + '</span></div>' +
+    '<div class="panel-field"><span class="panel-field-label">Stade</span><span class="panel-field-value">' + (p.stade||'?') + '</span></div>' +
+    '<div class="panel-field"><span class="panel-field-label">Date de semis</span><span class="panel-field-value">' + (p.dateSemis||'?') + '</span></div>' +
+    '</div>';
+
+  if (pred && !pred.error) {
+    html +=
+      '<div class="panel-section"><div class="panel-section-title">Predictions</div>' +
+      '<div class="panel-field"><span class="panel-field-label">Recolte estimee</span><span class="panel-field-value">' + pred.date_recolte_estimee + '</span></div>' +
+      '<div class="panel-field"><span class="panel-field-label">Score sol</span><span class="panel-field-value" style="color:' + (pred.score_sol.score>=4?'var(--success)':pred.score_sol.score>=2?'var(--warning)':'var(--danger)') + '">' + pred.score_sol.score + '/5</span></div>' +
+      '<div class="panel-field"><span class="panel-field-label">Besoin eau</span><span class="panel-field-value">' + pred.besoins_eau_total_m3.toLocaleString() + ' m3</span></div>' +
+      '<div class="panel-field"><span class="panel-field-label">Rendement</span><span class="panel-field-value">' + pred.rendement_estime.min + ' - ' + pred.rendement_estime.max + ' ' + pred.rendement_estime.unite + '</span></div>' +
+      (pred.alerte_irrigation.active ? '<p style="font-size:12px;color:var(--danger);margin-top:10px;padding:8px;background:#fdf2f2;border-radius:8px"><i class="fa-solid fa-triangle-exclamation"></i> ' + pred.alerte_irrigation.message + '</p>' : '') +
+      '<p style="font-size:12px;color:var(--text-secondary);margin-top:10px;font-style:italic">' + pred.recommandation_globale + '</p>' +
+      '</div>';
+  }
+
+  if (p.notes) {
+    html += '<div class="panel-section"><div class="panel-section-title">Notes</div><p style="font-size:13px;color:var(--text-secondary)">' + p.notes + '</p></div>';
+  }
+
+  content.innerHTML = html;
+
+  actions.innerHTML = isMine ?
+    '<button style="background:var(--bg-green);color:var(--primary)" onclick="editParcel()"><i class="fa-solid fa-pen"></i> Modifier</button>' +
+    '<button style="background:#fdf2f2;color:var(--danger)" onclick="deleteParcel()"><i class="fa-solid fa-trash"></i> Supprimer</button>' :
+    '<button style="background:var(--bg);color:var(--text-muted)" disabled>Parcelle voisine</button>';
+
+  panel.classList.add('open');
+}
+
+function closePanel() {
+  if (selectedLayer && selectedParcel) {
+    selectedLayer.setStyle({ weight: selectedLayer.options.isMine ? 2 : 1, fillOpacity: selectedLayer.options.isMine ? 0.2 : 0.15, color: selectedLayer.options.isMine ? '#4caf50' : '#9e9e9e' });
+  }
+  selectedParcel = null;
+  selectedLayer = null;
+  document.getElementById('side-panel').classList.remove('open');
+}
+
+document.getElementById('panel-close').addEventListener('click', closePanel);
+
+function editParcel() {
+  if (!selectedParcel) return;
+  var p = selectedParcel.data;
+  var nom = prompt('Nom :', p.nom || '');
+  if (nom !== null) {
+    p.nom = nom;
+    var culture = prompt('Culture :', p.culture || 'Ble');
+    if (culture !== null) p.culture = culture;
+    updateMyParcel(p.id, p);
+    loadParcels();
+    renderAllParcels();
+    selectedParcel.data = p;
+    openPanel(selectedParcel);
+    showUndo('Modifications enregistrees');
+  }
+}
+
+function deleteParcel() {
+  if (!selectedParcel || selectedParcel.owner !== myUserId) return;
+  var p = selectedParcel;
+  if (confirm('Supprimer "' + p.data.nom + '" ?')) {
+    undoStack.push({ action: 'delete', parcel: p.data });
+    deleteMyParcel(p.data.id);
+    loadParcels();
+    renderAllParcels();
+    closePanel();
+    showUndo('Parcelle supprimee');
+  }
+}
+
+/* ---- UNDO ---- */
+
+function showUndo(msg) {
+  var toast = document.getElementById('undo-toast');
+  toast.innerHTML = msg + ' <button onclick="undoLast()">Annuler</button>';
+  toast.classList.add('visible');
+  clearTimeout(toolTimer);
+  toolTimer = setTimeout(function() { toast.classList.remove('visible'); }, 5000);
+}
+
+function undoLast() {
+  var last = undoStack.pop();
+  if (!last) return;
+  if (last.action === 'create') {
+    deleteMyParcel(last.parcel.id);
+    closePanel();
+  }
+  if (last.action === 'delete') {
+    saveMyParcel(last.parcel);
+  }
+  loadParcels();
+  renderAllParcels();
+  document.getElementById('undo-toast').classList.remove('visible');
+}
+
+/* ---- KEYBOARD ---- */
+
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape' && drawing) { stopDrawing(false); return; }
+  if ((e.ctrlKey || e.metaKey) && e.key === 'z') { e.preventDefault(); undoLast(); }
+});
+
+/* ---- BUTTONS ---- */
+
+document.getElementById('btn-draw').addEventListener('click', function() {
+  if (drawing) stopDrawing(); else startDrawing();
+});
+
+document.getElementById('btn-fields').addEventListener('click', function() {
+  var mine = [];
+  for (var i = 0; i < allParcels.length; i++) { if (allParcels[i].owner === myUserId && allParcels[i].data.polygonCoords) mine = mine.concat(allParcels[i].data.polygonCoords); }
+  if (mine.length > 0) { var b = L.latLngBounds(mine.map(function(c){return[c[0],c[1]]})); map.fitBounds(b, {padding:[40,40],maxZoom:14}); }
+});
+
+document.getElementById('btn-locate').addEventListener('click', function() {
+  if (navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition(function(pos) {
+      map.flyTo([pos.coords.latitude, pos.coords.longitude], 15, {duration:1});
+      L.circleMarker([pos.coords.latitude, pos.coords.longitude], {radius:10,color:'#606E52',fillColor:'#91A56E',fillOpacity:0.5,weight:3}).addTo(map);
+    });
+  }
+});
+
+document.getElementById('btn-delete').addEventListener('click', function() {
+  if (selectedParcel && selectedParcel.owner === myUserId) deleteParcel();
+});
+
+/* ---- SEARCH ---- */
+
+var searchInput = document.getElementById('search-input');
+var searchResults = document.getElementById('search-results');
+
+searchInput.addEventListener('input', function() {
+  var q = searchInput.value.toLowerCase().trim();
+  if (q.length < 2) { searchResults.classList.remove('visible'); return; }
+
+  var matches = [];
+  for (var i = 0; i < allParcels.length; i++) {
+    var p = allParcels[i];
+    var txt = (p.data.nom||'') + ' ' + (p.data.culture||'') + ' ' + (p.data.stade||'');
+    if (txt.toLowerCase().indexOf(q) !== -1) matches.push(p);
+  }
+
+  if (matches.length === 0) { searchResults.classList.remove('visible'); return; }
+
+  searchResults.innerHTML = '';
+  for (var j = 0; j < Math.min(matches.length, 8); j++) {
+    var m = matches[j];
+    var item = document.createElement('div');
+    item.className = 'sr-item';
+    var isMine = m.owner === myUserId;
+    item.innerHTML = '<i class="fa-solid ' + (isMine?'fa-wheat-awn':'fa-map-pin') + '" style="color:' + (isMine?'var(--secondary)':'var(--text-muted)') + '"></i>' + (m.data.nom||'Parcelle') + '<span class="sr-badge">' + (m.data.culture||'?') + '</span>';
+    (function(parcel) {
+      item.addEventListener('click', function() {
+        if (parcel.data.polygonCoords && parcel.data.polygonCoords.length > 0) {
+          var b = L.latLngBounds(parcel.data.polygonCoords.map(function(c){return[c[0],c[1]]}));
+          map.fitBounds(b, {padding:[60,60],maxZoom:16,duration:0.5});
+        }
+        selectParcel(parcel, parcelLayers[parcel.data.id]);
+        searchResults.classList.remove('visible');
+        searchInput.value = '';
+      });
+    })(m);
+    searchResults.appendChild(item);
+  }
+  searchResults.classList.add('visible');
+});
+
+searchInput.addEventListener('blur', function() { setTimeout(function(){searchResults.classList.remove('visible')}, 200); });
+
+/* ---- INIT ---- */
+
+loadParcels();
+
+var hideToolbarTimer;
+map.on('movestart', function() { document.getElementById('float-toolbar').classList.add('hidden'); });
+map.on('moveend', function() {
+  clearTimeout(hideToolbarTimer);
+  hideToolbarTimer = setTimeout(function() { document.getElementById('float-toolbar').classList.remove('hidden'); }, 800);
+});
+
+renderAllParcels();
+
+/* ---- STYLES LEAFLET ---- */
+var style = document.createElement('style');
+style.textContent =
+  '.leaflet-control-zoom a{border-radius:12px!important;border:2px solid var(--border)!important;color:var(--primary)!important;box-shadow:var(--shadow-sm)!important}' +
+  '.leaflet-control-zoom a:hover{background:var(--bg-green)!important}' +
+  '.parcel-tooltip{background:transparent!important;border:none!important;box-shadow:none!important;font-weight:600;font-size:11px;color:var(--primary);text-shadow:0 0 6px rgba(255,255,255,0.8)}' +
+  '.parcel-tooltip::before{display:none!important}';
+document.head.appendChild(style);
+
+/* ---- EXPORT GLOBAL ---- */
+window.editParcel = editParcel;
+window.deleteParcel = deleteParcel;
+window.undoLast = undoLast;
+</script>
+</body>
+</html>

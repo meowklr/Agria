@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#606E52">
+  <title>Agr'IA — Diagnostic parcelle</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body data-page="diagnostic">
+
+  <header class="page-header">
+    <span class="page-header-logo">Diagnostic parcelle</span>
+  </header>
+
+  <main class="page-wrapper">
+
+    <div class="diagnostic-steps" id="diagnosticSteps">
+      <div class="step active" data-step="1"><span class="step-number">1</span></div>
+      <div class="step-line"></div>
+      <div class="step" data-step="2"><span class="step-number">2</span></div>
+      <div class="step-line"></div>
+      <div class="step" data-step="3"><span class="step-number">3</span></div>
+    </div>
+
+    <div id="diagnosticForm">
+      <div class="diagnostic-etape active reveal" id="etape1">
+        <h2 class="section-title">Quelle est votre culture ?</h2>
+        <div class="culture-grid">
+          <label class="culture-card card"><input type="radio" name="culture" value="ble" hidden><i class="fa-solid fa-seedling"></i><span>Ble</span></label>
+          <label class="culture-card card"><input type="radio" name="culture" value="mais" hidden><i class="fa-solid fa-seedling"></i><span>Mais</span></label>
+          <label class="culture-card card"><input type="radio" name="culture" value="tournesol" hidden><i class="fa-solid fa-sun"></i><span>Tournesol</span></label>
+          <label class="culture-card card"><input type="radio" name="culture" value="colza" hidden><i class="fa-solid fa-leaf"></i><span>Colza</span></label>
+          <label class="culture-card card"><input type="radio" name="culture" value="vigne" hidden><i class="fa-solid fa-wine-glass"></i><span>Vigne</span></label>
+        </div>
+        <button type="button" class="btn-primary diagnostic-next" data-next="2">Suivant</button>
+      </div>
+
+      <div class="diagnostic-etape" id="etape2">
+        <h2 class="section-title">Quels symptomes observez-vous ?</h2>
+        <div class="symptomes-list">
+          <label class="symptome-item"><input type="checkbox" name="symptome" value="jaunissement" hidden><span>Jaunissement des feuilles</span></label>
+          <label class="symptome-item"><input type="checkbox" name="symptome" value="taches" hidden><span>Taches brunes ou noires</span></label>
+          <label class="symptome-item"><input type="checkbox" name="symptome" value="fletrissement" hidden><span>Fletrissement</span></label>
+          <label class="symptome-item"><input type="checkbox" name="symptome" value="insectes" hidden><span>Presence d'insectes</span></label>
+          <label class="symptome-item"><input type="checkbox" name="symptome" value="croissance" hidden><span>Croissance ralentie</span></label>
+          <label class="symptome-item"><input type="checkbox" name="symptome" value="pourriture" hidden><span>Pourriture visible</span></label>
+        </div>
+        <button type="button" class="btn-primary diagnostic-next" data-next="3">Suivant</button>
+        <button type="button" class="btn-secondary diagnostic-prev" data-prev="1">Retour</button>
+      </div>
+
+      <div class="diagnostic-etape" id="etape3">
+        <h2 class="section-title">Ou se trouve votre parcelle ?</h2>
+        <div class="form-group">
+          <input type="text" class="input-field" id="diagnosticVille" placeholder="Nom de la ville" autocomplete="off">
+        </div>
+        <p class="diagnostic-info">Pour enrichir le diagnostic avec la meteo locale.</p>
+        <button type="button" class="btn-primary" id="btnAnalyser"><i class="fa-solid fa-magnifying-glass"></i> Analyser</button>
+        <button type="button" class="btn-secondary diagnostic-prev" data-prev="2">Retour</button>
+      </div>
+    </div>
+
+    <div id="diagnosticResultat" class="d-none">
+      <div class="card diagnostic-resultat-card card-glow">
+        <div class="diagnostic-badge-wrapper"><span class="badge" id="diagBadge"></span></div>
+        <h2 class="diagnostic-resultat-titre" id="diagTitre"></h2>
+        <p class="diagnostic-resultat-explication" id="diagExplication"></p>
+      </div>
+      <div class="card diagnostic-meteo-card">
+        <h3 class="diagnostic-sous-titre">Donnees meteo locales</h3>
+        <div class="diagnostic-meteo-grid" id="diagMeteoGrid"></div>
+      </div>
+      <div class="card diagnostic-reco-card">
+        <h3 class="diagnostic-sous-titre">Recommandations</h3>
+        <ul class="diagnostic-reco-liste" id="diagRecommandations"></ul>
+      </div>
+      <button type="button" class="btn-secondary" id="btnNouveauDiagnostic">Nouveau diagnostic</button>
+    </div>
+
+  </main>
+
+  <nav class="bottom-nav">
+    <a href="dashboard.html" class="bottom-nav-item"><i class="fa-solid fa-house"></i><span>Accueil</span></a>
+    <a href="carte.html" class="bottom-nav-item"><i class="fa-solid fa-map"></i><span>Carte</span></a>
+    <a href="diagnostic.html" class="bottom-nav-item active"><i class="fa-solid fa-magnifying-glass"></i><span>Diagnostic</span></a>
+    <a href="profil.html" class="bottom-nav-item"><i class="fa-solid fa-user"></i><span>Profil</span></a>
+  </nav>
+
+  <script src="script.js"></script>
+</body>
+</html>

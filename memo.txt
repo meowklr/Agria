@@ -1,0 +1,10 @@
+choses a faire apres, a se rappeler :
+
+
+- les parcelles doivent intelligemment s'aimnanter entre elles
+- les parcelles doiventse fermer toutes seules en mode dessin si on reclique sur le point de depart du dessin.
+- adapter les vues au navigateur pc
+- passage en app tel donc config pwa, considerer l'utilisation d'electron
+- preparer tout pour github
+
+

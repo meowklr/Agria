@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Agr'IA — Design System</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Plus Jakarta Sans',sans-serif;background:#f6f7f4;color:#474747;-webkit-font-smoothing:antialiased;line-height:1.6}
+.ds-wrap{max-width:960px;margin:0 auto;padding:48px 28px 120px}
+.ds-header{margin-bottom:72px;display:flex;align-items:center;gap:16px}
+.ds-mark{width:52px;height:52px;border-radius:16px;background:linear-gradient(135deg,#606E52,#91A56E);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.ds-mark i{font-size:24px;color:#FFFFFF}
+.ds-brand-name{font-family:'Cormorant Garamond',serif;font-size:44px;font-weight:600;color:#606E52;line-height:1;letter-spacing:-0.5px}
+.ds-tagline{font-size:15px;color:#8F8B84;margin-top:2px}
+.ds-version{font-size:11px;color:#C0CCA4;margin-top:4px}
+
+.ds-section{margin-bottom:64px}
+.ds-section-title{font-family:'Cormorant Garamond',serif;font-size:26px;font-weight:600;color:#606E52;margin-bottom:24px;padding-bottom:10px;border-bottom:2px solid #C0CCA4}
+
+.ds-color-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(155px,1fr));gap:14px}
+.ds-swatch{border-radius:20px;overflow:hidden;box-shadow:0 2px 12px rgba(96,110,82,0.06);border:1px solid #e8ece6}
+.ds-swatch-color{height:96px;position:relative}
+.ds-swatch-color::after{content:'';position:absolute;inset:0;background:linear-gradient(180deg,transparent 50%,rgba(0,0,0,0.02) 100%)}
+.ds-swatch-info{padding:14px 16px;background:#FFFFFF}
+.ds-swatch-name{font-size:14px;font-weight:600;color:#474747}
+.ds-swatch-hex{font-size:12px;color:#8F8B84;font-family:monospace;margin-top:2px;letter-spacing:0.3px}
+.ds-swatch-note{font-size:11px;color:#C0CCA4;margin-top:4px}
+
+.ds-type-sample{margin-bottom:36px}
+.ds-type-label{font-size:11px;color:#C0CCA4;text-transform:uppercase;letter-spacing:1.2px;margin-bottom:6px;font-weight:600}
+.ds-type-display{font-family:'Cormorant Garamond',serif;font-size:38px;color:#606E52;line-height:1.15}
+.ds-type-body{font-family:'Plus Jakarta Sans',sans-serif;font-size:16px;color:#8F8B84;max-width:520px;line-height:1.7}
+.ds-type-weights{display:flex;gap:32px;margin-top:14px;flex-wrap:wrap}
+.ds-type-weight{text-align:center}
+.ds-type-weight-sample{font-size:28px;color:#474747;font-family:'Plus Jakarta Sans'}
+.ds-type-weight-label{font-size:11px;color:#8F8B84;margin-top:2px}
+
+.ds-principles{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px}
+.ds-principle{background:#FFFFFF;border-radius:20px;padding:24px;border:1px solid #e8ece6}
+.ds-principle-num{font-family:'Cormorant Garamond',serif;font-size:32px;color:#91A56E;font-weight:600}
+.ds-principle-title{font-weight:600;color:#474747;margin:6px 0 4px;font-size:15px}
+.ds-principle-desc{font-size:13px;color:#8F8B84;line-height:1.5}
+
+.ds-comp-row{display:flex;gap:14px;flex-wrap:wrap;align-items:center;margin-bottom:20px}
+
+.ds-btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:48px;border-radius:16px;font-weight:600;font-size:15px;font-family:'Plus Jakarta Sans',sans-serif;cursor:pointer;padding:0 22px;border:none;transition:all 0.25s}
+.ds-btn-primary{background:#606E52;color:#FFFFFF}
+.ds-btn-primary:hover{background:#3D5A4B}
+.ds-btn-secondary{border:2px solid #606E52;color:#606E52;background:transparent}
+.ds-btn-secondary:hover{background:rgba(96,110,82,0.06)}
+.ds-btn-outline{border:1.5px solid #C0CCA4;color:#606E52;background:transparent;border-radius:20px}
+.ds-btn-outline:hover{background:#f6f7f4;border-color:#91A56E}
+
+.ds-badge{display:inline-block;padding:5px 12px;border-radius:999px;font-size:12px;font-weight:600;font-family:'Plus Jakarta Sans'}
+.ds-badge-sauge{background:#f0f3ec;color:#606E52}
+.ds-badge-nature{background:#f4f7f0;color:#91A56E}
+.ds-badge-doux{background:#f8faf6;color:#C0CCA4}
+.ds-badge-chaud{background:#f5f4f2;color:#8F8B84}
+
+.ds-card{background:#FFFFFF;border-radius:20px;padding:22px;box-shadow:0 2px 14px rgba(96,110,82,0.05);border:1px solid #e8ece6}
+.ds-card-plant{position:relative;overflow:hidden}
+.ds-card-plant::before{content:'';position:absolute;top:-30px;right:-20px;width:120px;height:120px;border-radius:50%;background:radial-gradient(circle,rgba(144,165,110,0.1),transparent 70%);pointer-events:none}
+
+.ds-input{width:100%;min-height:48px;padding:0 16px;border:1.5px solid #e8ece6;border-radius:16px;font-family:'Plus Jakarta Sans',sans-serif;font-size:15px;color:#474747;outline:none;background:#FFFFFF;transition:all 0.25s}
+.ds-input:focus{border-color:#91A56E;box-shadow:0 0 0 3px rgba(145,165,110,0.15)}
+
+.ds-icon-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(88px,1fr));gap:14px}
+.ds-icon-item{display:flex;flex-direction:column;align-items:center;gap:10px;padding:18px 10px;background:#FFFFFF;border-radius:20px;border:1px solid #e8ece6;font-size:11px;color:#8F8B84;font-weight:500;transition:all 0.25s}
+.ds-icon-item:hover{transform:translateY(-3px);box-shadow:0 4px 18px rgba(96,110,82,0.08);border-color:#C0CCA4}
+.ds-icon-item i{font-size:26px;color:#606E52}
+
+.ds-wordmark{background:#606E52;color:#FFFFFF;padding:36px 28px;border-radius:24px;margin-bottom:14px;text-align:center}
+.ds-wordmark-text{font-family:'Cormorant Garamond',serif;font-size:36px;font-weight:600;letter-spacing:-0.3px}
+.ds-wordmark-tag{font-size:12px;opacity:.55;margin-top:4px;font-family:'Plus Jakarta Sans'}
+.ds-wordmark-light{background:#f6f7f4;color:#606E52;border:1px solid #e8ece6}
+.ds-wordmark-gradient{background:linear-gradient(135deg,#606E52,#3D5A4B)}
+
+.ds-footer{border-top:1px solid #e8ece6;padding-top:28px;font-size:12px;color:#C0CCA4;display:flex;justify-content:space-between}
+
+.ds-radius-show{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:12px}
+.ds-radius-item{width:60px;height:60px;background:#91A56E;display:flex;align-items:center;justify-content:center;color:#fff;font-size:9px;font-weight:600}
+</style>
+</head>
+<body>
+<div class="ds-wrap">
+
+<header class="ds-header">
+  <div class="ds-mark"><i class="fa-solid fa-seedling"></i></div>
+  <div>
+    <h1 class="ds-brand-name">Agr'IA</h1>
+    <p class="ds-tagline">L'agriculture intelligente</p>
+    <p class="ds-version">Design System v3.0 · Mai 2026</p>
+  </div>
+</header>
+
+<section class="ds-section">
+  <h2 class="ds-section-title">Hierarchie des couleurs</h2>
+  <div class="ds-color-grid">
+    <div class="ds-swatch"><div class="ds-swatch-color" style="background:#606E52"></div><div class="ds-swatch-info"><div class="ds-swatch-name">Vert Sauge</div><div class="ds-swatch-hex">#606E52</div><div class="ds-swatch-note">Fonds, boutons, titres, navigation</div></div></div>
+    <div class="ds-swatch"><div class="ds-swatch-color" style="background:#91A56E"></div><div class="ds-swatch-info"><div class="ds-swatch-name">Vert Naturel</div><div class="ds-swatch-hex">#91A56E</div><div class="ds-swatch-note">Accents, icones, liens, focus</div></div></div>
+    <div class="ds-swatch"><div class="ds-swatch-color" style="background:#C0CCA4"></div><div class="ds-swatch-info"><div class="ds-swatch-name">Vert Doux</div><div class="ds-swatch-hex">#C0CCA4</div><div class="ds-swatch-note">Arriere-plans, hover, separations</div></div></div>
+    <div class="ds-swatch"><div class="ds-swatch-color" style="background:#3D5A4B"></div><div class="ds-swatch-info"><div class="ds-swatch-name">Bleu-Vert</div><div class="ds-swatch-hex">#3D5A4B</div><div class="ds-swatch-note">Zones sombres, contraste eleve</div></div></div>
+    <div class="ds-swatch"><div class="ds-swatch-color" style="background:#8F8B84"></div><div class="ds-swatch-info"><div class="ds-swatch-name">Gris Chaud</div><div class="ds-swatch-hex">#8F8B84</div><div class="ds-swatch-note">Textes secondaires, labels</div></div></div>
+    <div class="ds-swatch"><div class="ds-swatch-color" style="background:#474747"></div><div class="ds-swatch-info"><div class="ds-swatch-name">Anthracite</div><div class="ds-swatch-hex">#474747</div><div class="ds-swatch-note">Texte principal, icones foncees</div></div></div>
+  </div>
+</section>
+
+<section class="ds-section">
+  <h2 class="ds-section-title">Palette etendue</h2>
+  <div class="ds-color-grid">
+    <div class="ds-swatch"><div class="ds-swatch-color" style="background:#FFFFFF"></div><div class="ds-swatch-info"><div class="ds-swatch-name">Blanc</div><div class="ds-swatch-hex">#FFFFFF</div><div class="ds-swatch-note">Surface, fonds de cartes</div></div></div>
+    <div class="ds-swatch"><div class="ds-swatch-color" style="background:#f6f7f4"></div><div class="ds-swatch-info"><div class="ds-swatch-name">Ecru</div><div class="ds-swatch-hex">#f6f7f4</div><div class="ds-swatch-note">Fond principal, respiration</div></div></div>
+    <div class="ds-swatch"><div class="ds-swatch-color" style="background:#e8ece6"></div><div class="ds-swatch-info"><div class="ds-swatch-name">Bordure</div><div class="ds-swatch-hex">#e8ece6</div><div class="ds-swatch-note">Bordures, separations</div></div></div>
+    <div class="ds-swatch"><div class="ds-swatch-color" style="background:#525B47"></div><div class="ds-swatch-info"><div class="ds-swatch-name">Sauge foncee</div><div class="ds-swatch-hex">#525B47</div><div class="ds-swatch-note">Hover boutons, etats actifs</div></div></div>
+    <div class="ds-swatch"><div class="ds-swatch-color" style="background:#b8d4a6"></div><div class="ds-swatch-info"><div class="ds-swatch-name">Vert Tilleul</div><div class="ds-swatch-hex">#b8d4a6</div><div class="ds-swatch-note">Glow, highlights, badges</div></div></div>
+    <div class="ds-swatch"><div class="ds-swatch-color" style="background:#2a3830"></div><div class="ds-swatch-info"><div class="ds-swatch-name">Foret Profonde</div><div class="ds-swatch-hex">#2a3830</div><div class="ds-swatch-note">Textes forts, ombres</div></div></div>
+  </div>
+</section>
+
+<section class="ds-section">
+  <h2 class="ds-section-title">Typographie</h2>
+  <div class="ds-type-sample">
+    <div class="ds-type-label">Display Serif — Titres premium</div>
+    <div class="ds-type-display">Agr'IA cultive l'intelligence</div>
+    <div class="ds-type-label" style="margin-top:10px">Cormorant Garamond · Regular, SemiBold, Bold · Style Big Caslon</div>
+  </div>
+  <div class="ds-type-sample">
+    <div class="ds-type-label">Body Sans — Corps de texte</div>
+    <p class="ds-type-body">Plus Jakarta Sans est une police moderne, arrondie et hautement lisible. Concue pour les interfaces mobiles, elle offre une clarte exceptionnelle et une personnalite chaleureuse, parfaite pour une application agricole premium.</p>
+    <div class="ds-type-weights">
+      <div class="ds-type-weight"><div class="ds-type-weight-sample" style="font-weight:300">Aa</div><div class="ds-type-weight-label">Light 300</div></div>
+      <div class="ds-type-weight"><div class="ds-type-weight-sample" style="font-weight:400">Aa</div><div class="ds-type-weight-label">Regular 400</div></div>
+      <div class="ds-type-weight"><div class="ds-type-weight-sample" style="font-weight:500">Aa</div><div class="ds-type-weight-label">Medium 500</div></div>
+      <div class="ds-type-weight"><div class="ds-type-weight-sample" style="font-weight:600">Aa</div><div class="ds-type-weight-label">SemiBold 600</div></div>
+      <div class="ds-type-weight"><div class="ds-type-weight-sample" style="font-weight:700">Aa</div><div class="ds-type-weight-label">Bold 700</div></div>
+    </div>
+  </div>
+</section>
+
+<section class="ds-section">
+  <h2 class="ds-section-title">Principes de design</h2>
+  <div class="ds-principles">
+    <div class="ds-principle"><div class="ds-principle-num">01</div><div class="ds-principle-title">Nature Premium</div><div class="ds-principle-desc">L'interface evoque la douceur et l'elegance du monde vegetal. Aucune couleur agressive, aucune saturation excessive.</div></div>
+    <div class="ds-principle"><div class="ds-principle-num">02</div><div class="ds-principle-title">Respiration Generale</div><div class="ds-principle-desc">Chaque element dispose de son espace. Les marges sont genereuses. L'interface ne crie jamais, elle murmure.</div></div>
+    <div class="ds-principle"><div class="ds-principle-num">03</div><div class="ds-principle-title">Rondeur Systematique</div><div class="ds-principle-desc">Pas d'angles vifs. Tous les composants suivent un radius de 16 a 24px. L'interface est enveloppante.</div></div>
+    <div class="ds-principle"><div class="ds-principle-num">04</div><div class="ds-principle-title">Lisibilite Maximale</div><div class="ds-principle-desc">Typographie claire, taille minimum 15px, contrastes doux mais suffisants. La hierarchie est immediate.</div></div>
+    <div class="ds-principle"><div class="ds-principle-num">05</div><div class="ds-principle-title">Elegance Calme</div><div class="ds-principle-desc">Ambiance sereine et rassurante. L'utilisateur se sent accompagne, jamais agresse par l'interface.</div></div>
+    <div class="ds-principle"><div class="ds-principle-num">06</div><div class="ds-principle-title">Mobile-First</div><div class="ds-principle-desc">Concu pour iPhone 390px. Touch targets >= 48px. Desktop en media queries secondaires.</div></div>
+  </div>
+</section>
+
+<section class="ds-section">
+  <h2 class="ds-section-title">Composants</h2>
+
+  <div class="ds-type-label" style="margin-bottom:12px">Boutons</div>
+  <div class="ds-comp-row">
+    <button class="ds-btn ds-btn-primary"><i class="fa-solid fa-check"></i> Action principale</button>
+    <button class="ds-btn ds-btn-secondary"><i class="fa-solid fa-plus"></i> Action secondaire</button>
+    <button class="ds-btn ds-btn-outline"><i class="fa-solid fa-leaf"></i> Tertiaire</button>
+  </div>
+
+  <div class="ds-type-label" style="margin-bottom:12px;margin-top:24px">Badges</div>
+  <div class="ds-comp-row">
+    <span class="ds-badge ds-badge-sauge">Urgent</span>
+    <span class="ds-badge ds-badge-nature">Attention</span>
+    <span class="ds-badge ds-badge-doux">Bon</span>
+    <span class="ds-badge ds-badge-chaud">Info</span>
+  </div>
+
+  <div class="ds-type-label" style="margin-bottom:12px;margin-top:24px">Cartes</div>
+  <div class="ds-comp-row">
+    <div class="ds-card" style="width:200px"><strong style="color:#474747">Parcelle Nord</strong><br><span style="font-size:13px;color:#8F8B84">12,5 ha — Ble tendre</span></div>
+    <div class="ds-card ds-card-plant" style="width:200px"><strong style="color:#474747">Meteo du jour</strong><br><span style="font-size:13px;color:#8F8B84">17 C — Partiellement nuageux</span></div>
+  </div>
+
+  <div class="ds-type-label" style="margin-bottom:12px;margin-top:24px">Input</div>
+  <input type="text" class="ds-input" placeholder="Rechercher une ville..." style="max-width:300px">
+
+  <div class="ds-type-label" style="margin-bottom:12px;margin-top:24px">Rayons</div>
+  <div class="ds-radius-show">
+    <div class="ds-radius-item" style="border-radius:8px">8px</div>
+    <div class="ds-radius-item" style="border-radius:12px">12px</div>
+    <div class="ds-radius-item" style="border-radius:16px">16px</div>
+    <div class="ds-radius-item" style="border-radius:20px">20px</div>
+    <div class="ds-radius-item" style="border-radius:24px">24px</div>
+  </div>
+
+  <div class="ds-type-label" style="margin-bottom:12px;margin-top:24px">Navigation mobile</div>
+  <div class="ds-card" style="display:flex;justify-content:space-around;padding:14px 10px;border-radius:24px 24px 20px 20px;gap:0">
+    <div style="display:flex;flex-direction:column;align-items:center;gap:4px;font-size:10px;color:#606E52"><i class="fa-solid fa-house" style="font-size:18px"></i>Accueil</div>
+    <div style="display:flex;flex-direction:column;align-items:center;gap:4px;font-size:10px;color:#C0CCA4"><i class="fa-solid fa-map" style="font-size:18px"></i>Carte</div>
+    <div style="display:flex;flex-direction:column;align-items:center;gap:4px;font-size:10px;color:#C0CCA4"><i class="fa-solid fa-magnifying-glass" style="font-size:18px"></i>Diagnostic</div>
+    <div style="display:flex;flex-direction:column;align-items:center;gap:4px;font-size:10px;color:#C0CCA4"><i class="fa-solid fa-user" style="font-size:18px"></i>Profil</div>
+  </div>
+</section>
+
+<section class="ds-section">
+  <h2 class="ds-section-title">Icones</h2>
+  <div class="ds-icon-grid">
+    <div class="ds-icon-item"><i class="fa-solid fa-house"></i>Accueil</div>
+    <div class="ds-icon-item"><i class="fa-solid fa-map"></i>Carte</div>
+    <div class="ds-icon-item"><i class="fa-solid fa-magnifying-glass"></i>Diagnostic</div>
+    <div class="ds-icon-item"><i class="fa-solid fa-user"></i>Profil</div>
+    <div class="ds-icon-item"><i class="fa-solid fa-seedling"></i>Culture</div>
+    <div class="ds-icon-item"><i class="fa-solid fa-cloud-sun"></i>Meteo</div>
+    <div class="ds-icon-item"><i class="fa-solid fa-bell"></i>Alertes</div>
+    <div class="ds-icon-item"><i class="fa-solid fa-droplet"></i>Humidite</div>
+    <div class="ds-icon-item"><i class="fa-solid fa-sun"></i>Soleil</div>
+    <div class="ds-icon-item"><i class="fa-solid fa-cloud-rain"></i>Pluie</div>
+    <div class="ds-icon-item"><i class="fa-solid fa-leaf"></i>Nature</div>
+    <div class="ds-icon-item"><i class="fa-solid fa-temperature-half"></i>Temperature</div>
+  </div>
+</section>
+
+<section class="ds-section">
+  <h2 class="ds-section-title">Wordmarks / Lockups</h2>
+  <div class="ds-wordmark"><div class="ds-wordmark-text">Agr'IA</div><div class="ds-wordmark-tag">L'agriculture intelligente</div></div>
+  <div class="ds-wordmark ds-wordmark-light"><div class="ds-wordmark-text">Agr'IA</div><div class="ds-wordmark-tag">L'agriculture intelligente</div></div>
+  <div class="ds-wordmark ds-wordmark-gradient"><i class="fa-solid fa-seedling" style="font-size:22px;display:block;margin-bottom:8px"></i><div class="ds-wordmark-text">Agr'IA</div><div class="ds-wordmark-tag">L'agriculture intelligente</div></div>
+</section>
+
+<footer class="ds-footer">
+  <span>Agr'IA Design System · design/design-system.html</span>
+  <span>Genere depuis le brief de marque · Agr'IA v3.0</span>
+</footer>
+
+</div>
+</body>
+</html>
