@@ -147,12 +147,15 @@ L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/
 /* ---- DATA ---- */
 
 function loadParcels() {
+  return loadAllParcels();
+}
+
+async function loadAllParcels() {
   allParcels = [];
-  var keys = [];
-  for (var i = 0; i < localStorage.length; i++) { var k = localStorage.key(i); if (k && k.indexOf('agria_champs_') === 0) keys.push(k); }
+  var keys = dpGetAllKeys('agria_champs_');
   for (var j = 0; j < keys.length; j++) {
     try {
-      var champs = JSON.parse(localStorage.getItem(keys[j]));
+      var champs = await dpLoad(keys[j], []);
       if (!Array.isArray(champs)) continue;
       var owner = keys[j].replace('agria_champs_', '');
       for (var c = 0; c < champs.length; c++) allParcels.push({ data: champs[c], owner: owner });
@@ -161,27 +164,15 @@ function loadParcels() {
 }
 
 function saveMyParcel(parcel) {
-  var key = 'agria_champs_' + myUserId;
-  var champs = [];
-  try { champs = JSON.parse(localStorage.getItem(key)) || []; } catch(e) {}
-  champs.push(parcel);
-  localStorage.setItem(key, JSON.stringify(champs));
+  return addChamp(parcel);
 }
 
 function updateMyParcel(id, data) {
-  var key = 'agria_champs_' + myUserId;
-  var champs = [];
-  try { champs = JSON.parse(localStorage.getItem(key)) || []; } catch(e) {}
-  for (var i = 0; i < champs.length; i++) { if (champs[i].id === id) { champs[i] = data; break; } }
-  localStorage.setItem(key, JSON.stringify(champs));
+  return updateChamp(id, data);
 }
 
 function deleteMyParcel(id) {
-  var key = 'agria_champs_' + myUserId;
-  var champs = [];
-  try { champs = JSON.parse(localStorage.getItem(key)) || []; } catch(e) {}
-  champs = champs.filter(function(c) { return c.id !== id; });
-  localStorage.setItem(key, JSON.stringify(champs));
+  return deleteChamp(id);
 }
 
 /* ---- RENDER PARCELS ON MAP ---- */
@@ -331,7 +322,7 @@ function calculateAreaLL(latlngs) {
   return Math.abs(area) * 6371000 * 6371000 * Math.PI / 180 / 20000;
 }
 
-function finalizeDraw() {
+async function finalizeDraw() {
   var coords = drawPoints.map(function(ll) { return [ll.lat, ll.lng]; });
   var ha = calculateAreaLL(drawPoints);
 
@@ -349,8 +340,8 @@ function finalizeDraw() {
   };
 
   undoStack.push({ action: 'create', parcel: newParcel });
-  saveMyParcel(newParcel);
-  loadParcels();
+  await saveMyParcel(newParcel);
+  await loadParcels();
   renderAllParcels();
   showUndo('Parcelle creee');
 
@@ -441,7 +432,7 @@ function closePanel() {
 
 document.getElementById('panel-close').addEventListener('click', closePanel);
 
-function editParcel() {
+async function editParcel() {
   if (!selectedParcel) return;
   var p = selectedParcel.data;
   var nom = prompt('Nom :', p.nom || '');
@@ -449,8 +440,8 @@ function editParcel() {
     p.nom = nom;
     var culture = prompt('Culture :', p.culture || 'Ble');
     if (culture !== null) p.culture = culture;
-    updateMyParcel(p.id, p);
-    loadParcels();
+    await updateMyParcel(p.id, p);
+    await loadParcels();
     renderAllParcels();
     selectedParcel.data = p;
     openPanel(selectedParcel);
@@ -458,13 +449,13 @@ function editParcel() {
   }
 }
 
-function deleteParcel() {
+async function deleteParcel() {
   if (!selectedParcel || selectedParcel.owner !== myUserId) return;
   var p = selectedParcel;
   if (confirm('Supprimer "' + p.data.nom + '" ?')) {
     undoStack.push({ action: 'delete', parcel: p.data });
-    deleteMyParcel(p.data.id);
-    loadParcels();
+    await deleteMyParcel(p.data.id);
+    await loadParcels();
     renderAllParcels();
     closePanel();
     showUndo('Parcelle supprimee');
@@ -481,17 +472,17 @@ function showUndo(msg) {
   toolTimer = setTimeout(function() { toast.classList.remove('visible'); }, 5000);
 }
 
-function undoLast() {
+async function undoLast() {
   var last = undoStack.pop();
   if (!last) return;
   if (last.action === 'create') {
-    deleteMyParcel(last.parcel.id);
+    await deleteMyParcel(last.parcel.id);
     closePanel();
   }
   if (last.action === 'delete') {
-    saveMyParcel(last.parcel);
+    await saveMyParcel(last.parcel);
   }
-  loadParcels();
+  await loadParcels();
   renderAllParcels();
   document.getElementById('undo-toast').classList.remove('visible');
 }
@@ -573,7 +564,9 @@ searchInput.addEventListener('blur', function() { setTimeout(function(){searchRe
 
 /* ---- INIT ---- */
 
-loadParcels();
+loadAllParcels().then(function() {
+  renderAllParcels();
+});
 
 var hideToolbarTimer;
 map.on('movestart', function() { document.getElementById('float-toolbar').classList.add('hidden'); });
@@ -581,8 +574,6 @@ map.on('moveend', function() {
   clearTimeout(hideToolbarTimer);
   hideToolbarTimer = setTimeout(function() { document.getElementById('float-toolbar').classList.remove('hidden'); }, 800);
 });
-
-renderAllParcels();
 
 /* ---- STYLES LEAFLET ---- */
 var style = document.createElement('style');

@@ -1,139 +1,74 @@
 // ============================================
-// FONCTIONS SUPABASE - INTÉGRATION COMPLÈTE
+// FONCTIONS SUPABASE - TABLES SPECIALISEES
+// (profiles/parcelles/mesures/alertes)
+// Les fonctions generiques dpLoad/dpSave dans
+// script.js utilisent la table agria_data.
 // ============================================
 
 // ===== PROFILES =====
 
-async function loadProfile(userId) {
+async function sbLoadProfile(userId) {
   var sb = getSupabase();
   if (!sb) return null;
-  
   try {
     var { data, error } = await sb.from('profiles').select('*').eq('id', userId).single();
     if (error) throw error;
     return data;
-  } catch(e) {
-    console.error('Erreur chargement profil:', e);
-    return null;
-  }
+  } catch(e) { console.error('Erreur chargement profil:', e); return null; }
 }
 
-async function saveProfile(userId, profileData) {
+async function sbSaveProfile(userId, profileData) {
   var sb = getSupabase();
   if (!sb) return false;
-  
   try {
     var { error } = await sb.from('profiles').upsert({
-      id: userId,
-      nom: profileData.nom,
-      prenom: profileData.prenom,
-      telephone: profileData.telephone,
-      created_at: new Date()
+      id: userId, nom: profileData.nom, prenom: profileData.prenom,
+      telephone: profileData.telephone, created_at: new Date()
     });
-    if (error) throw error;
-    showToast('Profil sauvegardé', 'success');
-    return true;
-  } catch(e) {
-    console.error('Erreur sauvegarde profil:', e);
-    showToast('Erreur sauvegarde profil', 'error');
-    return false;
-  }
+    if (error) throw error; return true;
+  } catch(e) { console.error('Erreur sauvegarde profil:', e); return false; }
 }
 
-// ===== PARCELLES =====
+// ===== PARCELLES (table dediee, alternative a agria_data) =====
 
-async function loadParcelles(userId) {
-  var sb = getSupabase();
-  if (!sb) return [];
-  
-  try {
-    var { data, error } = await sb.from('parcelles').select('*').eq('user_id', userId);
-    if (error) throw error;
-    return data || [];
-  } catch(e) {
-    console.error('Erreur chargement parcelles:', e);
-    return [];
-  }
-}
-
-async function loadParcelle(parcelleId) {
-  var sb = getSupabase();
-  if (!sb) return null;
-  
-  try {
-    var { data, error } = await sb.from('parcelles').select('*').eq('id', parcelleId).single();
-    if (error) throw error;
-    return data;
-  } catch(e) {
-    console.error('Erreur chargement parcelle:', e);
-    return null;
-  }
-}
-
-async function saveParcelle(userId, parcelleData) {
+async function sbSaveParcelle(userId, parcelleData) {
   var sb = getSupabase();
   if (!sb) return false;
-  
   try {
     var { data, error } = await sb.from('parcelles').insert({
-      user_id: userId,
-      nom: parcelleData.nom,
-      superficie: parcelleData.superficie,
-      type_culture: parcelleData.type_culture,
-      type_sol: parcelleData.type_sol,
-      latitude: parcelleData.latitude,
-      longitude: parcelleData.longitude,
-      created_at: new Date()
+      user_id: userId, nom: parcelleData.nom, surface: parcelleData.surface,
+      culture: parcelleData.culture, type_sol: parcelleData.typeSol,
+      stade: parcelleData.stade, date_semis: parcelleData.dateSemis,
+      polygon_coords: JSON.stringify(parcelleData.polygonCoords),
+      notes: parcelleData.notes || '', created_at: new Date()
     }).select();
-    
-    if (error) throw error;
-    showToast('Parcelle créée', 'success');
-    return data[0];
-  } catch(e) {
-    console.error('Erreur création parcelle:', e);
-    showToast('Erreur création parcelle', 'error');
-    return false;
-  }
+    if (error) throw error; return data[0];
+  } catch(e) { console.error('Erreur creation parcelle:', e); return false; }
 }
 
-async function updateParcelle(parcelleId, parcelleData) {
+async function sbUpdateParcelle(parcelleId, parcelleData) {
   var sb = getSupabase();
   if (!sb) return false;
-  
   try {
-    var { error } = await sb.from('parcelles').update({
-      nom: parcelleData.nom,
-      superficie: parcelleData.superficie,
-      type_culture: parcelleData.type_culture,
-      type_sol: parcelleData.type_sol,
-      latitude: parcelleData.latitude,
-      longitude: parcelleData.longitude
-    }).eq('id', parcelleId);
-    
-    if (error) throw error;
-    showToast('Parcelle mise à jour', 'success');
-    return true;
-  } catch(e) {
-    console.error('Erreur mise à jour parcelle:', e);
-    showToast('Erreur mise à jour parcelle', 'error');
-    return false;
-  }
+    var updateData = {
+      nom: parcelleData.nom, surface: parcelleData.surface,
+      culture: parcelleData.culture, type_sol: parcelleData.typeSol,
+      stade: parcelleData.stade, date_semis: parcelleData.dateSemis,
+      notes: parcelleData.notes || ''
+    };
+    if (parcelleData.polygonCoords) updateData.polygon_coords = JSON.stringify(parcelleData.polygonCoords);
+    var { error } = await sb.from('parcelles').update(updateData).eq('id', parcelleId);
+    if (error) throw error; return true;
+  } catch(e) { console.error('Erreur mise a jour parcelle:', e); return false; }
 }
 
-async function deleteParcelle(parcelleId) {
+async function sbDeleteParcelle(parcelleId) {
   var sb = getSupabase();
   if (!sb) return false;
-  
   try {
     var { error } = await sb.from('parcelles').delete().eq('id', parcelleId);
-    if (error) throw error;
-    showToast('Parcelle supprimée', 'success');
-    return true;
-  } catch(e) {
-    console.error('Erreur suppression parcelle:', e);
-    showToast('Erreur suppression parcelle', 'error');
-    return false;
-  }
+    if (error) throw error; return true;
+  } catch(e) { console.error('Erreur suppression parcelle:', e); return false; }
 }
 
 // ===== MESURES =====
@@ -354,28 +289,20 @@ async function getMesureStats(parcelleId, jours) {
 // ===== BATCH OPERATIONS =====
 
 async function loadAllUserData(userId) {
-  var profile = await loadProfile(userId);
-  var parcelles = await loadParcelles(userId);
+  var profile = await sbLoadProfile(userId);
+  var parcellesData = await sb.from('parcelles').select('*').eq('user_id', userId);
+  var parcelles = (parcellesData.data || []).map(function(p) {
+    p.polygonCoords = typeof p.polygon_coords === 'string' ? JSON.parse(p.polygon_coords) : (p.polygon_coords || null);
+    return p;
+  });
   
-  var data = {
-    profile: profile,
-    parcelles: []
-  };
-  
-  // Charger les mesures et alertes pour chaque parcelle
+  var data = { profile: profile, parcelles: [] };
   for (var i = 0; i < parcelles.length; i++) {
     var p = parcelles[i];
     var mesures = await loadMesuresRecentes(p.id, 7);
     var alertes = await loadAlertes(p.id);
     var stats = await getMesureStats(p.id, 30);
-    
-    data.parcelles.push({
-      ...p,
-      mesures: mesures,
-      alertes: alertes,
-      stats: stats
-    });
+    data.parcelles.push({ ...p, mesures: mesures, alertes: alertes, stats: stats });
   }
-  
   return data;
 }

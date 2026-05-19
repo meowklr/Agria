@@ -11,7 +11,7 @@ var CONFIG = {
 /* ---------- SUPABASE CONFIG ---------- */
 
 var SUPABASE_CONFIG = {
-  URL: "https://vqpxnibyljhoftbhtnjx.supabase.co",
+  URL: "https://vqpxnibyljhoftbhtnjx.supabase.co/",
   ANON_KEY: "sb_publishable_W9Nk_fRKHx2Et7mgwy4PGQ_06F0Y_ai",
   ENABLED: true
 };
@@ -177,13 +177,13 @@ async function dpLoad(key, fallback) {
   if (sb) {
     try {
       var res = await sb.from('agria_data').select('value').eq('key', key).single();
-      if (res.data) return JSON.parse(res.data.value);
-    } catch(e) { console.warn('Supabase fallback -> localStorage'); }
+      if (res.data) {
+        var parsed = JSON.parse(res.data.value);
+        localStorage.setItem(key, JSON.stringify(parsed));
+        return parsed;
+      }
+    } catch(e) {}
   }
-  try { return JSON.parse(localStorage.getItem(key)) || fallback; } catch(e) { return fallback; }
-}
-
-function dpLoadSync(key, fallback) {
   try { return JSON.parse(localStorage.getItem(key)) || fallback; } catch(e) { return fallback; }
 }
 
@@ -198,17 +198,32 @@ async function dpSave(key, value) {
   }
 }
 
-function dpSaveSync(key, value) {
-  var json = JSON.stringify(value);
-  localStorage.setItem(key, json);
-}
-
-function dpRemove(key) {
+async function dpRemove(key) {
   localStorage.removeItem(key);
   var sb = getSupabase();
   if (sb) {
-    try { sb.from('agria_data').delete().eq('key', key).then(function(){}); } catch(e) {}
+    try { await sb.from('agria_data').delete().eq('key', key); } catch(e) {}
   }
+}
+
+async function dpLoadAll(prefix) {
+  var sb = getSupabase();
+  if (sb) {
+    try {
+      var res = await sb.from('agria_data').select('key,value').like('key', prefix + '%');
+      if (res.data && res.data.length > 0) {
+        return res.data.map(function(row) { return JSON.parse(row.value); });
+      }
+    } catch(e) {}
+  }
+  var results = [];
+  for (var i = 0; i < localStorage.length; i++) {
+    var k = localStorage.key(i);
+    if (k && k.indexOf(prefix) === 0) {
+      try { results.push(JSON.parse(localStorage.getItem(k))); } catch(e) {}
+    }
+  }
+  return results;
 }
 
 function dpGetAllKeys(prefix) {
@@ -218,15 +233,6 @@ function dpGetAllKeys(prefix) {
     if (k && k.indexOf(prefix) === 0) keys.push(k);
   }
   return keys;
-}
-
-function dpLoadAll(prefix) {
-  var keys = dpGetAllKeys(prefix);
-  var results = [];
-  for (var i = 0; i < keys.length; i++) {
-    try { results.push(JSON.parse(localStorage.getItem(keys[i]))); } catch(e) {}
-  }
-  return results;
 }
 
 function getSession() {
@@ -653,35 +659,39 @@ async function fetchCoordonnees(ville) {
 
 /* ---------- MODULE CHAMPS ---------- */
 
-function loadChamps() {
-  return dpLoadSync(getChampsKey(), []);
+async function loadChamps() {
+  return await dpLoad(getChampsKey(), []);
 }
 
-function saveChamps(champs) {
-  dpSaveSync(getChampsKey(), champs);
+async function saveChamps(champs) {
+  await dpSave(getChampsKey(), champs);
 }
 
-function addChamp(champ) {
+async function addChamp(champ) {
   champ.id = champ.id || generateId();
-  var champs = loadChamps();
+  var champs = await loadChamps();
   champs.push(champ);
-  saveChamps(champs);
+  await saveChamps(champs);
   return champ;
 }
 
-function updateChamp(id, data) {
-  var champs = loadChamps();
+async function updateChamp(id, data) {
+  var champs = await loadChamps();
   for (var i = 0; i < champs.length; i++) {
     if (champs[i].id === id) { champs[i] = data; break; }
   }
-  saveChamps(champs);
+  await saveChamps(champs);
 }
 
-function deleteChamp(id) {
-  var champs = loadChamps();
+async function deleteChamp(id) {
+  var champs = await loadChamps();
   champs = champs.filter(function(c) { return c.id !== id; });
-  saveChamps(champs);
+  await saveChamps(champs);
   return champs;
+}
+
+async function loadAllChamps() {
+  return await dpLoadAll('agria_champs_');
 }
 
 /* ---------- MODULE PREDICTIONS ---------- */
@@ -749,13 +759,13 @@ function calculCentroide(coords) {
   return { lat: lat / coords.length, lon: lng / coords.length };
 }
 
-function checkCollision(newCoords) {
+async function checkCollision(newCoords) {
   var nouveauPolygon = L.polygon(newCoords);
-  var allKeys = dpGetAllKeys('agria_champs_');
+  var allChamps = await loadAllChamps();
 
-  for (var j = 0; j < allKeys.length; j++) {
+  for (var j = 0; j < allChamps.length; j++) {
     try {
-      var champs = dpLoadSync(allKeys[j], []);
+      var champs = allChamps[j];
       if (!Array.isArray(champs)) continue;
       for (var k = 0; k < champs.length; k++) {
         if (!champs[k].polygonCoords || champs[k].polygonCoords.length < 3) continue;
@@ -879,16 +889,16 @@ function getSheetContent() { return document.getElementById('modalSheet'); }
 
 /* ---------- MODULE PROFIL ---------- */
 
-function loadProfile() {
-  return dpLoadSync(getProfileKey(), {});
+async function loadProfile() {
+  return await dpLoad(getProfileKey(), {});
 }
 
-function saveProfile(data) {
-  dpSaveSync(getProfileKey(), data);
+async function saveProfile(data) {
+  await dpSave(getProfileKey(), data);
 }
 
-function renderProfileStats() {
-  var champs = loadChamps();
+async function renderProfileStats() {
+  var champs = await loadChamps();
   var nb = document.getElementById('statNbChamps');
   var surface = document.getElementById('statSurface');
   var cultures = document.getElementById('statCultures');
@@ -910,8 +920,8 @@ function renderProfileStats() {
   } else { dernier.textContent = 'Aucun'; }
 }
 
-function initProfil() {
-  var profile = loadProfile();
+async function initProfil() {
+  var profile = await loadProfile();
   var session = getSession();
   var emailUser = session ? session.email : (localStorage.getItem('agria_user') || '');
 
@@ -933,11 +943,11 @@ function initProfil() {
 
   var btnSaveId = document.getElementById('btnSaveIdentite');
   if (btnSaveId) {
-    btnSaveId.addEventListener('click', function() {
+    btnSaveId.addEventListener('click', async function() {
       profile.prenom = inputPrenom ? inputPrenom.value.trim() : '';
       profile.nom = inputNom ? inputNom.value.trim() : '';
       profile.telephone = inputTel ? inputTel.value.trim() : '';
-      saveProfile(profile);
+      await saveProfile(profile);
       if (avatar) { var pp = (profile.prenom || 'A')[0].toUpperCase(); var nn = (profile.nom || 'A')[0].toUpperCase(); avatar.textContent = pp + nn; }
       showToast('Profil sauvegarde.', 'success');
     });
@@ -958,16 +968,16 @@ function initProfil() {
 
   var btnSaveExpl = document.getElementById('btnSaveExploitation');
   if (btnSaveExpl) {
-    btnSaveExpl.addEventListener('click', function() {
+    btnSaveExpl.addEventListener('click', async function() {
       profile.exploitation = inputExpl ? inputExpl.value.trim() : '';
       profile.siret = inputSiret ? inputSiret.value.trim() : '';
       profile.typeAgriculture = selectType ? selectType.value : '';
-      saveProfile(profile);
+      await saveProfile(profile);
       showToast('Exploitation sauvegardee.', 'success');
     });
   }
 
-  renderProfileStats();
+  await renderProfileStats();
 
   var prefNotif = document.getElementById('prefNotifications');
   var prefUnite = document.getElementById('prefUniteHa');
@@ -1027,14 +1037,14 @@ function initProfil() {
       setTimeout(function() {
         var btnSave = document.getElementById('btnSaveMdp');
         if (btnSave) {
-          btnSave.addEventListener('click', function() {
+          btnSave.addEventListener('click', async function() {
             var actuel = document.getElementById('mdpActuel').value;
             var nouveau = document.getElementById('mdpNouveau').value;
             var confirmer = document.getElementById('mdpConfirmer').value;
             if (nouveau.length < 8) { showToast('Le mot de passe doit faire au moins 8 caracteres.', 'error'); return; }
             if (nouveau !== confirmer) { showToast('Les mots de passe ne correspondent pas.', 'error'); return; }
             profile.passwordHash = btoa(nouveau);
-            saveProfile(profile);
+            await saveProfile(profile);
             closeSheet();
             showToast('Mot de passe modifie.', 'success');
           });
@@ -1046,11 +1056,11 @@ function initProfil() {
 
 /* ---------- RENDER CHAMPS DASHBOARD ---------- */
 
-function renderChampsDashboard() {
+async function renderChampsDashboard() {
   var container = document.getElementById('champsContainer');
   if (!container) return;
 
-  var champs = loadChamps();
+  var champs = await loadChamps();
   container.innerHTML = '';
 
   if (champs.length === 0) {
@@ -1121,8 +1131,7 @@ function initDashboardChampEvents() {
     confirmYes[j].addEventListener('click', function(e) {
       e.stopPropagation();
       var id = this.getAttribute('data-id');
-      deleteChamp(id);
-      renderChampsDashboard();
+      deleteChamp(id).then(function() { renderChampsDashboard(); });
     });
   }
 
@@ -1137,8 +1146,8 @@ function initDashboardChampEvents() {
   }
 }
 
-function showChampDetail(id) {
-  var champs = loadChamps();
+async function showChampDetail(id) {
+  var champs = await loadChamps();
   var champ = null;
   for (var i = 0; i < champs.length; i++) { if (champs[i].id === id) { champ = champs[i]; break; } }
   if (!champ) return;
@@ -1175,8 +1184,8 @@ function showChampDetail(id) {
   openSheet(content);
 }
 
-function showChampEdit(id) {
-  var champs = loadChamps();
+async function showChampEdit(id) {
+  var champs = await loadChamps();
   var champ = null;
   for (var i = 0; i < champs.length; i++) { if (champs[i].id === id) { champ = champs[i]; break; } }
   if (!champ) return;
@@ -1198,7 +1207,7 @@ function showChampEdit(id) {
   setTimeout(function() {
     var btnSave = document.getElementById('btnSaveEdit');
     if (btnSave) {
-      btnSave.addEventListener('click', function() {
+      btnSave.addEventListener('click', async function() {
         champ.nom = document.getElementById('editNom').value.trim();
         champ.typeSol = document.getElementById('editTypeSol').value;
         champ.culture = document.getElementById('editCulture').value;
@@ -1206,9 +1215,9 @@ function showChampEdit(id) {
         champ.surface = document.getElementById('editSurface').value;
         champ.dateSemis = document.getElementById('editDateSemis').value;
         champ.notes = document.getElementById('editNotes').value;
-        updateChamp(id, champ);
+        await updateChamp(id, champ);
         closeSheet();
-        renderChampsDashboard();
+        await renderChampsDashboard();
       });
     }
   }, 100);
@@ -1216,8 +1225,8 @@ function showChampEdit(id) {
 
 /* ---------- INIT PAGES ---------- */
 
-function renderDashboardStats() {
-  var champs = loadChamps();
+async function renderDashboardStats() {
+  var champs = await loadChamps();
   var statsHtml = '';
   var totalHa = 0;
   var cultureCount = {};
@@ -1252,7 +1261,7 @@ function renderDashboardStats() {
   if (container) container.innerHTML = statsHtml;
 }
 
-function initDashboard() {
+async function initDashboard() {
   var ville = getDefaultVille();
   chargerMeteo(ville);
 
@@ -1279,11 +1288,11 @@ function initDashboard() {
     });
   }
 
-  renderChampsDashboard();
-  renderDashboardStats();
+  await renderChampsDashboard();
+  await renderDashboardStats();
 }
 
-function initCarte() {
+async function initCarte() {
   var selectRegion = document.getElementById('select-region');
   var regionSubtitle = document.getElementById('region-subtitle');
 
@@ -1332,8 +1341,8 @@ function initCarte() {
   }
 
   if (typeof map !== 'undefined' && typeof L !== 'undefined') {
-    loadAllChampsOnMap();
-    refreshMapFieldsList();
+    await loadAllChampsOnMap();
+    await refreshMapFieldsList();
 
     var gridBtn = document.getElementById('toggleGridBtn');
     if (gridBtn) {
@@ -1404,7 +1413,7 @@ function initCarte() {
         map.on(L.Draw.Event.DRAWSTOP, function() { drawActive = false; });
       });
 
-      var handleDrawCreated = function(e) {
+      var handleDrawCreated = async function(e) {
         var layer = e.layer;
         var coords = layer.getLatLngs()[0].map(function(ll) { return [ll.lat, ll.lng]; });
         var areaSqM = L.GeometryUtil ? L.GeometryUtil.geodesicArea(layer.getLatLngs()[0]) : turfArea(coords);
@@ -1415,7 +1424,7 @@ function initCarte() {
         map.addLayer(layer);
         layer.setStyle({ fillColor: '#91A56E', fillOpacity: 0.25, color: '#606E52', weight: 2 });
 
-        var collision = checkCollision(coords);
+        var collision = await checkCollision(coords);
         var content =
           '<h2 class="sheet-title">Creer un champ</h2>' +
           '<div class="form-group"><label class="form-label">Nom</label><input type="text" class="input-field" id="fieldNom" placeholder="Ex: Parcelle Nord"></div>' +
@@ -1438,10 +1447,11 @@ function initCarte() {
           var bs = document.getElementById('btnSaveField');
           var bc = document.getElementById('btnCancelField');
           if (bc) bc.addEventListener('click', function() { map.removeLayer(layer); closeSheet(); });
-          if (bs) bs.addEventListener('click', function() {
+          if (bs) bs.addEventListener('click', async function() {
             if (collision.collision) { showToast('Collision detectee.', 'error'); return; }
             var champ = { id: generateId(), nom: document.getElementById('fieldNom').value.trim() || 'Sans nom', typeSol: document.getElementById('fieldTypeSol').value, culture: document.getElementById('fieldCulture').value, stade: document.getElementById('fieldStade').value, surface: document.getElementById('fieldSurface').value, dateSemis: document.getElementById('fieldDateSemis').value, notes: document.getElementById('fieldNotes').value, polygonCoords: coords };
-            addChamp(champ); closeSheet(); refreshMapFieldsList();
+            var created = await addChamp(champ); closeSheet(); await refreshMapFieldsList();
+            if (typeof map !== 'undefined') loadAllChampsOnMap();
             showToast('Champ "' + champ.nom + '" cree.', 'success');
           });
         }, 100);
@@ -1476,12 +1486,12 @@ function drawHectareGrid() {
   window._hectareGrid.addTo(map);
 }
 
-function refreshMapFieldsList() {
+async function refreshMapFieldsList() {
   var badge = document.getElementById('mapFieldsBadge');
   var countEl = document.getElementById('mapFieldsCount');
   var listEl = document.getElementById('mapFieldsList');
   if (!badge || !countEl || !listEl) return;
-  var champs = loadChamps();
+  var champs = await loadChamps();
   countEl.textContent = champs.length;
   if (champs.length > 0) badge.classList.remove('d-none'); else badge.classList.add('d-none');
   listEl.innerHTML = '';
@@ -1504,14 +1514,13 @@ function refreshMapFieldsList() {
 
 function toggleMapFieldsList() { var l = document.getElementById('mapFieldsList'); if (l) l.classList.toggle('visible'); }
 
-function loadAllChampsOnMap() {
+async function loadAllChampsOnMap() {
   if (typeof map === 'undefined') return;
   var allKeys = dpGetAllKeys('agria_champs_');
-  var myId = getUserId();
 
   for (var j = 0; j < allKeys.length; j++) {
     try {
-      var champs = dpLoadSync(allKeys[j], []);
+      var champs = await dpLoad(allKeys[j], []);
       if (!Array.isArray(champs)) continue;
       var isMine = allKeys[j] === getChampsKey();
       for (var c = 0; c < champs.length; c++) {
