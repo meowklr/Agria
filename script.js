@@ -148,21 +148,9 @@ function getSupabase() {
   if (!SUPABASE_CONFIG.ENABLED) return null;
   if (supabaseClient) return supabaseClient;
   
-  // Chercher la bibiliothèque Supabase dans window
   if (typeof window.supabase !== 'undefined' && window.supabase.createClient) {
     supabaseClient = window.supabase.createClient(SUPABASE_CONFIG.URL, SUPABASE_CONFIG.ANON_KEY);
     return supabaseClient;
-  }
-  
-  // Fallback : créer le client directement si disponible
-  if (typeof window.supabase !== 'undefined' && typeof window.supabase === 'object') {
-    try {
-      supabaseClient = supabase.createClient(SUPABASE_CONFIG.URL, SUPABASE_CONFIG.ANON_KEY);
-      return supabaseClient;
-    } catch(e) {
-      console.warn('Supabase non chargé correctement', e);
-      return null;
-    }
   }
   
   return null;
@@ -212,7 +200,7 @@ async function dpLoadAll(prefix) {
     try {
       var res = await sb.from('agria_data').select('key,value').like('key', prefix + '%');
       if (res.data && res.data.length > 0) {
-        return res.data.map(function(row) { return JSON.parse(row.value); });
+        return res.data.map(function(row) { try { return JSON.parse(row.value); } catch(e) { return null; } }).filter(function(r) { return r !== null; });
       }
     } catch(e) {}
   }
@@ -1131,7 +1119,7 @@ function initDashboardChampEvents() {
     confirmYes[j].addEventListener('click', function(e) {
       e.stopPropagation();
       var id = this.getAttribute('data-id');
-      deleteChamp(id).then(function() { renderChampsDashboard(); });
+      deleteChamp(id).then(function() { return renderChampsDashboard(); });
     });
   }
 
@@ -1341,8 +1329,10 @@ async function initCarte() {
   }
 
   if (typeof map !== 'undefined' && typeof L !== 'undefined') {
-    await loadAllChampsOnMap();
-    await refreshMapFieldsList();
+    if (!window._carteInlineLoaded) {
+      await loadAllChampsOnMap();
+      await refreshMapFieldsList();
+    }
 
     var gridBtn = document.getElementById('toggleGridBtn');
     if (gridBtn) {
@@ -1451,7 +1441,7 @@ async function initCarte() {
             if (collision.collision) { showToast('Collision detectee.', 'error'); return; }
             var champ = { id: generateId(), nom: document.getElementById('fieldNom').value.trim() || 'Sans nom', typeSol: document.getElementById('fieldTypeSol').value, culture: document.getElementById('fieldCulture').value, stade: document.getElementById('fieldStade').value, surface: document.getElementById('fieldSurface').value, dateSemis: document.getElementById('fieldDateSemis').value, notes: document.getElementById('fieldNotes').value, polygonCoords: coords };
             var created = await addChamp(champ); closeSheet(); await refreshMapFieldsList();
-            if (typeof map !== 'undefined') loadAllChampsOnMap();
+            if (typeof map !== 'undefined') await loadAllChampsOnMap();
             showToast('Champ "' + champ.nom + '" cree.', 'success');
           });
         }, 100);
@@ -1468,7 +1458,7 @@ function turfArea(coords) {
   if (L.GeometryUtil && L.GeometryUtil.geodesicArea) return L.GeometryUtil.geodesicArea(coords);
   var area = 0;
   for (var i = 0; i < coords.length; i++) { var j = (i + 1) % coords.length; area += coords[i][0] * coords[j][1]; area -= coords[j][0] * coords[i][1]; }
-  return Math.abs(area) * 6371000 * 6371000 * Math.PI / 180 / 2;
+  return Math.abs(area) * 6371000 * 6371000 * Math.PI / 360;
 }
 
 function drawHectareGrid() {

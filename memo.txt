@@ -1,10 +1,11 @@
 choses a faire apres, a se rappeler :
 
 
-- les parcelles doivent intelligemment s'aimnanter entre elles
-- les parcelles doiventse fermer toutes seules en mode dessin si on reclique sur le point de depart du dessin.
-- adapter les vues au navigateur pc
+
 - passage en app tel donc config pwa, considerer l'utilisation d'electron
-- preparer tout pour github
+- quand on clique sur le badge du nom de la parcelle, ça zomme automatiquement sur la parcelle concernée;
+- a l'arrivée de l'utilisateur sur la carte, ça zoome automatiquement la carte pour qu'on voit ses propores parcelles, qu'il n'ai pas a la rechercher.
+- quand on crée une parcelle, apres avoir fini de la dessiner, ça affiche un petit popup stylisé qui colle avec la da de l'app ou on peut mettre les infos de la parcelle (dropdown pour le type de culture, type de sol, nom de la parcelle, etc)
+- remplacer l'intégralité deds sigles "Agr'ia" apr "Agria" qui est un vrai nom d'app, et plus un jeu de mots.
 
 

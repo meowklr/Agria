@@ -802,11 +802,6 @@ body::before {
   .previsions-card:hover { transform: none; box-shadow: var(--shadow-xs); }
 }
 
-.previsions-card:hover {
-  transform: translateY(-6px);
-  box-shadow: var(--shadow-md);
-}
-
 .previsions-jour {
   font-size: 13px;
   font-weight: 600;
@@ -1360,16 +1355,6 @@ body::before {
   box-shadow: var(--shadow-md);
 }
 
-.carte-full .carte-search-bar .input-field {
-  background: rgba(255,255,255,0.95);
-  backdrop-filter: blur(10px);
-  box-shadow: var(--shadow-md);
-}
-
-.carte-full .carte-search-btn {
-  box-shadow: var(--shadow-md);
-}
-
 @media (min-width: 768px) {
   .carte-full #map {
     height: calc(100vh - 160px);
@@ -1727,29 +1712,8 @@ body::before {
 
 .sheet-error.visible { display: block; }
 
-/* ---------- DESKTOP ADAPTATION ---------- */
-
-@media (min-width: 1024px) {
-  .page-wrapper {
-    max-width: 960px;
-    margin: 0 auto;
-    padding: 24px;
-    padding-bottom: 84px;
-  }
-  .bottom-nav {
-    left: 50%;
-    transform: translateX(-50%);
-    max-width: 960px;
-    border-radius: 24px 24px 0 0;
-    border-left: 1px solid var(--border);
-    border-right: 1px solid var(--border);
-  }
-  .login-container {
-    max-width: 480px;
-  }
-}
-
 /* ---------- TOGGLE ---------- */
+
 
 .toggle-label {
   display: flex;
@@ -1928,38 +1892,6 @@ body::before {
 .confirm-delete-no {
   background: var(--border);
   color: var(--text-secondary);
-}
-
-/* ---------- DRAW BUTTON ---------- */
-
-.draw-btn {
-  width: 56px;
-  height: 56px;
-  border-radius: 50%;
-  background: var(--primary);
-  color: #fff;
-  border: none;
-  font-size: 20px;
-  cursor: pointer;
-  box-shadow: var(--shadow-md);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  position: absolute;
-  bottom: 80px;
-  right: 16px;
-  z-index: 50;
-  transition: transform 0.25s var(--ease-out-back), background 0.2s var(--ease-smooth), box-shadow 0.2s var(--ease-smooth);
-}
-
-.draw-btn:hover {
-  background: var(--primary-hover);
-  transform: scale(1.08);
-  box-shadow: var(--shadow-lg);
-}
-
-.draw-btn:active {
-  transform: scale(0.94);
 }
 
 /* ---------- LEAFLET DRAW OVERRIDE ---------- */
@@ -2193,15 +2125,23 @@ body::before {
 @media (min-width: 1024px) {
 
   .page-wrapper {
-    max-width: 860px;
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 24px;
+    padding-bottom: 84px;
   }
 
   .page-header {
-    max-width: 860px;
+    max-width: 960px;
   }
 
   .bottom-nav {
-    max-width: 860px;
+    max-width: 960px;
+    left: 50%;
+    transform: translateX(-50%);
+    border-radius: 24px 24px 0 0;
+    border-left: 1px solid var(--border);
+    border-right: 1px solid var(--border);
   }
 
   .culture-grid { grid-template-columns: repeat(5, 1fr); }
@@ -2224,7 +2164,7 @@ body::before {
   }
 
   .login-container {
-    max-width: 440px;
+    max-width: 480px;
   }
 }
 

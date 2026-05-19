@@ -146,11 +146,15 @@ L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/
 
 /* ---- DATA ---- */
 
+var _parcelsLoading = false;
+
 function loadParcels() {
   return loadAllParcels();
 }
 
 async function loadAllParcels() {
+  if (_parcelsLoading) return;
+  _parcelsLoading = true;
   allParcels = [];
   var keys = dpGetAllKeys('agria_champs_');
   for (var j = 0; j < keys.length; j++) {
@@ -161,6 +165,7 @@ async function loadAllParcels() {
       for (var c = 0; c < champs.length; c++) allParcels.push({ data: champs[c], owner: owner });
     } catch(e) {}
   }
+  _parcelsLoading = false;
 }
 
 function saveMyParcel(parcel) {
@@ -319,7 +324,7 @@ function calculateAreaLL(latlngs) {
     area += latlngs[i].lng * latlngs[j].lat;
     area -= latlngs[j].lng * latlngs[i].lat;
   }
-  return Math.abs(area) * 6371000 * 6371000 * Math.PI / 180 / 20000;
+  return Math.abs(area) * 6371000 * 6371000 * Math.PI / 360 / 10000;
 }
 
 async function finalizeDraw() {
@@ -345,8 +350,9 @@ async function finalizeDraw() {
   renderAllParcels();
   showUndo('Parcelle creee');
 
-  var p = { data: newParcel, owner: myUserId };
-  selectParcel(p, parcelLayers[newParcel.id]);
+  for (var i = 0; i < allParcels.length; i++) {
+    if (allParcels[i].data.id === newParcel.id) { selectParcel(allParcels[i], parcelLayers[newParcel.id]); break; }
+  }
 }
 
 /* ---- MAP CLICK HANDLING ---- */
@@ -437,15 +443,19 @@ async function editParcel() {
   var p = selectedParcel.data;
   var nom = prompt('Nom :', p.nom || '');
   if (nom !== null) {
-    p.nom = nom;
     var culture = prompt('Culture :', p.culture || 'Ble');
-    if (culture !== null) p.culture = culture;
-    await updateMyParcel(p.id, p);
-    await loadParcels();
-    renderAllParcels();
-    selectedParcel.data = p;
-    openPanel(selectedParcel);
-    showUndo('Modifications enregistrees');
+    if (culture !== null) {
+      p.nom = nom;
+      p.culture = culture;
+      await updateMyParcel(p.id, p);
+      await loadParcels();
+      renderAllParcels();
+      for (var i = 0; i < allParcels.length; i++) {
+        if (allParcels[i].data.id === p.id) { selectedParcel = allParcels[i]; break; }
+      }
+      openPanel(selectedParcel);
+      showUndo('Modifications enregistrees');
+    }
   }
 }
 
@@ -564,6 +574,7 @@ searchInput.addEventListener('blur', function() { setTimeout(function(){searchRe
 
 /* ---- INIT ---- */
 
+window._carteInlineLoaded = true;
 loadAllParcels().then(function() {
   renderAllParcels();
 });
