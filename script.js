@@ -579,7 +579,7 @@ function renderMeteo(data) {
   if (elIcone) { elIcone.className = 'fa-solid ' + data.icone + ' meteo-icone updated'; setTimeout(function() { elIcone.classList.remove('updated'); }, 500); }
   if (elTemp) elTemp.innerHTML = data.temp + '<small>&deg;C</small>';
   if (elDesc) elDesc.textContent = data.description;
-  if (elHumidite) elHumidite.innerHTML = '<i class="fa-solid fa-droplet"></i><span>Humidite : <strong>' + data.humidity + '%</strong></span>';
+  if (elHumidite) elHumidite.textContent = data.humidity + '%';
 }
 
 function renderPrevisions(previsions) {

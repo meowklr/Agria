@@ -18,3 +18,5 @@ choses a faire apres, a se rappeler :
 - ne pas pouvoir cliquer sur les parcelles deja exsitantes en mode dessin car ça nous sort du dessin et ça ouvre la config de la parcelle sélectionnée.
 
 - souci : l'app alterne de temps en temps entre mode clair et mode sombre, je voudrais juste un mode clair.
+
+corriger l'indicateur d'humidité : actuel : [goutte] Humidite : [goutte ]Humidite : 80%, voulu : [goutte] : 80%
