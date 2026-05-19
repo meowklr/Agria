@@ -20,3 +20,5 @@ choses a faire apres, a se rappeler :
 - souci : l'app alterne de temps en temps entre mode clair et mode sombre, je voudrais juste un mode clair.
 
 corriger l'indicateur d'humidité : actuel : [goutte] Humidite : [goutte ]Humidite : 80%, voulu : [goutte] : 80%
+
+-ajouter un historique des diagnostiques effectués

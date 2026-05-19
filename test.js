@@ -51,15 +51,11 @@ async function testPagesLoad() {
 
       // Check script loading order
       if (page !== 'login.html') {
+        var firebaseIdx = res.body.indexOf('firebase-app-compat');
         var scriptIdx = res.body.indexOf('<script src="script.js"');
-        var supabaseIdx = res.body.indexOf('<script src="supabase-functions.js"');
-        var supabaseCDN = res.body.indexOf('@supabase/supabase-js');
         
-        if (supabaseCDN === -1) log('WARN', page + ' missing Supabase CDN script');
+        if (firebaseIdx === -1) log('WARN', page + ' missing Firebase CDN script');
         if (scriptIdx === -1) log('ERROR', page + ' missing script.js');
-        if (supabaseIdx === -1) log('WARN', page + ' missing supabase-functions.js');
-        if (scriptIdx !== -1 && supabaseIdx !== -1 && scriptIdx > supabaseIdx) 
-          log('ERROR', page + ' script.js loaded AFTER supabase-functions.js (wrong order)');
       }
 
       // Check meta viewport
@@ -74,7 +70,7 @@ async function testPagesLoad() {
 // ========================================
 async function testAssetsLoad() {
   console.log('\n=== TEST 2: Assets ===');
-  var assets = ['style.css', 'script.js', 'supabase-functions.js'];
+  var assets = ['style.css', 'script.js'];
   for (var i = 0; i < assets.length; i++) {
     try {
       var res = await fetch(BASE + '/' + assets[i]);
@@ -207,15 +203,20 @@ function testCodeAnalysis() {
   
   // Check for hardcoded URLs
   var hardcoded = script.match(/https?:\/\/[^\s"']+/g) || [];
-  var expected = ['openweathermap', 'open-meteo', 'nominatim', 'supabase', 'jsdelivr'];
+  var expected = ['openweathermap', 'open-meteo', 'nominatim', 'firebasedatabase', 'firebaseapp', 'gstatic', 'jsdelivr'];
   hardcoded.forEach(function(u) {
     var found = expected.some(function(e) { return u.indexOf(e) !== -1; });
     if (!found && u.indexOf('http') === 0) log('WARN', 'Unexpected URL in script.js: ' + u);
   });
   
-  // Check supabase config is enabled
-  if (script.indexOf('ENABLED: true') === -1) log('ERROR', 'SUPABASE_CONFIG.ENABLED is not true');
-  if (script.indexOf('REMPLACER_PAR') !== -1) log('ERROR', 'SUPABASE_CONFIG has placeholder values');
+  // Check firebase config is present
+  if (script.indexOf('FIREBASE_CONFIG') === -1) log('ERROR', 'FIREBASE_CONFIG missing');
+  if (script.indexOf('apiKey') === -1) log('ERROR', 'Firebase apiKey missing');
+  
+  // Check no remaining Supabase references
+  if (script.indexOf('SUPABASE_CONFIG') !== -1) log('WARN', 'SUPABASE_CONFIG still present in script.js');
+  if (script.indexOf('getSupabase') !== -1) log('WARN', 'getSupabase still present in script.js');
+  if (script.indexOf('supabase-functions') !== -1) log('WARN', 'supabase-functions reference still present');
   
   // Check no remaining dpLoadSync/dpSaveSync
   if (script.indexOf('dpLoadSync') !== -1) log('ERROR', 'dpLoadSync still present in script.js');
@@ -223,7 +224,7 @@ function testCodeAnalysis() {
   
   // Check function definitions exist
   var requiredFunctions = [
-    'getSupabase', 'dpLoad', 'dpSave', 'dpRemove', 'dpLoadAll', 'dpGetAllKeys',
+    'getFirebase', 'dpLoad', 'dpSave', 'dpRemove', 'dpLoadAll', 'dpGetAllKeys',
     'loadChamps', 'saveChamps', 'addChamp', 'updateChamp', 'deleteChamp', 'loadAllChamps',
     'getUserId', 'generateId', 'getSession',
     'fetchMeteoActuelle', 'fetchPrevisions', 'chargerMeteo', 'renderMeteo', 'renderPrevisions',

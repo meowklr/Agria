@@ -8,12 +8,16 @@ var CONFIG = {
   NOMINATIM_SEARCH_URL: "https://nominatim.openstreetmap.org/search"
 };
 
-/* ---------- SUPABASE CONFIG ---------- */
+/* ---------- FIREBASE CONFIG ---------- */
 
-var SUPABASE_CONFIG = {
-  URL: "https://vqpxnibyljhoftbhtnjx.supabase.co/",
-  ANON_KEY: "sb_publishable_W9Nk_fRKHx2Et7mgwy4PGQ_06F0Y_ai",
-  ENABLED: true
+var FIREBASE_CONFIG = {
+  apiKey: "REMOVED_FIREBASE_API_KEY",
+  authDomain: "projet-etude-2026-256f3.firebaseapp.com",
+  databaseURL: "https://projet-etude-2026-256f3-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "projet-etude-2026-256f3",
+  storageBucket: "projet-etude-2026-256f3.firebasestorage.app",
+  messagingSenderId: "733207661064",
+  appId: "1:733207661064:web:d9256d9310d0b15e469fbd"
 };
 
 /* ---------- CROP_DATA ---------- */
@@ -140,24 +144,26 @@ function debounce(fn, delay) {
   };
 }
 
-/* ---------- DATA PROVIDER (SUPABASE + LOCALSTORAGE) ---------- */
+/* ---------- DATA PROVIDER (FIREBASE + LOCALSTORAGE) ---------- */
 
-var supabaseClient = null;
+var firebaseApp = null;
+var firebaseDb = null;
 
-function getSupabase() {
-  if (!SUPABASE_CONFIG.ENABLED) return null;
-  if (supabaseClient) return supabaseClient;
-  
-  if (typeof window.supabase !== 'undefined' && window.supabase.createClient) {
-    supabaseClient = window.supabase.createClient(SUPABASE_CONFIG.URL, SUPABASE_CONFIG.ANON_KEY);
-    return supabaseClient;
+function getFirebase() {
+  if (firebaseDb) return firebaseDb;
+  if (typeof firebase !== 'undefined' && firebase.apps) {
+    try {
+      if (!firebase.apps.length) firebaseApp = firebase.initializeApp(FIREBASE_CONFIG);
+      else firebaseApp = firebase.apps[0];
+      firebaseDb = firebase.database();
+      return firebaseDb;
+    } catch(e) { return null; }
   }
-  
   return null;
 }
 
-function getStorageKey(suffix) {
-  return suffix + '_' + getUserId();
+function safeKey(key) {
+  return key.replace(/[.#$\/\[\]]/g, '_');
 }
 
 async function dpLoad(key, fallback) {
@@ -165,12 +171,12 @@ async function dpLoad(key, fallback) {
     var local = JSON.parse(localStorage.getItem(key));
     if (local) return local;
   } catch(e) {}
-  var sb = getSupabase();
-  if (sb) {
+  var db = getFirebase();
+  if (db) {
     try {
-      var res = await sb.from('agria_data').select('value').eq('key', key).single();
-      if (res.data) {
-        var parsed = JSON.parse(res.data.value);
+      var snap = await db.ref('agriaData/' + safeKey(key)).get();
+      if (snap.exists()) {
+        var parsed = snap.val();
         localStorage.setItem(key, JSON.stringify(parsed));
         return parsed;
       }
@@ -180,31 +186,37 @@ async function dpLoad(key, fallback) {
 }
 
 async function dpSave(key, value) {
-  var sb = getSupabase();
   var json = JSON.stringify(value);
   localStorage.setItem(key, json);
-  if (sb) {
-    try {
-      await sb.from('agria_data').upsert({ key: key, value: json, updated_at: new Date().toISOString() }, { onConflict: 'key' });
-    } catch(e) { console.warn('Supabase sync differee'); }
+  var db = getFirebase();
+  if (db) {
+    var sk = safeKey(key);
+    try { await db.ref('agriaData/' + sk).set(value); } catch(e) {}
   }
 }
 
 async function dpRemove(key) {
   localStorage.removeItem(key);
-  var sb = getSupabase();
-  if (sb) {
-    try { await sb.from('agria_data').delete().eq('key', key); } catch(e) {}
+  var db = getFirebase();
+  if (db) {
+    var sk = safeKey(key);
+    try { await db.ref('agriaData/' + sk).remove(); } catch(e) {}
   }
 }
 
 async function dpLoadAll(prefix) {
-  var sb = getSupabase();
-  if (sb) {
+  var db = getFirebase();
+  if (db) {
     try {
-      var res = await sb.from('agria_data').select('key,value').like('key', prefix + '%');
-      if (res.data && res.data.length > 0) {
-        return res.data.map(function(row) { try { return JSON.parse(row.value); } catch(e) { return null; } }).filter(function(r) { return r !== null; });
+      var snap = await db.ref('agriaData').get();
+      if (snap.exists()) {
+        var data = snap.val();
+        var results = [];
+        var safePrefix = safeKey(prefix);
+        for (var k in data) {
+          if (k.indexOf(safePrefix) === 0 && data[k]) results.push(data[k]);
+        }
+        if (results.length > 0) return results;
       }
     } catch(e) {}
   }
