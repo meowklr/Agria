@@ -40,6 +40,9 @@
 ### Zoom au clic
 - `selectParcel()` fait `map.fitBounds()` avec padding 60px, maxZoom 16, animation 0.6s (déjà fait).
 
+### Edition des parcelles
+- Pouvoir configurer sa parcelle juste après l'avoir dessiné, en spécifiant ses specs.
+
 ---
 
 ## 3. Dashboard
@@ -91,7 +94,10 @@
 
 ## 6. Exclusions
 
-- Pas de backend / synchro temps réel (reste localStorage).
 - Pas de redesign complet des pages Diagnostic et Profil (elles suivent le système visuel, le centrage desktop).
-- Pas de PWA / service worker.
 - Pas de migration framework (reste vanilla HTML/CSS/JS).
+
+## 7. Précisions
+
+- Utilisation de supabase.
+- Pwa pour configurer app mobile.
