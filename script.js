@@ -1106,6 +1106,9 @@ async function renderChampsDashboard() {
     container.appendChild(card);
   }
 
+  var reveals = container.querySelectorAll('.reveal');
+  for (var r = 0; r < reveals.length; r++) { reveals[r].classList.add('visible'); }
+
   initDashboardChampEvents();
 }
 
