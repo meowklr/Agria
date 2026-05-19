@@ -22,3 +22,5 @@ choses a faire apres, a se rappeler :
 corriger l'indicateur d'humidité : actuel : [goutte] Humidite : [goutte ]Humidite : 80%, voulu : [goutte] : 80%
 
 -ajouter un historique des diagnostiques effectués
+
+revoir tout le 

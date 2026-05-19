@@ -1264,7 +1264,7 @@ async function showChampDetail(id) {
           (predictions.alerte_irrigation.active ? '<div class="pred-item" style="border-left:3px solid var(--danger)"><span>ALERTE</span><strong style="color:var(--danger)">Irrigation requise</strong><small>' + predictions.alerte_irrigation.message + '</small></div>' : '') +
           '<div class="pred-item"><span>Azote total</span><strong>' + predictions.fertilisation.azote_total_kg + ' kg</strong><small>Cout estime : ' + predictions.fertilisation.cout_estime_euros + ' EUR</small></div>' +
           '<div class="pred-item"><span>Rendement estime</span><strong>' + predictions.rendement_estime.min + ' - ' + predictions.rendement_estime.max + ' ' + predictions.rendement_estime.unite + '</strong></div>' +
-          '<p style="font-size:13px;color:var(--text-secondary);margin-top:10px;padding:8px;background:#fff;border-radius:8px">' + predictions.recommandation_globale + '</p>' +
+          '<p style="font-size:13px;color:var(--text-secondary);margin-top:10px;padding:8px;background:var(--surface);border-radius:8px">' + predictions.recommandation_globale + '</p>' +
           '</div>';
       }
       return predHtml;
@@ -1452,7 +1452,7 @@ async function initCarte() {
           navigator.geolocation.getCurrentPosition(function(pos) {
             if (typeof map !== 'undefined') {
               map.flyTo([pos.coords.latitude, pos.coords.longitude], 15, { duration: 1 });
-              L.circleMarker([pos.coords.latitude, pos.coords.longitude], { radius: 12, color: '#606E52', fillColor: '#91A56E', fillOpacity: 0.5, weight: 3 }).addTo(map).bindPopup('Vous etes ici').openPopup();
+              L.circleMarker([pos.coords.latitude, pos.coords.longitude], { radius: 12, color: '#4a5d3e', fillColor: '#7a9a5e', fillOpacity: 0.5, weight: 3 }).addTo(map).bindPopup('Vous etes ici').openPopup();
             }
           }, function() { showToast('Geolocalisation indisponible.', 'warning'); });
         } else { showToast('Geolocalisation non supportee.', 'warning'); }
@@ -1514,7 +1514,7 @@ async function initCarte() {
         drawActive = false; drawBtn.classList.remove('active');
         if (drawIndicator) drawIndicator.classList.remove('visible');
         map.addLayer(layer);
-        layer.setStyle({ fillColor: '#91A56E', fillOpacity: 0.25, color: '#606E52', weight: 2 });
+        layer.setStyle({ fillColor: '#7a9a5e', fillOpacity: 0.25, color: '#4a5d3e', weight: 2 });
 
         var collision = await checkCollision(coords);
         var content =
@@ -1570,10 +1570,10 @@ function drawHectareGrid() {
   var step = 0.01;
   var sw = bounds.getSouthWest(), ne = bounds.getNorthEast();
   for (var lat = Math.floor(sw.lat / step) * step; lat <= ne.lat; lat += step) {
-    L.polyline([[lat, sw.lng], [lat, ne.lng]], { color: '#c0cca4', weight: 0.5, opacity: 0.35, interactive: false }).addTo(window._hectareGrid);
+    L.polyline([[lat, sw.lng], [lat, ne.lng]], { color: '#b6c8a2', weight: 0.5, opacity: 0.35, interactive: false }).addTo(window._hectareGrid);
   }
   for (var lng = Math.floor(sw.lng / step) * step; lng <= ne.lng; lng += step) {
-    L.polyline([[sw.lat, lng], [ne.lat, lng]], { color: '#c0cca4', weight: 0.5, opacity: 0.35, interactive: false }).addTo(window._hectareGrid);
+    L.polyline([[sw.lat, lng], [ne.lat, lng]], { color: '#b6c8a2', weight: 0.5, opacity: 0.35, interactive: false }).addTo(window._hectareGrid);
   }
   window._hectareGrid.addTo(map);
 }
@@ -1618,7 +1618,7 @@ async function loadAllChampsOnMap() {
       for (var c = 0; c < champs.length; c++) {
         if (!champs[c].polygonCoords || champs[c].polygonCoords.length < 3) continue;
         var coords = champs[c].polygonCoords.map(function(pt) { return [pt[0], pt[1]]; });
-        var style = isMine ? { fillColor: '#91A56E', fillOpacity: 0.25, color: '#606E52', weight: 2 } : { fillColor: '#c44d4d', fillOpacity: 0.15, color: '#c44d4d', weight: 1, interactive: false };
+        var style = isMine ? { fillColor: '#6b9e64', fillOpacity: 0.18, color: '#4a5d3e', weight: 2 } : { fillColor: '#c4b8a8', fillOpacity: 0.10, color: '#b0a090', weight: 1, interactive: false };
         var polygon = L.polygon(coords, style).addTo(map);
         if (isMine) {
           var centroid = calculCentroide(champs[c].polygonCoords);
