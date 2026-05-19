@@ -161,6 +161,10 @@ function getStorageKey(suffix) {
 }
 
 async function dpLoad(key, fallback) {
+  try {
+    var local = JSON.parse(localStorage.getItem(key));
+    if (local) return local;
+  } catch(e) {}
   var sb = getSupabase();
   if (sb) {
     try {
@@ -172,7 +176,7 @@ async function dpLoad(key, fallback) {
       }
     } catch(e) {}
   }
-  try { return JSON.parse(localStorage.getItem(key)) || fallback; } catch(e) { return fallback; }
+  return fallback;
 }
 
 async function dpSave(key, value) {
@@ -709,7 +713,7 @@ function generatePredictions(field) {
   var irrigationMsg = '';
   if ((!field.irrigation || field.irrigation === 'Aucun') && (crop.resistance_secheresse === 'Faible' || crop.resistance_secheresse === 'Tres faible')) {
     irrigationAlert = true;
-    irrigationMsg = 'Attention : cette culture necessite une irrigation en Occitanie. Sans apport d\'eau, les pertes de rendement peuvent etre importantes.';
+    irrigationMsg = '[Exemple] Attention : cette culture necessite une irrigation en Occitanie. Sans apport d\'eau, les pertes de rendement peuvent etre importantes.';
   }
 
   var azoteTotal = Math.round(((crop.besoin_azote_kg_ha.min + crop.besoin_azote_kg_ha.max) / 2) * area);

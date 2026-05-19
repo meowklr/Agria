@@ -11,4 +11,8 @@ choses a faire apres, a se rappeler :
 - souci: nos parcelles de s'affichent pas dans la page d'accueil, dans "mes parcelles" il n'y a rien, peut etre parce qu'on ne les voit pas, ou parce qu'elles ne sont juste pas crées.
 
 - faire en sorte que en mode desktop, la page soit au meme format que au format telephne, juste centrée au milieu de l'ecran et autour ce sera juste vide. comme ça on a la meme vue sur les deux plateformes.
+- souci : la champs "mes parcelles" reste toujours vides, on ne voit pas no parcelles, comme si elles etaient cachées pas un autre élément.
+- le texte d'indication "cliquez pour tracer...." doit disparaitre au bout de deux secondes car la il reste au milieu de l'écran et ça gene le dessin.
+- souci, peu importe la parcelle, il y a un avertissement : " Attention : cette culture necessite une irrigation en Occitanie. Sans apport d'eau, les pertes de rendement peuvent etre importantes.". l'app est un prototype, mais il faut preciser que c'est un message d'exemple.
+
 
