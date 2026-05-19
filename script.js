@@ -880,8 +880,16 @@ function openSheet(contentHtml) {
 function closeSheet() {
   var overlay = document.getElementById('modalOverlay');
   var sheet = document.getElementById('modalSheet');
-  if (overlay) overlay.remove();
-  if (sheet) sheet.remove();
+  if (sheet) {
+    sheet.style.animation = 'slide-down 0.2s var(--ease-press) forwards';
+    if (overlay) overlay.style.animation = 'fade-out 0.15s var(--ease-press) forwards';
+    setTimeout(function() {
+      if (overlay) overlay.remove();
+      if (sheet) sheet.remove();
+    }, 200);
+  } else {
+    if (overlay) overlay.remove();
+  }
 }
 
 function getSheetContent() { return document.getElementById('modalSheet'); }
@@ -1538,6 +1546,7 @@ async function loadAllChampsOnMap() {
           polygon.bindPopup('<strong>' + champs[c].nom + '</strong><br><span style="font-size:12px;color:var(--text-secondary)">' + (champs[c].culture || '?') + ' — ' + (champs[c].surface || '0') + ' ha</span>');
           (function(poly, champCoords) {
             polygon.on('click', function() {
+              if (typeof drawing !== 'undefined' && drawing) return;
               var bounds = L.latLngBounds(champCoords.map(function(p) { return [p[0], p[1]]; }));
               map.fitBounds(bounds, { padding: [60, 60], maxZoom: 17, animate: true, duration: 0.6 });
             });
@@ -1578,7 +1587,13 @@ function initDiagnostic() {
         var coords = await fetchCoordonnees(ville); var meteoData = await fetchOpenMeteo(coords.lat, coords.lon);
         var diagnostic = genererDiagnostic(cultureChoisie, symptomesChoisis, meteoData); renderResultat(diagnostic);
         var form = document.getElementById('diagnosticForm'); var resultat = document.getElementById('diagnosticResultat'); var steps = document.getElementById('diagnosticSteps');
-        if (form) form.classList.add('d-none'); if (resultat) resultat.classList.remove('d-none'); if (steps) steps.classList.add('d-none');
+        if (form) { form.style.opacity = '0'; form.style.transition = 'opacity 0.15s var(--ease-press)'; }
+      if (resultat) { resultat.classList.remove('d-none'); resultat.style.opacity = '0'; resultat.style.transition = 'opacity 0.3s var(--ease-spring)'; }
+      setTimeout(function() {
+        if (form) form.classList.add('d-none');
+        if (resultat) { resultat.style.opacity = '1'; }
+      }, 150);
+      if (steps) steps.classList.add('d-none');
       } catch (err) { showToast('Erreur lors de l\'analyse : ' + err.message, 'error'); }
       btnAnalyser.disabled = false; btnAnalyser.innerHTML = '<i class="fa-solid fa-magnifying-glass"></i> Analyser';
     });
@@ -1588,7 +1603,13 @@ function initDiagnostic() {
   if (btnNouveau) {
     btnNouveau.addEventListener('click', function() {
       var form = document.getElementById('diagnosticForm'); var resultat = document.getElementById('diagnosticResultat'); var steps = document.getElementById('diagnosticSteps');
-      if (form) form.classList.remove('d-none'); if (resultat) resultat.classList.add('d-none'); if (steps) steps.classList.remove('d-none');
+      if (form) { form.classList.remove('d-none'); form.style.opacity = '0'; form.style.transition = 'opacity 0.3s var(--ease-spring)'; }
+      if (resultat) { resultat.style.opacity = '0'; resultat.style.transition = 'opacity 0.15s var(--ease-press)'; }
+      setTimeout(function() {
+        if (resultat) resultat.classList.add('d-none');
+        if (form) { form.style.opacity = '1'; }
+      }, 150);
+      if (steps) steps.classList.remove('d-none');
       var radios = document.querySelectorAll('input[name="culture"]'); for (var n = 0; n < radios.length; n++) radios[n].checked = false;
       var checks = document.querySelectorAll('#etape2 input[type="checkbox"]'); for (var q = 0; q < checks.length; q++) checks[q].checked = false;
       var vi = document.getElementById('diagnosticVille'); if (vi) vi.value = '';

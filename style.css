@@ -162,6 +162,7 @@ body {
   line-height: 1.55;
   color: var(--text-primary);
   background: var(--bg);
+  color-scheme: light;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   -webkit-tap-highlight-color: transparent;
@@ -552,12 +553,16 @@ body::before {
   position: absolute;
   top: -1px;
   left: 50%;
-  transform: translateX(-50%);
-  width: 0;
+  transform: translateX(-50%) scaleX(0);
+  width: 28px;
   height: 3px;
   background: var(--secondary);
   border-radius: 0 0 3px 3px;
-  transition: width 0.2s var(--ease-out-expo);
+  transition: transform 0.2s var(--ease-out-expo);
+}
+
+.bottom-nav-item.active::before {
+  transform: translateX(-50%) scaleX(1);
 }
 
 .bottom-nav-item.active {
@@ -571,7 +576,7 @@ body::before {
 
 .bottom-nav-item i {
   font-size: 20px;
-  transition: transform 0.15s var(--ease-press);
+  transition: transform 0.08s var(--ease-press);
 }
 
 .bottom-nav-item:active i {
