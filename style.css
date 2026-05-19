@@ -259,7 +259,6 @@ body::before {
   position: relative;
   overflow: hidden;
   transition: transform 0.16s var(--ease-press), background 0.2s var(--ease-smooth), box-shadow 0.2s var(--ease-smooth);
-  will-change: transform;
 }
 
 .btn-primary::after {
@@ -480,7 +479,6 @@ body::before {
   transform: translateY(12px);
   filter: blur(4px);
   transition: opacity 0.45s var(--ease-enter), transform 0.45s var(--ease-enter), filter 0.45s var(--ease-enter);
-  will-change: transform, opacity, filter;
 }
 
 .reveal.visible {
