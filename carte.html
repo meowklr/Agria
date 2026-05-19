@@ -63,6 +63,13 @@
 .sr-item:hover{background:var(--bg-green)}
 .sr-item .sr-badge{font-size:10px;background:var(--bg-green);color:var(--secondary);padding:2px 8px;border-radius:8px;margin-left:auto}
 
+/* Desktop responsive */
+@media(min-width:1024px){
+  :root{--panel-w:420px}
+  #side-panel{right:0;left:auto;width:var(--panel-w);transform:translateX(105%)}
+  #side-panel.open{transform:translateX(0)}
+}
+
 /* Mobile responsive */
 @media(max-width:768px){
   :root{--panel-w:100vw}
@@ -216,7 +223,39 @@ function selectParcel(parcel, layer) {
   selectedParcel = parcel;
   selectedLayer = layer;
   if (layer) layer.setStyle({ weight: 4, fillOpacity: 0.35, color: parcel.owner === myUserId ? '#2e7d32' : '#e65100' });
+  if (parcel.data.polygonCoords && parcel.data.polygonCoords.length > 0) {
+    var bounds = L.latLngBounds(parcel.data.polygonCoords.map(function(c){ return [c[0], c[1]]; }));
+    map.fitBounds(bounds, { padding: [60, 60], maxZoom: 16, animate: true, duration: 0.6 });
+  }
   openPanel(parcel);
+}
+
+/* ---- SNAP HELPERS ---- */
+
+function getAllExistingPoints() {
+  var points = [];
+  for (var i = 0; i < allParcels.length; i++) {
+    var p = allParcels[i].data.polygonCoords;
+    if (p && p.length) {
+      for (var j = 0; j < p.length; j++) {
+        points.push(L.latLng(p[j][0], p[j][1]));
+      }
+    }
+  }
+  return points;
+}
+
+function snapLatLng(latlng) {
+  var SNAP_METERS = 15;
+  var candidates = getAllExistingPoints();
+  if (drawPoints.length > 0) candidates.push(drawPoints[0]);
+  var minDist = SNAP_METERS;
+  var snapped = null;
+  for (var i = 0; i < candidates.length; i++) {
+    var d = latlng.distanceTo(candidates[i]);
+    if (d < minDist) { minDist = d; snapped = candidates[i]; }
+  }
+  return snapped || latlng;
 }
 
 /* ---- DRAWING (Leaflet natif, pas de canvas) ---- */
@@ -248,6 +287,15 @@ function stopDrawing(finalize) {
 
 function addDrawPoint(latlng) {
   if (!drawing) return;
+  latlng = snapLatLng(latlng);
+
+  if (drawPoints.length >= 2) {
+    if (latlng.distanceTo(drawPoints[0]) < 15) {
+      stopDrawing(true);
+      return;
+    }
+  }
+
   drawPoints.push(latlng);
 
   if (drawLine) map.removeLayer(drawLine);
