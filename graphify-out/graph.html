@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>graphify - graphify-out/graph.html</title>
+<script src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: #0f0f1a; color: #e0e0e0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; display: flex; height: 100vh; overflow: hidden; }
+  #graph { flex: 1; }
+  #sidebar { width: 280px; background: #1a1a2e; border-left: 1px solid #2a2a4e; display: flex; flex-direction: column; overflow: hidden; }
+  #search-wrap { padding: 12px; border-bottom: 1px solid #2a2a4e; }
+  #search { width: 100%; background: #0f0f1a; border: 1px solid #3a3a5e; color: #e0e0e0; padding: 7px 10px; border-radius: 6px; font-size: 13px; outline: none; }
+  #search:focus { border-color: #4E79A7; }
+  #search-results { max-height: 140px; overflow-y: auto; padding: 4px 12px; border-bottom: 1px solid #2a2a4e; display: none; }
+  .search-item { padding: 4px 6px; cursor: pointer; border-radius: 4px; font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .search-item:hover { background: #2a2a4e; }
+  #info-panel { padding: 14px; border-bottom: 1px solid #2a2a4e; min-height: 140px; }
+  #info-panel h3 { font-size: 13px; color: #aaa; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.05em; }
+  #info-content { font-size: 13px; color: #ccc; line-height: 1.6; }
+  #info-content .field { margin-bottom: 5px; }
+  #info-content .field b { color: #e0e0e0; }
+  #info-content .empty { color: #555; font-style: italic; }
+  .neighbor-link { display: block; padding: 2px 6px; margin: 2px 0; border-radius: 3px; cursor: pointer; font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; border-left: 3px solid #333; }
+  .neighbor-link:hover { background: #2a2a4e; }
+  #neighbors-list { max-height: 160px; overflow-y: auto; margin-top: 4px; }
+  #legend-wrap { flex: 1; overflow-y: auto; padding: 12px; }
+  #legend-wrap h3 { font-size: 13px; color: #aaa; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 0.05em; }
+  .legend-item { display: flex; align-items: center; gap: 8px; padding: 4px 0; cursor: pointer; border-radius: 4px; font-size: 12px; }
+  .legend-item:hover { background: #2a2a4e; padding-left: 4px; }
+  .legend-item.dimmed { opacity: 0.35; }
+  .legend-dot { width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0; }
+  .legend-label { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .legend-count { color: #666; font-size: 11px; }
+  #stats { padding: 10px 14px; border-top: 1px solid #2a2a4e; font-size: 11px; color: #555; }
+  #legend-controls { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; padding: 4px 0; }
+  #legend-controls label { display: flex; align-items: center; gap: 6px; cursor: pointer; font-size: 12px; color: #aaa; user-select: none; }
+  #legend-controls label:hover { color: #e0e0e0; }
+  .legend-cb, #select-all-cb { appearance: none; -webkit-appearance: none; width: 14px; height: 14px; border: 1.5px solid #3a3a5e; border-radius: 3px; background: #0f0f1a; cursor: pointer; position: relative; flex-shrink: 0; }
+  .legend-cb:checked, #select-all-cb:checked { background: #4E79A7; border-color: #4E79A7; }
+  .legend-cb:checked::after, #select-all-cb:checked::after { content: ''; position: absolute; left: 3.5px; top: 1px; width: 4px; height: 7px; border: solid #fff; border-width: 0 2px 2px 0; transform: rotate(45deg); }
+  #select-all-cb:indeterminate { background: #4E79A7; border-color: #4E79A7; }
+  #select-all-cb:indeterminate::after { content: ''; position: absolute; left: 2px; top: 5px; width: 8px; height: 2px; background: #fff; border: none; transform: none; }
+</style>
+</head>
+<body>
+<div id="graph"></div>
+<div id="sidebar">
+  <div id="search-wrap">
+    <input id="search" type="text" placeholder="Search nodes..." autocomplete="off">
+    <div id="search-results"></div>
+  </div>
+  <div id="info-panel">
+    <h3>Node Info</h3>
+    <div id="info-content"><span class="empty">Click a node to inspect it</span></div>
+  </div>
+  <div id="legend-wrap">
+    <h3>Communities</h3>
+    <div id="legend-controls">
+      <label><input type="checkbox" id="select-all-cb" checked onchange="toggleAllCommunities(!this.checked)">Select All</label>
+    </div>
+    <div id="legend"></div>
+  </div>
+  <div id="stats">60 nodes &middot; 84 edges &middot; 8 communities</div>
+</div>
+<script>
+const RAW_NODES = [{"id": "readme_agria_project", "label": "Agria Project", "color": {"background": "#76B7B2", "border": "#76B7B2", "highlight": {"background": "#ffffff", "border": "#76B7B2"}}, "size": 30.0, "font": {"size": 12, "color": "#ffffff"}, "title": "Agria Project", "community": 3, "community_name": "Agria Core Features & Stack", "source_file": "README.md", "file_type": "code", "degree": 8}, {"id": "readme_stack", "label": "Agria Tech Stack", "color": {"background": "#76B7B2", "border": "#76B7B2", "highlight": {"background": "#ffffff", "border": "#76B7B2"}}, "size": 25.0, "font": {"size": 12, "color": "#ffffff"}, "title": "Agria Tech Stack", "community": 3, "community_name": "Agria Core Features & Stack", "source_file": "README.md", "file_type": "code", "degree": 6}, {"id": "readme_leafletjs", "label": "Leaflet.js", "color": {"background": "#76B7B2", "border": "#76B7B2", "highlight": {"background": "#ffffff", "border": "#76B7B2"}}, "size": 17.5, "font": {"size": 12, "color": "#ffffff"}, "title": "Leaflet.js", "community": 3, "community_name": "Agria Core Features & Stack", "source_file": "README.md", "file_type": "code", "degree": 3}, {"id": "readme_arcgis", "label": "ArcGIS Satellite Tiles", "color": {"background": "#FF9DA7", "border": "#FF9DA7", "highlight": {"background": "#ffffff", "border": "#FF9DA7"}}, "size": 12.5, "font": {"size": 0, "color": "#ffffff"}, "title": "ArcGIS Satellite Tiles", "community": 7, "community_name": "Leaflet Map & WebView Integration", "source_file": "README.md", "file_type": "code", "degree": 1}, {"id": "readme_firebase", "label": "Firebase", "color": {"background": "#E15759", "border": "#E15759", "highlight": {"background": "#ffffff", "border": "#E15759"}}, "size": 20.0, "font": {"size": 12, "color": "#ffffff"}, "title": "Firebase", "community": 2, "community_name": "React Native Expo Migration", "source_file": "README.md", "file_type": "code", "degree": 4}, {"id": "readme_openweathermap", "label": "OpenWeatherMap API", "color": {"background": "#59A14F", "border": "#59A14F", "highlight": {"background": "#ffffff", "border": "#59A14F"}}, "size": 15.0, "font": {"size": 12, "color": "#ffffff"}, "title": "OpenWeatherMap API", "community": 4, "community_name": "Web Weather & Authentication", "source_file": "README.md", "file_type": "code", "degree": 2}, {"id": "readme_openmeteo", "label": "Open-Meteo API", "color": {"background": "#76B7B2", "border": "#76B7B2", "highlight": {"background": "#ffffff", "border": "#76B7B2"}}, "size": 15.0, "font": {"size": 12, "color": "#ffffff"}, "title": "Open-Meteo API", "community": 3, "community_name": "Agria Core Features & Stack", "source_file": "README.md", "file_type": "code", "degree": 2}, {"id": "readme_nominatim", "label": "Nominatim Geocoding", "color": {"background": "#76B7B2", "border": "#76B7B2", "highlight": {"background": "#ffffff", "border": "#76B7B2"}}, "size": 15.0, "font": {"size": 12, "color": "#ffffff"}, "title": "Nominatim Geocoding", "community": 3, "community_name": "Agria Core Features & Stack", "source_file": "README.md", "file_type": "code", "degree": 2}, {"id": "readme_supabase", "label": "Supabase", "color": {"background": "#B07AA1", "border": "#B07AA1", "highlight": {"background": "#ffffff", "border": "#B07AA1"}}, "size": 15.0, "font": {"size": 12, "color": "#ffffff"}, "title": "Supabase", "community": 6, "community_name": "Cloud Backup & Supabase", "source_file": "README.md", "file_type": "code", "degree": 2}, {"id": "readme_dessin_parcelles", "label": "Parcel Drawing Feature", "color": {"background": "#76B7B2", "border": "#76B7B2", "highlight": {"background": "#ffffff", "border": "#76B7B2"}}, "size": 17.5, "font": {"size": 12, "color": "#ffffff"}, "title": "Parcel Drawing Feature", "community": 3, "community_name": "Agria Core Features & Stack", "source_file": "README.md", "file_type": "code", "degree": 3}, {"id": "readme_diagnostic_cultures", "label": "Crop Diagnostic Feature", "color": {"background": "#76B7B2", "border": "#76B7B2", "highlight": {"background": "#ffffff", "border": "#76B7B2"}}, "size": 15.0, "font": {"size": 12, "color": "#ffffff"}, "title": "Crop Diagnostic Feature", "community": 3, "community_name": "Agria Core Features & Stack", "source_file": "README.md", "file_type": "code", "degree": 2}, {"id": "readme_meteo_temps_reel", "label": "Real-time Weather Feature", "color": {"background": "#59A14F", "border": "#59A14F", "highlight": {"background": "#ffffff", "border": "#59A14F"}}, "size": 15.0, "font": {"size": 12, "color": "#ffffff"}, "title": "Real-time Weather Feature", "community": 4, "community_name": "Web Weather & Authentication", "source_file": "README.md", "file_type": "code", "degree": 2}, {"id": "readme_predictions_agronomiques", "label": "Agronomic Predictions Feature", "color": {"background": "#F28E2B", "border": "#F28E2B", "highlight": {"background": "#ffffff", "border": "#F28E2B"}}, "size": 15.0, "font": {"size": 12, "color": "#ffffff"}, "title": "Agronomic Predictions Feature", "community": 1, "community_name": "Web Parcel Drawing & CRUD", "source_file": "README.md", "file_type": "code", "degree": 2}, {"id": "readme_gestion_multiusagers", "label": "Multi-user Management", "color": {"background": "#76B7B2", "border": "#76B7B2", "highlight": {"background": "#ffffff", "border": "#76B7B2"}}, "size": 12.5, "font": {"size": 0, "color": "#ffffff"}, "title": "Multi-user Management", "community": 3, "community_name": "Agria Core Features & Stack", "source_file": "README.md", "file_type": "code", "degree": 1}, {"id": "readme_sauvegarde_cloud", "label": "Cloud Sync (Supabase + localStorage)", "color": {"background": "#B07AA1", "border": "#B07AA1", "highlight": {"background": "#ffffff", "border": "#B07AA1"}}, "size": 17.5, "font": {"size": 12, "color": "#ffffff"}, "title": "Cloud Sync (Supabase + localStorage)", "community": 6, "community_name": "Cloud Backup & Supabase", "source_file": "README.md", "file_type": "code", "degree": 3}, {"id": "readme_supabase_functions", "label": "supabase-functions.js", "color": {"background": "#B07AA1", "border": "#B07AA1", "highlight": {"background": "#ffffff", "border": "#B07AA1"}}, "size": 15.0, "font": {"size": 12, "color": "#ffffff"}, "title": "supabase-functions.js", "community": 6, "community_name": "Cloud Backup & Supabase", "source_file": "README.md", "file_type": "code", "degree": 2}, {"id": "golden_hour_design_system", "label": "Golden Hour Design System", "color": {"background": "#4E79A7", "border": "#4E79A7", "highlight": {"background": "#ffffff", "border": "#4E79A7"}}, "size": 37.5, "font": {"size": 12, "color": "#ffffff"}, "title": "Golden Hour Design System", "community": 0, "community_name": "Golden Hour Design System", "source_file": "docs/superpowers/specs/2026-05-20-agria-golden-hour-redesign.md", "file_type": "rationale", "degree": 11}, {"id": "golden_hour_palette", "label": "Golden Hour Color Palette", "color": {"background": "#4E79A7", "border": "#4E79A7", "highlight": {"background": "#ffffff", "border": "#4E79A7"}}, "size": 12.5, "font": {"size": 0, "color": "#ffffff"}, "title": "Golden Hour Color Palette", "community": 0, "community_name": "Golden Hour Design System", "source_file": "docs/superpowers/specs/2026-05-20-agria-golden-hour-redesign.md", "file_type": "rationale", "degree": 1}, {"id": "golden_hour_typography", "label": "Fraunces + Outfit Typography", "color": {"background": "#4E79A7", "border": "#4E79A7", "highlight": {"background": "#ffffff", "border": "#4E79A7"}}, "size": 12.5, "font": {"size": 0, "color": "#ffffff"}, "title": "Fraunces + Outfit Typography", "community": 0, "community_name": "Golden Hour Design System", "source_file": "docs/superpowers/specs/2026-05-20-agria-golden-hour-redesign.md", "file_type": "rationale", "degree": 1}, {"id": "golden_hour_mobile_first", "label": "Mobile-First Single-Column Layout", "color": {"background": "#4E79A7", "border": "#4E79A7", "highlight": {"background": "#ffffff", "border": "#4E79A7"}}, "size": 12.5, "font": {"size": 0, "color": "#ffffff"}, "title": "Mobile-First Single-Column Layout", "community": 0, "community_name": "Golden Hour Design System", "source_file": "docs/superpowers/specs/2026-05-20-agria-golden-hour-redesign.md", "file_type": "rationale", "degree": 1}, {"id": "golden_hour_components", "label": "Golden Hour UI Components", "color": {"background": "#4E79A7", "border": "#4E79A7", "highlight": {"background": "#ffffff", "border": "#4E79A7"}}, "size": 17.5, "font": {"size": 12, "color": "#ffffff"}, "title": "Golden Hour UI Components", "community": 0, "community_name": "Golden Hour Design System", "source_file": "docs/superpowers/specs/2026-05-20-agria-golden-hour-redesign.md", "file_type": "rationale", "degree": 3}, {"id": "golden_hour_animations", "label": "Golden Hour Animation System", "color": {"background": "#76B7B2", "border": "#76B7B2", "highlight": {"background": "#ffffff", "border": "#76B7B2"}}, "size": 15.0, "font": {"size": 12, "color": "#ffffff"}, "title": "Golden Hour Animation System", "community": 3, "community_name": "Agria Core Features & Stack", "source_file": "docs/superpowers/specs/2026-05-20-agria-golden-hour-redesign.md", "file_type": "rationale", "degree": 2}, {"id": "golden_hour_bottom_nav", "label": "Bottom Navigation Bar", "color": {"background": "#4E79A7", "border": "#4E79A7", "highlight": {"background": "#ffffff", "border": "#4E79A7"}}, "size": 17.5, "font": {"size": 12, "color": "#ffffff"}, "title": "Bottom Navigation Bar", "community": 0, "community_name": "Golden Hour Design System", "source_file": "docs/superpowers/specs/2026-05-20-agria-golden-hour-redesign.md", "file_type": "rationale", "degree": 3}, {"id": "golden_hour_no_dark_mode", "label": "Light Theme Only", "color": {"background": "#4E79A7", "border": "#4E79A7", "highlight": {"background": "#ffffff", "border": "#4E79A7"}}, "size": 12.5, "font": {"size": 0, "color": "#ffffff"}, "title": "Light Theme Only", "community": 0, "community_name": "Golden Hour Design System", "source_file": "docs/superpowers/specs/2026-05-20-agria-golden-hour-redesign.md", "file_type": "rationale", "degree": 1}, {"id": "rn_expo_migration", "label": "Expo React Native Migration", "color": {"background": "#E15759", "border": "#E15759", "highlight": {"background": "#ffffff", "border": "#E15759"}}, "size": 40.0, "font": {"size": 12, "color": "#ffffff"}, "title": "Expo React Native Migration", "community": 2, "community_name": "React Native Expo Migration", "source_file": "docs/superpowers/specs/2026-05-20-agria-react-native-migration.md", "file_type": "code", "degree": 12}, {"id": "rn_expo_sdk52", "label": "Expo SDK 52", "color": {"background": "#E15759", "border": "#E15759", "highlight": {"background": "#ffffff", "border": "#E15759"}}, "size": 12.5, "font": {"size": 0, "color": "#ffffff"}, "title": "Expo SDK 52", "community": 2, "community_name": "React Native Expo Migration", "source_file": "docs/superpowers/specs/2026-05-20-agria-react-native-migration.md", "file_type": "code", "degree": 1}, {"id": "rn_expo_router", "label": "expo-router (File-based Routing)", "color": {"background": "#E15759", "border": "#E15759", "highlight": {"background": "#ffffff", "border": "#E15759"}}, "size": 12.5, "font": {"size": 0, "color": "#ffffff"}, "title": "expo-router (File-based Routing)", "community": 2, "community_name": "React Native Expo Migration", "source_file": "docs/superpowers/specs/2026-05-20-agria-react-native-migration.md", "file_type": "code", "degree": 1}, {"id": "rn_leaflet_webview", "label": "Leaflet via React Native WebView", "color": {"background": "#FF9DA7", "border": "#FF9DA7", "highlight": {"background": "#ffffff", "border": "#FF9DA7"}}, "size": 17.5, "font": {"size": 12, "color": "#ffffff"}, "title": "Leaflet via React Native WebView", "community": 7, "community_name": "Leaflet Map & WebView Integration", "source_file": "docs/superpowers/specs/2026-05-20-agria-react-native-migration.md", "file_type": "code", "degree": 3}, {"id": "rn_webview_postmessage", "label": "RN-WebView postMessage Protocol", "color": {"background": "#FF9DA7", "border": "#FF9DA7", "highlight": {"background": "#ffffff", "border": "#FF9DA7"}}, "size": 12.5, "font": {"size": 0, "color": "#ffffff"}, "title": "RN-WebView postMessage Protocol", "community": 7, "community_name": "Leaflet Map & WebView Integration", "source_file": "docs/superpowers/specs/2026-05-20-agria-react-native-migration.md", "file_type": "code", "degree": 1}, {"id": "rn_haptics", "label": "Expo Haptics", "color": {"background": "#E15759", "border": "#E15759", "highlight": {"background": "#ffffff", "border": "#E15759"}}, "size": 12.5, "font": {"size": 0, "color": "#ffffff"}, "title": "Expo Haptics", "community": 2, "community_name": "React Native Expo Migration", "source_file": "docs/superpowers/specs/2026-05-20-agria-react-native-migration.md", "file_type": "code", "degree": 1}, {"id": "rn_asyncstorage", "label": "AsyncStorage Fallback", "color": {"background": "#B07AA1", "border": "#B07AA1", "highlight": {"background": "#ffffff", "border": "#B07AA1"}}, "size": 15.0, "font": {"size": 12, "color": "#ffffff"}, "title": "AsyncStorage Fallback", "community": 6, "community_name": "Cloud Backup & Supabase", "source_file": "docs/superpowers/specs/2026-05-20-agria-react-native-migration.md", "file_type": "code", "degree": 2}, {"id": "rn_firebase_rtdb", "label": "Firebase Realtime Database (Mobile)", "color": {"background": "#E15759", "border": "#E15759", "highlight": {"background": "#ffffff", "border": "#E15759"}}, "size": 15.0, "font": {"size": 12, "color": "#ffffff"}, "title": "Firebase Realtime Database (Mobile)", "community": 2, "community_name": "React Native Expo Migration", "source_file": "docs/superpowers/specs/2026-05-20-agria-react-native-migration.md", "file_type": "code", "degree": 2}, {"id": "rn_data_sync", "label": "Web-Mobile Data Sync", "color": {"background": "#E15759", "border": "#E15759", "highlight": {"background": "#ffffff", "border": "#E15759"}}, "size": 15.0, "font": {"size": 12, "color": "#ffffff"}, "title": "Web-Mobile Data Sync", "community": 2, "community_name": "React Native Expo Migration", "source_file": "docs/superpowers/specs/2026-05-20-agria-react-native-migration.md", "file_type": "rationale", "degree": 2}, {"id": "rn_services", "label": "Mobile Service Layer (1:1 Web Logic)", "color": {"background": "#E15759", "border": "#E15759", "highlight": {"background": "#ffffff", "border": "#E15759"}}, "size": 15.0, "font": {"size": 12, "color": "#ffffff"}, "title": "Mobile Service Layer (1:1 Web Logic)", "community": 2, "community_name": "React Native Expo Migration", "source_file": "docs/superpowers/specs/2026-05-20-agria-react-native-migration.md", "file_type": "code", "degree": 2}, {"id": "web_vanilla_app", "label": "Vanilla Web App (web/)", "color": {"background": "#E15759", "border": "#E15759", "highlight": {"background": "#ffffff", "border": "#E15759"}}, "size": 15.0, "font": {"size": 12, "color": "#ffffff"}, "title": "Vanilla Web App (web/)", "community": 2, "community_name": "React Native Expo Migration", "source_file": "web/index.html", "file_type": "code", "degree": 2}, {"id": "web_style_css", "label": "style.css", "color": {"background": "#4E79A7", "border": "#4E79A7", "highlight": {"background": "#ffffff", "border": "#4E79A7"}}, "size": 12.5, "font": {"size": 0, "color": "#ffffff"}, "title": "style.css", "community": 0, "community_name": "Golden Hour Design System", "source_file": "web/dashboard.html", "file_type": "code", "degree": 1}, {"id": "web_script_js", "label": "script.js (Application Core)", "color": {"background": "#59A14F", "border": "#59A14F", "highlight": {"background": "#ffffff", "border": "#59A14F"}}, "size": 30.0, "font": {"size": 12, "color": "#ffffff"}, "title": "script.js (Application Core)", "community": 4, "community_name": "Web Weather & Authentication", "source_file": "web/dashboard.html", "file_type": "code", "degree": 8}, {"id": "web_firebase_compat_sdk", "label": "Firebase Compat SDKs (v10.14.1)", "color": {"background": "#59A14F", "border": "#59A14F", "highlight": {"background": "#ffffff", "border": "#59A14F"}}, "size": 22.5, "font": {"size": 12, "color": "#ffffff"}, "title": "Firebase Compat SDKs (v10.14.1)", "community": 4, "community_name": "Web Weather & Authentication", "source_file": "web/carte.html", "file_type": "code", "degree": 5}, {"id": "web_leaflet_map", "label": "Leaflet Map Instance", "color": {"background": "#FF9DA7", "border": "#FF9DA7", "highlight": {"background": "#ffffff", "border": "#FF9DA7"}}, "size": 17.5, "font": {"size": 12, "color": "#ffffff"}, "title": "Leaflet Map Instance", "community": 7, "community_name": "Leaflet Map & WebView Integration", "source_file": "web/carte.html", "file_type": "code", "degree": 3}, {"id": "web_polygon_drawing", "label": "Polygon Drawing System", "color": {"background": "#F28E2B", "border": "#F28E2B", "highlight": {"background": "#ffffff", "border": "#F28E2B"}}, "size": 25.0, "font": {"size": 12, "color": "#ffffff"}, "title": "Polygon Drawing System", "community": 1, "community_name": "Web Parcel Drawing & CRUD", "source_file": "web/carte.html", "file_type": "code", "degree": 6}, {"id": "web_snap_system", "label": "Snap-to-Points System (15m threshold)", "color": {"background": "#F28E2B", "border": "#F28E2B", "highlight": {"background": "#ffffff", "border": "#F28E2B"}}, "size": 15.0, "font": {"size": 12, "color": "#ffffff"}, "title": "Snap-to-Points System (15m threshold)", "community": 1, "community_name": "Web Parcel Drawing & CRUD", "source_file": "web/carte.html", "file_type": "code", "degree": 2}, {"id": "web_parcel_crud", "label": "Parcel CRUD (addChamp/updateChamp/deleteChamp)", "color": {"background": "#F28E2B", "border": "#F28E2B", "highlight": {"background": "#ffffff", "border": "#F28E2B"}}, "size": 22.5, "font": {"size": 12, "color": "#ffffff"}, "title": "Parcel CRUD (addChamp/updateChamp/deleteChamp)", "community": 1, "community_name": "Web Parcel Drawing & CRUD", "source_file": "web/carte.html", "file_type": "code", "degree": 5}, {"id": "web_parcel_undo", "label": "Undo Stack for Parcel Operations", "color": {"background": "#F28E2B", "border": "#F28E2B", "highlight": {"background": "#ffffff", "border": "#F28E2B"}}, "size": 15.0, "font": {"size": 12, "color": "#ffffff"}, "title": "Undo Stack for Parcel Operations", "community": 1, "community_name": "Web Parcel Drawing & CRUD", "source_file": "web/carte.html", "file_type": "code", "degree": 2}, {"id": "web_side_panel", "label": "Side Panel (Parcel Info)", "color": {"background": "#F28E2B", "border": "#F28E2B", "highlight": {"background": "#ffffff", "border": "#F28E2B"}}, "size": 17.5, "font": {"size": 12, "color": "#ffffff"}, "title": "Side Panel (Parcel Info)", "community": 1, "community_name": "Web Parcel Drawing & CRUD", "source_file": "web/carte.html", "file_type": "code", "degree": 3}, {"id": "web_search_bar", "label": "Parcel Search Bar", "color": {"background": "#F28E2B", "border": "#F28E2B", "highlight": {"background": "#ffffff", "border": "#F28E2B"}}, "size": 12.5, "font": {"size": 0, "color": "#ffffff"}, "title": "Parcel Search Bar", "community": 1, "community_name": "Web Parcel Drawing & CRUD", "source_file": "web/carte.html", "file_type": "code", "degree": 1}, {"id": "web_generate_predictions", "label": "generatePredictions Function", "color": {"background": "#F28E2B", "border": "#F28E2B", "highlight": {"background": "#ffffff", "border": "#F28E2B"}}, "size": 17.5, "font": {"size": 12, "color": "#ffffff"}, "title": "generatePredictions Function", "community": 1, "community_name": "Web Parcel Drawing & CRUD", "source_file": "web/carte.html", "file_type": "code", "degree": 3}, {"id": "web_crop_data", "label": "CROP_DATA Object", "color": {"background": "#F28E2B", "border": "#F28E2B", "highlight": {"background": "#ffffff", "border": "#F28E2B"}}, "size": 15.0, "font": {"size": 12, "color": "#ffffff"}, "title": "CROP_DATA Object", "community": 1, "community_name": "Web Parcel Drawing & CRUD", "source_file": "web/carte.html", "file_type": "code", "degree": 2}, {"id": "web_diagnostic_3steps", "label": "3-Step Diagnostic Workflow", "color": {"background": "#76B7B2", "border": "#76B7B2", "highlight": {"background": "#ffffff", "border": "#76B7B2"}}, "size": 25.0, "font": {"size": 12, "color": "#ffffff"}, "title": "3-Step Diagnostic Workflow", "community": 3, "community_name": "Agria Core Features & Stack", "source_file": "web/diagnostic.html", "file_type": "code", "degree": 6}, {"id": "web_dashboard_weather", "label": "Dashboard Weather Widget", "color": {"background": "#59A14F", "border": "#59A14F", "highlight": {"background": "#ffffff", "border": "#59A14F"}}, "size": 20.0, "font": {"size": 12, "color": "#ffffff"}, "title": "Dashboard Weather Widget", "community": 4, "community_name": "Web Weather & Authentication", "source_file": "web/dashboard.html", "file_type": "code", "degree": 4}, {"id": "web_dashboard_alerts", "label": "Dashboard Alert Cards (Example)", "color": {"background": "#4E79A7", "border": "#4E79A7", "highlight": {"background": "#ffffff", "border": "#4E79A7"}}, "size": 12.5, "font": {"size": 0, "color": "#ffffff"}, "title": "Dashboard Alert Cards (Example)", "community": 0, "community_name": "Golden Hour Design System", "source_file": "web/dashboard.html", "file_type": "code", "degree": 1}, {"id": "web_login_auth", "label": "Login Authentication", "color": {"background": "#59A14F", "border": "#59A14F", "highlight": {"background": "#ffffff", "border": "#59A14F"}}, "size": 17.5, "font": {"size": 12, "color": "#ffffff"}, "title": "Login Authentication", "community": 4, "community_name": "Web Weather & Authentication", "source_file": "web/login.html", "file_type": "code", "degree": 3}, {"id": "web_profil_page", "label": "Profile Page", "color": {"background": "#59A14F", "border": "#59A14F", "highlight": {"background": "#ffffff", "border": "#59A14F"}}, "size": 17.5, "font": {"size": 12, "color": "#ffffff"}, "title": "Profile Page", "community": 4, "community_name": "Web Weather & Authentication", "source_file": "web/profil.html", "file_type": "code", "degree": 3}, {"id": "memo_drawing_bug", "label": "Drawing Bug: Polygon Closure Failure", "color": {"background": "#F28E2B", "border": "#F28E2B", "highlight": {"background": "#ffffff", "border": "#F28E2B"}}, "size": 15.0, "font": {"size": 12, "color": "#ffffff"}, "title": "Drawing Bug: Polygon Closure Failure", "community": 1, "community_name": "Web Parcel Drawing & CRUD", "source_file": "memo.txt", "file_type": "document", "degree": 2}, {"id": "expo_dot_expo", "label": ".expo Folder (Expo Dev Config)", "color": {"background": "#E15759", "border": "#E15759", "highlight": {"background": "#ffffff", "border": "#E15759"}}, "size": 12.5, "font": {"size": 0, "color": "#ffffff"}, "title": ".expo Folder (Expo Dev Config)", "community": 2, "community_name": "React Native Expo Migration", "source_file": "mobile/.expo/README.md", "file_type": "code", "degree": 1}, {"id": "design_system_reference", "label": "Design System Reference Page", "color": {"background": "#4E79A7", "border": "#4E79A7", "highlight": {"background": "#ffffff", "border": "#4E79A7"}}, "size": 12.5, "font": {"size": 0, "color": "#ffffff"}, "title": "Design System Reference Page", "community": 0, "community_name": "Golden Hour Design System", "source_file": "README.md", "file_type": "document", "degree": 1}, {"id": "brand_book_pdf", "label": "Brand Book A4 PDF", "color": {"background": "#4E79A7", "border": "#4E79A7", "highlight": {"background": "#ffffff", "border": "#4E79A7"}}, "size": 12.5, "font": {"size": 0, "color": "#ffffff"}, "title": "Brand Book A4 PDF", "community": 0, "community_name": "Golden Hour Design System", "source_file": "README.md", "file_type": "document", "degree": 1}, {"id": "icon_app_icon", "label": "Agria App Icon (icon.png)", "color": {"background": "#EDC948", "border": "#EDC948", "highlight": {"background": "#ffffff", "border": "#EDC948"}}, "size": 17.5, "font": {"size": 12, "color": "#ffffff"}, "title": "Agria App Icon (icon.png)", "community": 5, "community_name": "Mobile App Configuration", "source_file": "mobile/assets/icon.png", "file_type": "image", "degree": 3}, {"id": "app_json", "label": "Expo App Configuration (app.json)", "color": {"background": "#EDC948", "border": "#EDC948", "highlight": {"background": "#ffffff", "border": "#EDC948"}}, "size": 15.0, "font": {"size": 12, "color": "#ffffff"}, "title": "Expo App Configuration (app.json)", "community": 5, "community_name": "Mobile App Configuration", "source_file": "mobile/app.json", "file_type": "code", "degree": 2}, {"id": "agria_mobile_app", "label": "Agria Mobile Application", "color": {"background": "#EDC948", "border": "#EDC948", "highlight": {"background": "#ffffff", "border": "#EDC948"}}, "size": 15.0, "font": {"size": 12, "color": "#ffffff"}, "title": "Agria Mobile Application", "community": 5, "community_name": "Mobile App Configuration", "source_file": "mobile/", "file_type": "code", "degree": 2}, {"id": "expo_asset_system", "label": "Expo Asset/Build System", "color": {"background": "#EDC948", "border": "#EDC948", "highlight": {"background": "#ffffff", "border": "#EDC948"}}, "size": 12.5, "font": {"size": 0, "color": "#ffffff"}, "title": "Expo Asset/Build System", "community": 5, "community_name": "Mobile App Configuration", "source_file": "mobile/package.json", "file_type": "code", "degree": 1}];
+const RAW_EDGES = [{"from": "rn_expo_migration", "to": "readme_agria_project", "label": "conceptually_related_to", "title": "conceptually_related_to [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "readme_agria_project", "to": "readme_stack", "label": "conceptually_related_to", "title": "conceptually_related_to [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "readme_agria_project", "to": "readme_dessin_parcelles", "label": "conceptually_related_to", "title": "conceptually_related_to [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "readme_agria_project", "to": "readme_diagnostic_cultures", "label": "conceptually_related_to", "title": "conceptually_related_to [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "readme_agria_project", "to": "readme_meteo_temps_reel", "label": "conceptually_related_to", "title": "conceptually_related_to [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "readme_agria_project", "to": "readme_predictions_agronomiques", "label": "conceptually_related_to", "title": "conceptually_related_to [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "readme_agria_project", "to": "readme_gestion_multiusagers", "label": "conceptually_related_to", "title": "conceptually_related_to [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "readme_agria_project", "to": "readme_sauvegarde_cloud", "label": "conceptually_related_to", "title": "conceptually_related_to [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "readme_stack", "to": "readme_leafletjs", "label": "conceptually_related_to", "title": "conceptually_related_to [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "readme_stack", "to": "readme_firebase", "label": "conceptually_related_to", "title": "conceptually_related_to [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "readme_stack", "to": "readme_openweathermap", "label": "conceptually_related_to", "title": "conceptually_related_to [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "readme_stack", "to": "readme_nominatim", "label": "conceptually_related_to", "title": "conceptually_related_to [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "readme_stack", "to": "readme_openmeteo", "label": "conceptually_related_to", "title": "conceptually_related_to [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "web_leaflet_map", "to": "readme_leafletjs", "label": "calls", "title": "calls [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "readme_dessin_parcelles", "to": "readme_leafletjs", "label": "references", "title": "references [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "web_leaflet_map", "to": "readme_arcgis", "label": "calls", "title": "calls [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "web_parcel_crud", "to": "readme_firebase", "label": "calls", "title": "calls [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "rn_firebase_rtdb", "to": "readme_firebase", "label": "semantically_similar_to", "title": "semantically_similar_to [INFERRED]", "dashes": true, "width": 1, "color": {"opacity": 0.35}, "confidence": "INFERRED"}, {"from": "rn_data_sync", "to": "readme_firebase", "label": "references", "title": "references [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "web_dashboard_weather", "to": "readme_openweathermap", "label": "references", "title": "references [INFERRED]", "dashes": true, "width": 1, "color": {"opacity": 0.35}, "confidence": "INFERRED"}, {"from": "web_diagnostic_3steps", "to": "readme_openmeteo", "label": "references", "title": "references [INFERRED]", "dashes": true, "width": 1, "color": {"opacity": 0.35}, "confidence": "INFERRED"}, {"from": "web_diagnostic_3steps", "to": "readme_nominatim", "label": "references", "title": "references [INFERRED]", "dashes": true, "width": 1, "color": {"opacity": 0.35}, "confidence": "INFERRED"}, {"from": "readme_supabase", "to": "readme_sauvegarde_cloud", "label": "conceptually_related_to", "title": "conceptually_related_to [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "readme_supabase", "to": "readme_supabase_functions", "label": "conceptually_related_to", "title": "conceptually_related_to [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "web_polygon_drawing", "to": "readme_dessin_parcelles", "label": "implements", "title": "implements [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "web_diagnostic_3steps", "to": "readme_diagnostic_cultures", "label": "implements", "title": "implements [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "web_dashboard_weather", "to": "readme_meteo_temps_reel", "label": "implements", "title": "implements [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "readme_predictions_agronomiques", "to": "web_generate_predictions", "label": "conceptually_related_to", "title": "conceptually_related_to [INFERRED]", "dashes": true, "width": 1, "color": {"opacity": 0.35}, "confidence": "INFERRED"}, {"from": "rn_asyncstorage", "to": "readme_sauvegarde_cloud", "label": "semantically_similar_to", "title": "semantically_similar_to [INFERRED]", "dashes": true, "width": 1, "color": {"opacity": 0.35}, "confidence": "INFERRED"}, {"from": "web_script_js", "to": "readme_supabase_functions", "label": "references", "title": "references [INFERRED]", "dashes": true, "width": 1, "color": {"opacity": 0.35}, "confidence": "INFERRED"}, {"from": "web_style_css", "to": "golden_hour_design_system", "label": "implements", "title": "implements [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "rn_expo_migration", "to": "golden_hour_design_system", "label": "references", "title": "references [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "golden_hour_design_system", "to": "golden_hour_palette", "label": "conceptually_related_to", "title": "conceptually_related_to [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "golden_hour_design_system", "to": "golden_hour_typography", "label": "conceptually_related_to", "title": "conceptually_related_to [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "golden_hour_design_system", "to": "golden_hour_mobile_first", "label": "conceptually_related_to", "title": "conceptually_related_to [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "golden_hour_design_system", "to": "golden_hour_components", "label": "conceptually_related_to", "title": "conceptually_related_to [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "golden_hour_design_system", "to": "golden_hour_animations", "label": "conceptually_related_to", "title": "conceptually_related_to [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "golden_hour_design_system", "to": "golden_hour_bottom_nav", "label": "conceptually_related_to", "title": "conceptually_related_to [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "golden_hour_design_system", "to": "golden_hour_no_dark_mode", "label": "conceptually_related_to", "title": "conceptually_related_to [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "design_system_reference", "to": "golden_hour_design_system", "label": "conceptually_related_to", "title": "conceptually_related_to [INFERRED]", "dashes": true, "width": 1, "color": {"opacity": 0.35}, "confidence": "INFERRED"}, {"from": "brand_book_pdf", "to": "golden_hour_design_system", "label": "conceptually_related_to", "title": "conceptually_related_to [INFERRED]", "dashes": true, "width": 1, "color": {"opacity": 0.35}, "confidence": "INFERRED"}, {"from": "golden_hour_components", "to": "golden_hour_bottom_nav", "label": "conceptually_related_to", "title": "conceptually_related_to [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "web_profil_page", "to": "golden_hour_components", "label": "implements", "title": "implements [INFERRED]", "dashes": true, "width": 1, "color": {"opacity": 0.35}, "confidence": "INFERRED"}, {"from": "golden_hour_animations", "to": "web_diagnostic_3steps", "label": "conceptually_related_to", "title": "conceptually_related_to [INFERRED]", "dashes": true, "width": 1, "color": {"opacity": 0.35}, "confidence": "INFERRED"}, {"from": "golden_hour_bottom_nav", "to": "web_dashboard_alerts", "label": "conceptually_related_to", "title": "conceptually_related_to [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "rn_expo_migration", "to": "rn_expo_sdk52", "label": "calls", "title": "calls [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "rn_expo_migration", "to": "rn_expo_router", "label": "calls", "title": "calls [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "rn_expo_migration", "to": "rn_firebase_rtdb", "label": "calls", "title": "calls [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "rn_expo_migration", "to": "rn_leaflet_webview", "label": "calls", "title": "calls [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "rn_expo_migration", "to": "rn_haptics", "label": "calls", "title": "calls [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "rn_expo_migration", "to": "rn_asyncstorage", "label": "calls", "title": "calls [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "rn_expo_migration", "to": "rn_data_sync", "label": "conceptually_related_to", "title": "conceptually_related_to [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "rn_expo_migration", "to": "rn_services", "label": "conceptually_related_to", "title": "conceptually_related_to [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "rn_expo_migration", "to": "web_vanilla_app", "label": "conceptually_related_to", "title": "conceptually_related_to [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "expo_dot_expo", "to": "rn_expo_migration", "label": "conceptually_related_to", "title": "conceptually_related_to [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "rn_leaflet_webview", "to": "rn_webview_postmessage", "label": "calls", "title": "calls [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "rn_leaflet_webview", "to": "web_leaflet_map", "label": "semantically_similar_to", "title": "semantically_similar_to [INFERRED]", "dashes": true, "width": 1, "color": {"opacity": 0.35}, "confidence": "INFERRED"}, {"from": "rn_services", "to": "web_script_js", "label": "semantically_similar_to", "title": "semantically_similar_to [INFERRED]", "dashes": true, "width": 1, "color": {"opacity": 0.35}, "confidence": "INFERRED"}, {"from": "web_vanilla_app", "to": "web_login_auth", "label": "calls", "title": "calls [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "web_script_js", "to": "web_firebase_compat_sdk", "label": "calls", "title": "calls [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "web_parcel_crud", "to": "web_script_js", "label": "calls", "title": "calls [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "web_login_auth", "to": "web_script_js", "label": "calls", "title": "calls [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "web_dashboard_weather", "to": "web_script_js", "label": "calls", "title": "calls [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "web_diagnostic_3steps", "to": "web_script_js", "label": "calls", "title": "calls [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "web_profil_page", "to": "web_script_js", "label": "calls", "title": "calls [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "web_login_auth", "to": "web_firebase_compat_sdk", "label": "calls", "title": "calls [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "web_dashboard_weather", "to": "web_firebase_compat_sdk", "label": "calls", "title": "calls [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "web_diagnostic_3steps", "to": "web_firebase_compat_sdk", "label": "calls", "title": "calls [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "web_profil_page", "to": "web_firebase_compat_sdk", "label": "calls", "title": "calls [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "web_polygon_drawing", "to": "web_snap_system", "label": "calls", "title": "calls [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "web_polygon_drawing", "to": "web_parcel_crud", "label": "calls", "title": "calls [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "web_polygon_drawing", "to": "web_parcel_undo", "label": "calls", "title": "calls [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "web_polygon_drawing", "to": "web_crop_data", "label": "references", "title": "references [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "memo_drawing_bug", "to": "web_polygon_drawing", "label": "conceptually_related_to", "title": "conceptually_related_to [INFERRED]", "dashes": true, "width": 1, "color": {"opacity": 0.35}, "confidence": "INFERRED"}, {"from": "memo_drawing_bug", "to": "web_snap_system", "label": "conceptually_related_to", "title": "conceptually_related_to [INFERRED]", "dashes": true, "width": 1, "color": {"opacity": 0.35}, "confidence": "INFERRED"}, {"from": "web_side_panel", "to": "web_parcel_crud", "label": "calls", "title": "calls [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "web_parcel_undo", "to": "web_parcel_crud", "label": "calls", "title": "calls [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "web_side_panel", "to": "web_generate_predictions", "label": "calls", "title": "calls [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "web_search_bar", "to": "web_side_panel", "label": "calls", "title": "calls [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "web_generate_predictions", "to": "web_crop_data", "label": "references", "title": "references [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "app_json", "to": "icon_app_icon", "label": "references", "title": "references [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "icon_app_icon", "to": "agria_mobile_app", "label": "conceptually_related_to", "title": "conceptually_related_to [INFERRED]", "dashes": true, "width": 1, "color": {"opacity": 0.35}, "confidence": "INFERRED"}, {"from": "expo_asset_system", "to": "icon_app_icon", "label": "references", "title": "references [INFERRED]", "dashes": true, "width": 1, "color": {"opacity": 0.35}, "confidence": "INFERRED"}, {"from": "app_json", "to": "agria_mobile_app", "label": "conceptually_related_to", "title": "conceptually_related_to [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}];
+const LEGEND = [{"cid": 0, "color": "#4E79A7", "label": "Golden Hour Design System", "count": 11}, {"cid": 1, "color": "#F28E2B", "label": "Web Parcel Drawing &amp; CRUD", "count": 10}, {"cid": 2, "color": "#E15759", "label": "React Native Expo Migration", "count": 10}, {"cid": 3, "color": "#76B7B2", "label": "Agria Core Features &amp; Stack", "count": 10}, {"cid": 4, "color": "#59A14F", "label": "Web Weather &amp; Authentication", "count": 7}, {"cid": 5, "color": "#EDC948", "label": "Mobile App Configuration", "count": 4}, {"cid": 6, "color": "#B07AA1", "label": "Cloud Backup &amp; Supabase", "count": 4}, {"cid": 7, "color": "#FF9DA7", "label": "Leaflet Map &amp; WebView Integration", "count": 4}];
+
+// HTML-escape helper — prevents XSS when injecting graph data into innerHTML
+function esc(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
+
+// Build vis datasets
+const nodesDS = new vis.DataSet(RAW_NODES.map(n => ({
+  id: n.id, label: n.label, color: n.color, size: n.size,
+  font: n.font, title: n.title,
+  _community: n.community, _community_name: n.community_name,
+  _source_file: n.source_file, _file_type: n.file_type, _degree: n.degree,
+})));
+
+const edgesDS = new vis.DataSet(RAW_EDGES.map((e, i) => ({
+  id: i, from: e.from, to: e.to,
+  label: '',
+  title: e.title,
+  dashes: e.dashes,
+  width: e.width,
+  color: e.color,
+  arrows: { to: { enabled: true, scaleFactor: 0.5 } },
+})));
+
+const container = document.getElementById('graph');
+const network = new vis.Network(container, { nodes: nodesDS, edges: edgesDS }, {
+  physics: {
+    enabled: true,
+    solver: 'forceAtlas2Based',
+    forceAtlas2Based: {
+      gravitationalConstant: -60,
+      centralGravity: 0.005,
+      springLength: 120,
+      springConstant: 0.08,
+      damping: 0.4,
+      avoidOverlap: 0.8,
+    },
+    stabilization: { iterations: 200, fit: true },
+  },
+  interaction: {
+    hover: true,
+    tooltipDelay: 100,
+    hideEdgesOnDrag: true,
+    navigationButtons: false,
+    keyboard: false,
+  },
+  nodes: { shape: 'dot', borderWidth: 1.5 },
+  edges: { smooth: { type: 'continuous', roundness: 0.2 }, selectionWidth: 3 },
+});
+
+network.once('stabilizationIterationsDone', () => {
+  network.setOptions({ physics: { enabled: false } });
+});
+
+function showInfo(nodeId) {
+  const n = nodesDS.get(nodeId);
+  if (!n) return;
+  const neighborIds = network.getConnectedNodes(nodeId);
+  const neighborItems = neighborIds.map(nid => {
+    const nb = nodesDS.get(nid);
+    const color = nb ? nb.color.background : '#555';
+    return `<span class="neighbor-link" style="border-left-color:${esc(color)}" onclick="focusNode(${JSON.stringify(nid)})">${esc(nb ? nb.label : nid)}</span>`;
+  }).join('');
+  document.getElementById('info-content').innerHTML = `
+    <div class="field"><b>${esc(n.label)}</b></div>
+    <div class="field">Type: ${esc(n._file_type || 'unknown')}</div>
+    <div class="field">Community: ${esc(n._community_name)}</div>
+    <div class="field">Source: ${esc(n._source_file || '-')}</div>
+    <div class="field">Degree: ${n._degree}</div>
+    ${neighborIds.length ? `<div class="field" style="margin-top:8px;color:#aaa;font-size:11px">Neighbors (${neighborIds.length})</div><div id="neighbors-list">${neighborItems}</div>` : ''}
+  `;
+}
+
+function focusNode(nodeId) {
+  network.focus(nodeId, { scale: 1.4, animation: true });
+  network.selectNodes([nodeId]);
+  showInfo(nodeId);
+}
+
+// Track hovered node — hover detection is more reliable than click params
+let hoveredNodeId = null;
+network.on('hoverNode', params => {
+  hoveredNodeId = params.node;
+  container.style.cursor = 'pointer';
+});
+network.on('blurNode', () => {
+  hoveredNodeId = null;
+  container.style.cursor = 'default';
+});
+container.addEventListener('click', () => {
+  if (hoveredNodeId !== null) {
+    showInfo(hoveredNodeId);
+    network.selectNodes([hoveredNodeId]);
+  }
+});
+network.on('click', params => {
+  if (params.nodes.length > 0) {
+    showInfo(params.nodes[0]);
+  } else if (hoveredNodeId === null) {
+    document.getElementById('info-content').innerHTML = '<span class="empty">Click a node to inspect it</span>';
+  }
+});
+
+const searchInput = document.getElementById('search');
+const searchResults = document.getElementById('search-results');
+searchInput.addEventListener('input', () => {
+  const q = searchInput.value.toLowerCase().trim();
+  searchResults.innerHTML = '';
+  if (!q) { searchResults.style.display = 'none'; return; }
+  const matches = RAW_NODES.filter(n => n.label.toLowerCase().includes(q)).slice(0, 20);
+  if (!matches.length) { searchResults.style.display = 'none'; return; }
+  searchResults.style.display = 'block';
+  matches.forEach(n => {
+    const el = document.createElement('div');
+    el.className = 'search-item';
+    el.textContent = n.label;
+    el.style.borderLeft = `3px solid ${n.color.background}`;
+    el.style.paddingLeft = '8px';
+    el.onclick = () => {
+      network.focus(n.id, { scale: 1.5, animation: true });
+      network.selectNodes([n.id]);
+      showInfo(n.id);
+      searchResults.style.display = 'none';
+      searchInput.value = '';
+    };
+    searchResults.appendChild(el);
+  });
+});
+document.addEventListener('click', e => {
+  if (!searchResults.contains(e.target) && e.target !== searchInput)
+    searchResults.style.display = 'none';
+});
+
+const hiddenCommunities = new Set();
+
+const selectAllCb = document.getElementById('select-all-cb');
+
+function updateSelectAllState() {
+  const total = LEGEND.length;
+  const hidden = hiddenCommunities.size;
+  selectAllCb.checked = hidden === 0;
+  selectAllCb.indeterminate = hidden > 0 && hidden < total;
+}
+
+function toggleAllCommunities(hide) {
+  document.querySelectorAll('.legend-item').forEach(item => {
+    hide ? item.classList.add('dimmed') : item.classList.remove('dimmed');
+  });
+  document.querySelectorAll('.legend-cb').forEach(cb => {
+    cb.checked = !hide;
+  });
+  LEGEND.forEach(c => {
+    if (hide) hiddenCommunities.add(c.cid); else hiddenCommunities.delete(c.cid);
+  });
+  const updates = RAW_NODES.map(n => ({ id: n.id, hidden: hide }));
+  nodesDS.update(updates);
+  updateSelectAllState();
+}
+
+const legendEl = document.getElementById('legend');
+LEGEND.forEach(c => {
+  const item = document.createElement('div');
+  item.className = 'legend-item';
+  const cb = document.createElement('input');
+  cb.type = 'checkbox';
+  cb.className = 'legend-cb';
+  cb.checked = true;
+  cb.addEventListener('change', (e) => {
+    e.stopPropagation();
+    if (cb.checked) {
+      hiddenCommunities.delete(c.cid);
+      item.classList.remove('dimmed');
+    } else {
+      hiddenCommunities.add(c.cid);
+      item.classList.add('dimmed');
+    }
+    const updates = RAW_NODES
+      .filter(n => n.community === c.cid)
+      .map(n => ({ id: n.id, hidden: !cb.checked }));
+    nodesDS.update(updates);
+    updateSelectAllState();
+  });
+  item.innerHTML = `<div class="legend-dot" style="background:${c.color}"></div>
+    <span class="legend-label">${c.label}</span>
+    <span class="legend-count">${c.count}</span>`;
+  item.prepend(cb);
+  item.onclick = (e) => {
+    if (e.target === cb) return;
+    cb.checked = !cb.checked;
+    cb.dispatchEvent(new Event('change'));
+  };
+  legendEl.appendChild(item);
+});
+</script>
+<script>
+// Render hyperedges as shaded regions
+const hyperedges = [{"id": "parcel_drawing_workflow", "label": "Parcel Drawing Full Workflow", "nodes": ["web_polygon_drawing", "web_snap_system", "web_parcel_crud", "web_parcel_undo", "web_side_panel"], "relation": "participate_in", "confidence": "INFERRED", "confidence_score": 0.85, "source_file": "web/carte.html"}, {"id": "golden_hour_design_application", "label": "Golden Hour Design Applied to Web Pages", "nodes": ["golden_hour_design_system", "golden_hour_palette", "golden_hour_typography", "web_style_css", "web_vanilla_app"], "relation": "implement", "confidence": "INFERRED", "confidence_score": 0.88, "source_file": "docs/superpowers/specs/2026-05-20-agria-golden-hour-redesign.md"}, {"id": "rn_mobile_to_web_parity", "label": "React Native Mirror of Web Functionality", "nodes": ["rn_expo_migration", "rn_leaflet_webview", "web_leaflet_map", "rn_services", "web_script_js", "rn_data_sync"], "relation": "implement", "confidence": "INFERRED", "confidence_score": 0.82, "source_file": "docs/superpowers/specs/2026-05-20-agria-react-native-migration.md"}];
+// afterDrawing passes ctx already transformed to network coordinate space.
+// Draw node positions raw — no manual pan/zoom/DPR math needed.
+network.on('afterDrawing', function(ctx) {
+    hyperedges.forEach(h => {
+        const positions = h.nodes
+            .map(nid => network.getPositions([nid])[nid])
+            .filter(p => p !== undefined);
+        if (positions.length < 2) return;
+        ctx.save();
+        ctx.globalAlpha = 0.12;
+        ctx.fillStyle = '#6366f1';
+        ctx.strokeStyle = '#6366f1';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        // Centroid and expanded hull in network coordinates
+        const cx = positions.reduce((s, p) => s + p.x, 0) / positions.length;
+        const cy = positions.reduce((s, p) => s + p.y, 0) / positions.length;
+        const expanded = positions.map(p => ({
+            x: cx + (p.x - cx) * 1.15,
+            y: cy + (p.y - cy) * 1.15
+        }));
+        ctx.moveTo(expanded[0].x, expanded[0].y);
+        expanded.slice(1).forEach(p => ctx.lineTo(p.x, p.y));
+        ctx.closePath();
+        ctx.fill();
+        ctx.globalAlpha = 0.4;
+        ctx.stroke();
+        // Label
+        ctx.globalAlpha = 0.8;
+        ctx.fillStyle = '#4f46e5';
+        ctx.font = 'bold 11px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText(h.label, cx, cy - 5);
+        ctx.restore();
+    });
+});
+</script>
+</body>
+</html>

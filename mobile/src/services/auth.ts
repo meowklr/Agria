@@ -4,10 +4,12 @@ export function generateId(): string { return Date.now().toString(36) + Math.ran
 
 export async function getSession() { try { const s = await AsyncStorage.getItem('agria_session'); return s ? JSON.parse(s) : null; } catch { return null; } }
 
+export async function isLoggedIn(): Promise<boolean> { const s = await getSession(); return s !== null; }
+
 export async function getUserId(): Promise<string> {
-  let session = await getSession();
-  if (!session) { session = { userId: generateId(), email: (await AsyncStorage.getItem('agria_user')) || 'invite@agria.fr' }; await AsyncStorage.setItem('agria_session', JSON.stringify(session)); }
-  return session.userId;
+  const session = await getSession();
+  if (session) return session.userId;
+  const uid = generateId(); await AsyncStorage.setItem('agria_session', JSON.stringify({ userId: uid, email: 'invite@agria.fr' })); return uid;
 }
 export function getPrefsKey(uid: string) { return 'agria_prefs_' + uid; }
 export function getChampsKey(uid: string) { return 'agria_champs_' + uid; }

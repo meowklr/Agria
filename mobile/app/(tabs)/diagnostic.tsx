@@ -1,4 +1,6 @@
-import React, { useEffect, useState } from 'react'; import { View, Text, ScrollView, TouchableOpacity } from 'react-native'; import { Ionicons } from '@expo/vector-icons'; import { colors, radius } from '../../src/theme'; import { Card } from '../../src/components/Card'; import { Badge } from '../../src/components/Badge'; import { Button } from '../../src/components/Button'; import { Input } from '../../src/components/Input'; import { SectionTitle } from '../../src/components/Typography'; import { useDiagnostic } from '../../src/hooks/useDiagnostic'; import * as Haptics from 'expo-haptics';
+import React, { useEffect, useState } from 'react'; import { View, Text, ScrollView, TouchableOpacity } from 'react-native'; import { Ionicons } from '@expo/vector-icons'; import { colors, radius, fontFamily } from '../../src/theme'; import { Card } from '../../src/components/Card'; import { Badge } from '../../src/components/Badge'; import { Button } from '../../src/components/Button'; import { Input } from '../../src/components/Input'; import { SectionTitle } from '../../src/components/Typography'; import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useDiagnostic } from '../../src/hooks/useDiagnostic';
+import * as Haptics from 'expo-haptics';
 
 const CULTURES = ['ble','mais','tournesol','colza','vigne'];
 const CL: Record<string,string> = { ble:'Ble', mais:'Mais', tournesol:'Tournesol', colza:'Colza', vigne:'Vigne' };
@@ -9,11 +11,13 @@ const SL: Record<string,string> = { jaunissement:'Jaunissement', taches:'Taches 
 export default function DiagnosticScreen() {
   const { result, history, loading, analyse, reset, loadHistory } = useDiagnostic();
   const [step, setStep] = useState(1); const [culture, setCulture] = useState(''); const [sympts, setSympts] = useState<string[]>([]); const [ville, setVille] = useState('');
+  const [expanded, setExpanded] = useState<number | null>(null);
+  const insets = useSafeAreaInsets();
   useEffect(() => { loadHistory(); }, []);
   const ts = (s: string) => setSympts(p => p.includes(s) ? p.filter(x => x !== s) : [...p, s]);
 
-  return <ScrollView style={{ flex: 1, backgroundColor: colors.bg }} contentContainerStyle={{ padding: 16 }}>
-    <View style={{ paddingVertical: 8, marginBottom: 16 }}><Text style={{ fontSize: 22, fontWeight: '600', color: colors.primary }}>Diagnostic</Text></View>
+  return <ScrollView style={{ flex: 1, backgroundColor: colors.bg }} contentContainerStyle={{ padding: 16, paddingTop: (insets.top || 0) + 16, paddingBottom: 100 }}>
+    <View style={{ paddingVertical: 8, marginBottom: 16 }}><Text style={{ fontSize: 22, fontWeight: '600', color: colors.primary, fontFamily: fontFamily.serif }}>Diagnostic</Text></View>
 
     {!result ? <>
       <View style={{ flexDirection: 'row', justifyContent: 'center', alignItems: 'center', marginBottom: 24 }}>
@@ -46,7 +50,7 @@ export default function DiagnosticScreen() {
     </> : <View>
       <Card style={{ marginBottom: 16 }}>
         <View style={{ marginBottom: 12 }}><Badge text={result.gravite === 'danger' ? 'Urgent' : result.gravite === 'warning' ? 'Attention' : 'Info'} variant={result.gravite} /></View>
-        <Text style={{ fontSize: 20, fontWeight: '600', color: colors.text, marginBottom: 10 }}>Diagnostic : {result.nom}</Text>
+        <Text style={{ fontSize: 20, fontWeight: '600', color: colors.text, marginBottom: 10, fontFamily: fontFamily.serif }}>Diagnostic : {result.nom}</Text>
         <Text style={{ fontSize: 14, color: colors.textSecondary, lineHeight: 22 }}>{result.explication}</Text>
       </Card>
       <Card style={{ marginBottom: 16 }}>
@@ -67,10 +71,21 @@ export default function DiagnosticScreen() {
     {history.length > 0 && <View style={{ marginTop: 32 }}>
       <SectionTitle title="Historique" />
       {history.map((h, i) => <Card key={i} style={{ marginBottom: 10 }}>
-        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}><Badge text={h.nom} variant={h.gravite} /><Text style={{ fontSize: 11, color: colors.textMuted }}>{h.date}</Text></View>
-        <Text style={{ fontSize: 12, color: colors.textMuted }}>{h.culture} - {h.ville} - {h.symptomes.length} symptomes</Text>
+        <TouchableOpacity onPress={() => setExpanded(expanded === i ? null : i)} activeOpacity={0.7}>
+          <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}><Badge text={h.nom} variant={h.gravite} /><Ionicons name={expanded === i ? 'chevron-up' : 'chevron-down'} size={14} color={colors.textMuted} /></View>
+            <Text style={{ fontSize: 11, color: colors.textMuted }}>{h.date}</Text>
+          </View>
+          <Text style={{ fontSize: 12, color: colors.textMuted }}>{h.culture} - {h.ville} - {h.symptomes.length} symptomes</Text>
+        </TouchableOpacity>
+        {expanded === i && <View style={{ marginTop: 12, paddingTop: 12, borderTopWidth: 1, borderTopColor: colors.border }}>
+          <Text style={{ fontSize: 13, fontWeight: '600', color: colors.text, marginBottom: 6 }}>Explication</Text>
+          <Text style={{ fontSize: 13, color: colors.textSecondary, lineHeight: 20, marginBottom: 12 }}>{h.explication}</Text>
+          <Text style={{ fontSize: 13, fontWeight: '600', color: colors.text, marginBottom: 6 }}>Recommandations</Text>
+          {h.recommandations.map((r, ri) => <View key={ri} style={{ flexDirection: 'row', alignItems: 'flex-start', gap: 8, marginBottom: 6 }}><Ionicons name="checkmark-circle" size={12} color={colors.success} style={{ marginTop: 2 }} /><Text style={{ flex: 1, fontSize: 12, color: colors.textSecondary, lineHeight: 18 }}>{r}</Text></View>)}
+          <Text style={{ fontSize: 11, color: colors.textMuted, marginTop: 8 }}>Symptomes : {h.symptomes.join(', ')}</Text>
+        </View>}
       </Card>)}
     </View>}
-    <View style={{ height: 100 }} />
   </ScrollView>;
 }

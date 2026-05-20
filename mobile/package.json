@@ -10,6 +10,8 @@
     "postinstall": "patch-package"
   },
   "dependencies": {
+    "@expo-google-fonts/fraunces": "^0.4.1",
+    "@expo-google-fonts/outfit": "^0.4.3",
     "@expo/vector-icons": "^14.0.0",
     "@react-native-async-storage/async-storage": "1.23.1",
     "expo": "~54.0.33",
@@ -33,5 +35,8 @@
     "postinstall-postinstall": "^2.1.0",
     "typescript": "~5.9.2"
   },
-  "private": true
+  "private": true,
+  "overrides": {
+    "react": "19.1.0"
+  }
 }

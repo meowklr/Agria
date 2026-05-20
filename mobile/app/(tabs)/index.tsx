@@ -1,17 +1,30 @@
-import React from 'react'; import { View, Text, ScrollView, ActivityIndicator } from 'react-native'; import { Ionicons } from '@expo/vector-icons'; import { colors, radius } from '../../src/theme'; import { Card } from '../../src/components/Card'; import { Badge } from '../../src/components/Badge'; import { SectionTitle } from '../../src/components/Typography'; import { useWeather } from '../../src/hooks/useWeather'; import { useChamps } from '../../src/hooks/useChamps';
+import React, { useState } from 'react'; import { View, Text, ScrollView, ActivityIndicator, TouchableOpacity } from 'react-native'; import { Ionicons } from '@expo/vector-icons'; import { useSafeAreaInsets } from 'react-native-safe-area-context'; import { colors, radius, fontFamily } from '../../src/theme'; import { Card } from '../../src/components/Card'; import { Badge } from '../../src/components/Badge'; import { Button } from '../../src/components/Button'; import { Input } from '../../src/components/Input'; import { SectionTitle } from '../../src/components/Typography'; import { useWeather, useCitySearch } from '../../src/hooks/useWeather'; import { useChamps } from '../../src/hooks/useChamps'; import * as Haptics from 'expo-haptics';
 
 export default function DashboardScreen() {
-  const { meteo, previsions, loading: wl } = useWeather('Paris');
+  const { meteo, previsions, loading: wl, city, setCity, refresh } = useWeather('Paris');
   const { champs } = useChamps();
+  const { results, query, setQuery } = useCitySearch();
+  const [showSearch, setShowSearch] = useState(false);
+  const insets = useSafeAreaInsets();
   const totalHa = champs.reduce((s, c) => s + (parseFloat(c.surface) || 0), 0);
   const cc: Record<string, number> = {}; champs.forEach(c => { const n = c.culture || 'Inconnu'; cc[n] = (cc[n] || 0) + 1; });
   const top = Object.entries(cc).sort((a, b) => b[1] - a[1])[0]?.[0] || '-';
 
-  return <ScrollView style={{ flex: 1, backgroundColor: colors.bg }} contentContainerStyle={{ padding: 16 }}>
+  return <ScrollView style={{ flex: 1, backgroundColor: colors.bg }} contentContainerStyle={{ padding: 16, paddingTop: (insets.top || 0) + 16 }}>
     <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: 8, marginBottom: 16 }}>
-      <Text style={{ fontSize: 22, fontWeight: '600', color: colors.primary }}>Agria</Text>
-      <Ionicons name="notifications-outline" size={22} color={colors.textSecondary} />
+      <Text style={{ fontSize: 22, fontWeight: '600', color: colors.primary, fontFamily: fontFamily.serif }}>Agria</Text>
+      <View style={{ flexDirection: 'row', gap: 12, alignItems: 'center' }}>
+        <TouchableOpacity onPress={() => setShowSearch(!showSearch)}><Ionicons name="search-outline" size={22} color={colors.textSecondary} /></TouchableOpacity>
+        <Ionicons name="notifications-outline" size={22} color={colors.textSecondary} />
+      </View>
     </View>
+
+    {showSearch && <View style={{ marginBottom: 16 }}>
+      <Input value={query} onChangeText={setQuery} placeholder="Rechercher une ville..." />
+      {results.length > 0 && <View style={{ backgroundColor: colors.surface, borderRadius: radius.md, borderWidth: 1, borderColor: colors.border, marginTop: 4, overflow: 'hidden' }}>
+        {results.map((r, i) => <TouchableOpacity key={i} style={{ paddingHorizontal: 16, paddingVertical: 12, borderBottomWidth: i < results.length - 1 ? 1 : 0, borderBottomColor: colors.border }} onPress={() => { setCity(r); setQuery(''); setShowSearch(false); refresh(r); Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); }}><Text style={{ fontSize: 14, color: colors.text }}>{r}</Text></TouchableOpacity>)}
+      </View>}
+    </View>}
 
     <View style={{ marginBottom: 24 }}>
       <SectionTitle title="Meteo du jour" />
@@ -20,7 +33,7 @@ export default function DashboardScreen() {
           <Text style={{ fontSize: 15, fontWeight: '600', color: colors.primary }}>{meteo.ville}</Text>
           <Ionicons name="partly-sunny" size={40} color={colors.primary} />
         </View>
-        <Text style={{ fontSize: 56, fontWeight: '600', color: colors.text }}>{meteo.temp}<Text style={{ fontSize: 22, fontWeight: '400', color: colors.textSecondary }}>°C</Text></Text>
+        <Text style={{ fontSize: 56, fontWeight: '600', color: colors.text, fontFamily: fontFamily.serif }}>{meteo.temp}<Text style={{ fontSize: 22, fontWeight: '400', color: colors.textSecondary }}>°C</Text></Text>
         <Text style={{ fontSize: 14, color: colors.textMuted, marginBottom: 12, textTransform: 'capitalize' }}>{meteo.description}</Text>
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, backgroundColor: 'rgba(232,184,75,0.08)', paddingHorizontal: 14, paddingVertical: 8, borderRadius: radius.sm, alignSelf: 'flex-start' }}>
           <Ionicons name="water-outline" size={14} color={colors.primary} />
@@ -62,15 +75,15 @@ export default function DashboardScreen() {
 
     <View style={{ flexDirection: 'row', gap: 10 }}>
       <View style={{ flex: 1, backgroundColor: colors.surface, borderRadius: radius.md, padding: 14, borderWidth: 1, borderColor: colors.border, alignItems: 'center' }}>
-        <Text style={{ fontSize: 22, fontWeight: '600', color: colors.primary }}>{champs.length}</Text>
+        <Text style={{ fontSize: 22, fontWeight: '600', color: colors.primary, fontFamily: fontFamily.serif }}>{champs.length}</Text>
         <Text style={{ fontSize: 11, color: colors.textMuted, fontWeight: '500', marginTop: 2 }}>Champs</Text>
       </View>
       <View style={{ flex: 1, backgroundColor: colors.surface, borderRadius: radius.md, padding: 14, borderWidth: 1, borderColor: colors.border, alignItems: 'center' }}>
-        <Text style={{ fontSize: 22, fontWeight: '600', color: colors.primary }}>{totalHa.toFixed(1)}</Text>
+        <Text style={{ fontSize: 22, fontWeight: '600', color: colors.primary, fontFamily: fontFamily.serif }}>{totalHa.toFixed(1)}</Text>
         <Text style={{ fontSize: 11, color: colors.textMuted, fontWeight: '500', marginTop: 2 }}>Hectares</Text>
       </View>
       <View style={{ flex: 1, backgroundColor: colors.surface, borderRadius: radius.md, padding: 14, borderWidth: 1, borderColor: colors.border, alignItems: 'center' }}>
-        <Text style={{ fontSize: 22, fontWeight: '600', color: colors.primary }}>{top}</Text>
+        <Text style={{ fontSize: 22, fontWeight: '600', color: colors.primary, fontFamily: fontFamily.serif }}>{top}</Text>
         <Text style={{ fontSize: 11, color: colors.textMuted, fontWeight: '500', marginTop: 2 }}>Culture n1</Text>
       </View>
     </View>

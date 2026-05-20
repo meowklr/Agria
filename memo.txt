@@ -1,0 +1,9 @@
+on va passer aux fix, debogages, correctifs de l'app mobile. 
+- la fonction de dessin marche mal, quand on dessine, la parcelle ne se valide pas, et il faut etendre les champs d'action du premier point de depart au cas ou on lcique dessus pour fermer la parcelle, car la c'est difficle de bien toucher precisement le premier point.
+- il faut obliger l'utilisateur a passer par la page de login a la premiere ouverture (sauf acces admin dashboard), pour etre sur de pouvoir stocker correctement les infos et parcelles des utilisateurs, sauvegardés dans la bdd.
+- on doit pouvoir chercvhe sa ville dans la page d'accueil (la il n'y a pas la barre de recherche contrairement a la version web)
+- il faut ajouter une bordure basse et bordure haute, car certains elements haut passes sous la camera frontale du tel, et en bas passe sous la barre de controle iphone (uniquement sur iphone).
+- voir si c'est possible d'utiliser les memes polices que la version eb dans la version mobile.
+- -on doit pouvoir voir le détail de nos diagnostics depuis l'historique des diagnostics, en cliquant par exemple sur un petit bouton details.
+
+- analyse make plus poussée sur les diagnostics, conseils sur les solutions, recherche sur le type de sol par rappotrt a la zone renseignée (agriachat)
