@@ -1,5 +1,18 @@
 import React, { useState } from 'react'; import { View, Text, ScrollView, ActivityIndicator, TouchableOpacity } from 'react-native'; import { Ionicons } from '@expo/vector-icons'; import { useSafeAreaInsets } from 'react-native-safe-area-context'; import { colors, radius, fontFamily } from '../../src/theme'; import { Card } from '../../src/components/Card'; import { Badge } from '../../src/components/Badge'; import { Button } from '../../src/components/Button'; import { Input } from '../../src/components/Input'; import { SectionTitle } from '../../src/components/Typography'; import { useWeather, useCitySearch } from '../../src/hooks/useWeather'; import { useChamps } from '../../src/hooks/useChamps'; import * as Haptics from 'expo-haptics';
 
+const forecastIcons: Record<string, keyof typeof Ionicons.glyphMap> = {
+  sun: 'sunny',
+  moon: 'moon',
+  'cloud-sun': 'partly-sunny',
+  'cloud-moon': 'cloudy-night',
+  cloud: 'cloudy',
+  'cloud-drizzle': 'rainy',
+  'cloud-rain': 'rainy',
+  'cloud-bolt': 'thunderstorm',
+  snowflake: 'snow',
+  smog: 'cloudy',
+};
+
 export default function DashboardScreen() {
   const { meteo, previsions, loading: wl, city, setCity, refresh } = useWeather('Paris');
   const { champs } = useChamps();
@@ -45,11 +58,15 @@ export default function DashboardScreen() {
     <View style={{ marginBottom: 24 }}>
       <SectionTitle title="Previsions" />
       <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 10, paddingBottom: 8 }}>
-        {previsions.map((p, i) => <Card key={i} style={{ minWidth: 80, alignItems: 'center', padding: 14 }}>
-          <Text style={{ fontSize: 13, fontWeight: '600', color: colors.text, marginBottom: 6 }}>{p.jour}</Text>
-          <Ionicons name="partly-sunny" size={20} color={colors.primary} />
-          <Text style={{ fontSize: 15, fontWeight: '700', color: colors.text }}>{p.tempMax}°</Text>
-          <Text style={{ fontSize: 13, color: colors.textMuted, fontWeight: '500' }}>{p.tempMin}°</Text>
+        {previsions.map((p, i) => <Card key={i} style={{ minWidth: 96, minHeight: 150, alignItems: 'center', justifyContent: 'space-between', paddingVertical: 16, paddingHorizontal: 12 }}>
+          <Text style={{ fontSize: 13, fontWeight: '600', color: colors.text, textAlign: 'center' }}>{p.jour}</Text>
+          <View style={{ alignItems: 'center', justifyContent: 'center', gap: 8, flex: 1 }}>
+            <Ionicons name={forecastIcons[p.icone] || 'partly-sunny'} size={30} color={colors.primary} />
+            <View style={{ alignItems: 'center' }}>
+              <Text style={{ fontSize: 18, fontWeight: '700', color: colors.text, lineHeight: 22 }}>{p.tempMax}°</Text>
+              <Text style={{ fontSize: 12, color: colors.textMuted, fontWeight: '500', marginTop: 2 }}>{p.tempMin}°</Text>
+            </View>
+          </View>
         </Card>)}
       </ScrollView>
     </View>
