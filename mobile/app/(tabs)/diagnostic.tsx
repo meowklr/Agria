@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'; import { View, Text, ScrollView, TouchableOpacity } from 'react-native'; import { Ionicons } from '@expo/vector-icons'; import { colors, radius, fontFamily } from '../../src/theme'; import { Card } from '../../src/components/Card'; import { Badge } from '../../src/components/Badge'; import { Button } from '../../src/components/Button'; import { Input } from '../../src/components/Input'; import { SectionTitle } from '../../src/components/Typography'; import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import React, { useEffect, useState } from 'react'; import { View, Text, ScrollView, TouchableOpacity } from 'react-native'; import { Ionicons } from '@expo/vector-icons'; import { colors, radius, fontFamily } from '../../src/theme'; import { Card } from '../../src/components/Card'; import { Badge } from '../../src/components/Badge'; import { Button } from '../../src/components/Button'; import { Input } from '../../src/components/Input'; import { SectionTitle } from '../../src/components/Typography'; import { LoaderBar } from '../../src/components/LoaderBar'; import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useDiagnostic } from '../../src/hooks/useDiagnostic';
 import * as Haptics from 'expo-haptics';
 
@@ -12,12 +12,16 @@ export default function DiagnosticScreen() {
   const { result, history, loading, analyse, reset, loadHistory } = useDiagnostic();
   const [step, setStep] = useState(1); const [culture, setCulture] = useState(''); const [sympts, setSympts] = useState<string[]>([]); const [ville, setVille] = useState('');
   const [expanded, setExpanded] = useState<number | null>(null);
+  const [errVille, setErrVille] = useState(false);
+  const [errCulture, setErrCulture] = useState(false);
+  const [errSympts, setErrSympts] = useState(false);
   const insets = useSafeAreaInsets();
   useEffect(() => { loadHistory(); }, []);
   const ts = (s: string) => setSympts(p => p.includes(s) ? p.filter(x => x !== s) : [...p, s]);
 
   return <ScrollView style={{ flex: 1, backgroundColor: colors.bg }} contentContainerStyle={{ padding: 16, paddingTop: (insets.top || 0) + 16, paddingBottom: 100 }}>
     <View style={{ paddingVertical: 8, marginBottom: 16 }}><Text style={{ fontSize: 22, fontWeight: '600', color: colors.primary, fontFamily: fontFamily.serif }}>Diagnostic</Text></View>
+    {loading && <View style={{ marginBottom: 16 }}><LoaderBar /></View>}
 
     {!result ? <>
       <View style={{ flexDirection: 'row', justifyContent: 'center', alignItems: 'center', marginBottom: 24 }}>
@@ -27,24 +31,27 @@ export default function DiagnosticScreen() {
       {step === 1 && <View>
         <SectionTitle title="Quelle est votre culture ?" />
         <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 12, marginBottom: 22 }}>
-          {CULTURES.map(c => <TouchableOpacity key={c} style={[{ width: '46%', padding: 20, backgroundColor: colors.surface, borderRadius: radius.lg, borderWidth: 1, borderColor: colors.border, alignItems: 'center', gap: 8 }, culture === c && { borderColor: colors.primary, borderWidth: 2, backgroundColor: 'rgba(232,184,75,.06)' }]} onPress={() => setCulture(c)}><Ionicons name={CI[c]} size={24} color={culture === c ? colors.primary : colors.primaryHover} /><Text style={[{ fontSize: 14, fontWeight: '500', color: colors.textSecondary }, culture === c && { color: colors.text, fontWeight: '600' }]}>{CL[c]}</Text></TouchableOpacity>)}
+          {CULTURES.map(c => <TouchableOpacity key={c} style={[{ width: '46%', padding: 20, backgroundColor: colors.surface, borderRadius: radius.lg, borderWidth: 1, borderColor: colors.border, alignItems: 'center', gap: 8 }, culture === c && { borderColor: colors.primary, borderWidth: 2, backgroundColor: 'rgba(232,184,75,.06)' }]} onPress={() => { setCulture(c); setErrCulture(false); }}><Ionicons name={CI[c]} size={24} color={culture === c ? colors.primary : colors.primaryHover} /><Text style={[{ fontSize: 14, fontWeight: '500', color: colors.textSecondary }, culture === c && { color: colors.text, fontWeight: '600' }]}>{CL[c]}</Text></TouchableOpacity>)}
         </View>
-        <Button title="Suivant" onPress={() => { if (culture) { setStep(2); Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); } }} />
+        {errCulture && <Text style={{ fontSize: 12, color: colors.danger, marginBottom: 10 }}>Veuillez selectionner une culture.</Text>}
+        <Button title="Suivant" onPress={() => { if (!culture) { setErrCulture(true); return; } setStep(2); Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); }} />
       </View>}
 
       {step === 2 && <View>
         <SectionTitle title="Quels symptomes ?" />
         <View style={{ gap: 8, marginBottom: 22 }}>
-          {SYMPS.map(s => <TouchableOpacity key={s} style={[{ flexDirection: 'row', alignItems: 'center', gap: 14, paddingHorizontal: 16, minHeight: 50, backgroundColor: colors.surface, borderWidth: 2, borderColor: colors.border, borderRadius: radius.md }, sympts.includes(s) && { borderColor: colors.primary, backgroundColor: 'rgba(232,184,75,.06)' }]} onPress={() => ts(s)}><Ionicons name={sympts.includes(s) ? 'checkbox' : 'square-outline'} size={20} color={sympts.includes(s) ? colors.primary : colors.textMuted} /><Text style={[{ fontSize: 14, color: colors.textSecondary }, sympts.includes(s) && { color: colors.text, fontWeight: '500' }]}>{SL[s]}</Text></TouchableOpacity>)}
+          {SYMPS.map(s => <TouchableOpacity key={s} style={[{ flexDirection: 'row', alignItems: 'center', gap: 14, paddingHorizontal: 16, minHeight: 50, backgroundColor: colors.surface, borderWidth: 2, borderColor: colors.border, borderRadius: radius.md }, sympts.includes(s) && { borderColor: colors.primary, backgroundColor: 'rgba(232,184,75,.06)' }]} onPress={() => { ts(s); setErrSympts(false); }}><Ionicons name={sympts.includes(s) ? 'checkbox' : 'square-outline'} size={20} color={sympts.includes(s) ? colors.primary : colors.textMuted} /><Text style={[{ fontSize: 14, color: colors.textSecondary }, sympts.includes(s) && { color: colors.text, fontWeight: '500' }]}>{SL[s]}</Text></TouchableOpacity>)}
         </View>
-        <Button title="Suivant" onPress={() => setStep(3)} /><View style={{ height: 10 }} /><Button title="Retour" variant="secondary" onPress={() => setStep(1)} />
+        {errSympts && <Text style={{ fontSize: 12, color: colors.danger, marginBottom: 10 }}>Veuillez selectionner au moins un symptome.</Text>}
+        <Button title="Suivant" onPress={() => { if (sympts.length === 0) { setErrSympts(true); return; } setStep(3); }} /><View style={{ height: 10 }} /><Button title="Retour" variant="secondary" onPress={() => { setStep(1); setErrSympts(false); }} />
       </View>}
 
       {step === 3 && <View>
         <SectionTitle title="Ou se trouve la parcelle ?" />
-        <Input value={ville} onChangeText={setVille} placeholder="Nom de la ville" />
+        <Input value={ville} onChangeText={t => { setVille(t); setErrVille(false); }} placeholder="Nom de la ville (obligatoire)" />
+        {errVille && <Text style={{ fontSize: 12, color: colors.danger, marginTop: 6 }}>Veuillez entrer une ville pour continuer.</Text>}
         <Text style={{ fontSize: 13, color: colors.textMuted, marginVertical: 16 }}>Pour enrichir le diagnostic avec la meteo locale.</Text>
-        <Button title="Analyser" onPress={async () => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium); await analyse(culture, sympts, ville || 'Paris'); }} />
+        <Button title="Analyser" onPress={async () => { if (!ville.trim()) { setErrVille(true); return; } Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium); await analyse(culture, sympts, ville.trim()); }} />
         <View style={{ height: 10 }} /><Button title="Retour" variant="secondary" onPress={() => setStep(2)} />
       </View>}
     </> : <View>

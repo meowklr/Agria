@@ -7,3 +7,21 @@ on va passer aux fix, debogages, correctifs de l'app mobile.
 - -on doit pouvoir voir le détail de nos diagnostics depuis l'historique des diagnostics, en cliquant par exemple sur un petit bouton details.
 
 - analyse make plus poussée sur les diagnostics, conseils sur les solutions, recherche sur le type de sol par rappotrt a la zone renseignée (agriachat)
+
+fix sur  version mobile (web secondaire): 
+- verifier et corriger la logique de comptes utilisateurs, que l'utilisateur est bien connecté et que ses infos sont a jour.
+- la page de login ne s'affiche pas lors de l'ouverture, il faut regler ça.
+- on doit pouvoir masquer les infos sur une parcelle depuis la carte en slidant vers le bas(il y a deja une icone de barre horizontale qui le suggere, mais le slide ne ferme pas les infos)
+
+
+fix :
+- badges parcelles
+- fermer le clavier notes
+- fermer clavier semis ou mettre au format date scrollable
+- scroll vers le haut du pane de config parceclles
+
+design :
+- tout fluidifier avec animations
+- revoir la disposition dans mon profil
+- 
+

@@ -2,6 +2,8 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export function generateId(): string { return Date.now().toString(36) + Math.random().toString(36).slice(2); }
 
+function uidKey(email: string): string { return 'agria_uid_' + email.trim().toLowerCase(); }
+
 export async function getSession() { try { const s = await AsyncStorage.getItem('agria_session'); return s ? JSON.parse(s) : null; } catch { return null; } }
 
 export async function isLoggedIn(): Promise<boolean> { const s = await getSession(); return s !== null; }
@@ -17,7 +19,18 @@ export function getProfileKey(uid: string) { return 'agria_user_profile_' + uid;
 export function getDiagKey(uid: string) { return 'agria_diagnostics_' + uid; }
 
 export async function login(email: string): Promise<string> {
-  const userId = generateId(); await AsyncStorage.setItem('agria_session', JSON.stringify({ userId, email })); await AsyncStorage.setItem('agria_user', email); return userId;
+  const e = email.trim().toLowerCase();
+  let userId: string;
+  const existing = await AsyncStorage.getItem(uidKey(e));
+  if (existing) {
+    userId = existing;
+  } else {
+    userId = generateId();
+    await AsyncStorage.setItem(uidKey(e), userId);
+  }
+  await AsyncStorage.setItem('agria_session', JSON.stringify({ userId, email: e }));
+  await AsyncStorage.setItem('agria_user', e);
+  return userId;
 }
 export async function logout(): Promise<void> { await AsyncStorage.multiRemove(['agria_session', 'agria_user', 'agria_ville']); }
 export function getDefaultVille(): string { return 'Paris'; }
