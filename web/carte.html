@@ -525,20 +525,34 @@ searchInput.addEventListener('input', function() {
 
 searchInput.addEventListener('blur', function() { setTimeout(function(){searchResults.classList.remove('visible')}, 200); });
 
+function focusParcelById(parcelId) {
+  if (!parcelId) return false;
+  for (var i = 0; i < allParcels.length; i++) {
+    if (allParcels[i].data.id === parcelId) {
+      selectParcel(allParcels[i], parcelLayers[parcelId]);
+      return true;
+    }
+  }
+  return false;
+}
+
 /* ---- INIT ---- */
 
 window._carteInlineLoaded = true;
+var initialParcelId = new URLSearchParams(window.location.search).get('parcel');
 loadAllParcels().then(function() {
   renderAllParcels();
-  var myCoords = [];
-  for (var i = 0; i < allParcels.length; i++) {
-    if (allParcels[i].owner === myUserId && allParcels[i].data.polygonCoords && allParcels[i].data.polygonCoords.length > 0) {
-      myCoords = myCoords.concat(allParcels[i].data.polygonCoords);
+  if (!focusParcelById(initialParcelId)) {
+    var myCoords = [];
+    for (var i = 0; i < allParcels.length; i++) {
+      if (allParcels[i].owner === myUserId && allParcels[i].data.polygonCoords && allParcels[i].data.polygonCoords.length > 0) {
+        myCoords = myCoords.concat(allParcels[i].data.polygonCoords);
+      }
     }
-  }
-  if (myCoords.length > 0) {
-    var bounds = L.latLngBounds(myCoords.map(function(c){ return [c[0], c[1]]; }));
-    map.fitBounds(bounds, { padding: [50, 50], maxZoom: 14 });
+    if (myCoords.length > 0) {
+      var bounds = L.latLngBounds(myCoords.map(function(c){ return [c[0], c[1]]; }));
+      map.fitBounds(bounds, { padding: [50, 50], maxZoom: 14 });
+    }
   }
 });
 

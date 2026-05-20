@@ -379,7 +379,7 @@ async function fetchPrevisions(ville) {
     }
     var result = []; var todayKey = new Date().getFullYear()+'-'+('0'+(new Date().getMonth()+1)).slice(-2)+'-'+('0'+new Date().getDate()).slice(-2);
     for (var k in jourMap) { if (k !== todayKey) result.push({ jour: jourMap[k].jour, tempMax: Math.round(jourMap[k].tempMax), tempMin: Math.round(jourMap[k].tempMin), icone: convertirIconeOpenWeather(jourMap[k].icone) }); }
-    return result.slice(0, 5);
+    return result.slice(0, 7);
   } catch (err) { console.warn('Fallback previsions'); return METEO_FALLBACK.previsions; }
 }
 
@@ -401,7 +401,7 @@ function renderPrevisions(previsions) {
     var card = document.createElement('div');
     card.className = 'card forecast-card reveal';
     card.style.animationDelay = (i * 0.08) + 's';
-    card.innerHTML = '<span class="forecast-day">' + p.jour + '</span><i class="fa-solid ' + p.icone + ' forecast-icon"></i><span class="forecast-high">' + p.tempMax + '<small>&deg;</small></span><span class="forecast-low">' + p.tempMin + '<small>&deg;</small></span>';
+    card.innerHTML = '<span class="forecast-day">' + p.jour + '</span><div class="forecast-icon-wrap"><i class="fa-solid ' + p.icone + ' forecast-icon"></i></div><div class="forecast-temps"><span class="forecast-high">' + p.tempMax + '<small>&deg;</small></span><span class="forecast-low">' + p.tempMin + '<small>&deg;</small></span></div>';
     container.appendChild(card);
     setTimeout(function(c) { c.style.opacity = '1'; c.style.transform = 'translateY(0)'; }, i * 80, card);
   }
@@ -758,6 +758,9 @@ async function renderChampsDashboard() {
       '<div class="field-card-detail">Semis : <strong>' + (c.dateSemis || 'Non definie') + '</strong></div></div>' +
       '<div class="field-card-actions">' +
       '<button class="field-btn field-btn-see" data-action="voir" data-id="' + c.id + '"><i class="fa-solid fa-eye"></i> Voir</button>' +
+      '<a class="field-btn field-btn-map" href="carte.html?parcel=' + encodeURIComponent(c.id) + '" title="Ouvrir sur la carte"><i class="fa-solid fa-map-location-dot"></i> Carte</a>' +
+      '<button class="field-btn field-btn-more" data-action="more" data-id="' + c.id + '" aria-expanded="false" aria-label="Plus d\'actions"><i class="fa-solid fa-ellipsis"></i></button></div>' +
+      '<div class="field-card-menu d-none" data-menu-id="' + c.id + '">' +
       '<button class="field-btn field-btn-edit" data-action="modifier" data-id="' + c.id + '"><i class="fa-solid fa-pen"></i> Modifier</button>' +
       '<button class="field-btn field-btn-delete" data-action="supprimer" data-id="' + c.id + '"><i class="fa-solid fa-trash"></i> Supprimer</button></div>' +
       '<div class="confirm-delete d-none" data-delete-id="' + c.id + '">Confirmer la suppression ? <span class="confirm-delete-btns"><button class="confirm-delete-yes" data-confirm="oui" data-id="' + c.id + '">Oui</button><button class="confirm-delete-no" data-confirm="non" data-id="' + c.id + '">Non</button></span></div>';
@@ -772,6 +775,16 @@ function initDashboardChampEvents() {
   for (var i = 0; i < btns.length; i++) {
     btns[i].addEventListener('click', function(e) {
       e.stopPropagation(); var action = this.getAttribute('data-action'), id = this.getAttribute('data-id');
+      if (action === 'more') {
+        var menu = document.querySelector('.field-card-menu[data-menu-id="' + id + '"]');
+        var expanded = this.getAttribute('aria-expanded') === 'true';
+        var openMenus = document.querySelectorAll('.field-card-menu:not(.d-none)');
+        for (var m = 0; m < openMenus.length; m++) openMenus[m].classList.add('d-none');
+        var openButtons = document.querySelectorAll('.field-btn-more[aria-expanded="true"]');
+        for (var b = 0; b < openButtons.length; b++) openButtons[b].setAttribute('aria-expanded', 'false');
+        if (!expanded && menu) { menu.classList.remove('d-none'); this.setAttribute('aria-expanded', 'true'); }
+        return;
+      }
       if (action === 'supprimer') { var cd = document.querySelector('.confirm-delete[data-delete-id="' + id + '"]'); if (cd) cd.classList.toggle('d-none'); }
       if (action === 'voir') showChampDetail(id);
       if (action === 'modifier') showChampEdit(id);
@@ -781,6 +794,16 @@ function initDashboardChampEvents() {
   for (var j = 0; j < cy.length; j++) { cy[j].addEventListener('click', function(e) { e.stopPropagation(); deleteChamp(this.getAttribute('data-id')).then(function() { return renderChampsDashboard(); }); }); }
   var cn = document.querySelectorAll('.confirm-delete-no');
   for (var k = 0; k < cn.length; k++) { cn[k].addEventListener('click', function(e) { e.stopPropagation(); var cd = document.querySelector('.confirm-delete[data-delete-id="' + this.getAttribute('data-id') + '"]'); if (cd) cd.classList.add('d-none'); }); }
+
+  if (!window._fieldCardMenuCloseBound) {
+    document.addEventListener('click', function() {
+      var openMenus = document.querySelectorAll('.field-card-menu:not(.d-none)');
+      for (var i = 0; i < openMenus.length; i++) openMenus[i].classList.add('d-none');
+      var openButtons = document.querySelectorAll('.field-btn-more[aria-expanded="true"]');
+      for (var j = 0; j < openButtons.length; j++) openButtons[j].setAttribute('aria-expanded', 'false');
+    });
+    window._fieldCardMenuCloseBound = true;
+  }
 }
 
 async function showChampDetail(id) {
@@ -803,7 +826,7 @@ async function showChampDetail(id) {
           '<div class="pred-item"><span>Recolte estimee</span><strong>' + predictions.date_recolte_estimee + '</strong></div>' +
           '<div class="pred-item"><span>Score sol</span><strong style="color:' + scoreColor + '">' + predictions.score_sol.score + '/5</strong><small>' + predictions.score_sol.texte + '</small></div>' +
           '<div class="pred-item"><span>Besoins en eau</span><strong>' + predictions.besoins_eau_total_m3.toLocaleString() + ' m3</strong></div>' +
-          (predictions.alerte_irrigation.active ? '<div class="pred-item" style="border-left:3px solid var(--danger)"><span>ALERTE</span><strong style="color:var(--danger)">Irrigation</strong><small>' + predictions.alerte_irrigation.message + '</small></div>' : '') +
+          (predictions.alerte_irrigation.active ? '<div class="pred-alert"><span>ALERTE</span><strong>Irrigation</strong><p>' + predictions.alerte_irrigation.message + '</p></div>' : '') +
           '<div class="pred-item"><span>Azote total</span><strong>' + predictions.fertilisation.azote_total_kg + ' kg</strong><small>Cout estime : ' + predictions.fertilisation.cout_estime_euros + ' EUR</small></div>' +
           '<div class="pred-item"><span>Rendement</span><strong>' + predictions.rendement_estime.min + ' - ' + predictions.rendement_estime.max + ' ' + predictions.rendement_estime.unite + '</strong></div>' +
           '<p style="font-size:13px;color:var(--text-secondary);margin-top:10px;padding:8px;background:var(--surface);border-radius:8px">' + predictions.recommandation_globale + '</p></div>';
