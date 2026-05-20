@@ -1,0 +1,35 @@
+{
+  "expo": {
+    "name": "Agria",
+    "slug": "agria",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "scheme": "agria",
+    "userInterfaceStyle": "light",
+    "newArchEnabled": true,
+    "splash": {
+      "backgroundColor": "#FDF8EE"
+    },
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "fr.agria.app"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "backgroundColor": "#FDF8EE"
+      },
+      "package": "fr.agria.app",
+      "edgeToEdgeEnabled": true
+    },
+    "platforms": [
+      "ios",
+      "android"
+    ],
+    "plugins": [
+      "expo-router",
+      "expo-asset",
+      "expo-font"
+    ]
+  }
+}

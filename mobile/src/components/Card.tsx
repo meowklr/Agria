@@ -1,0 +1,2 @@
+import React from 'react'; import { View, ViewStyle } from 'react-native'; import { colors, radius, shadow } from '../theme';
+export function Card({ children, style }: { children: React.ReactNode; style?: ViewStyle }) { return <View style={[{ backgroundColor: colors.surface, borderRadius: radius.lg, padding: 20, borderWidth: 1, borderColor: colors.border, ...shadow.xs }, style]}>{children}</View>; }

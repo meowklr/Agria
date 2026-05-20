@@ -16,9 +16,9 @@ Assistant agricole intelligent pour la gestion de parcelles, le diagnostic de cu
 
 - **Frontend** — HTML5, CSS3, JavaScript (vanilla)
 - **Carte** — Leaflet.js avec tuiles satellite ArcGIS
-- **Base de donnees** — Supabase (PostgreSQL)
+- **Base de donnees** — Firebase
 - **APIs** — OpenWeatherMap, Open-Meteo, Nominatim (geocoding)
-- **Design** — Mobile-first, responsive, mode sombre automatique
+- **Design** — Mobile-first, responsive
 
 ## Pages
 
