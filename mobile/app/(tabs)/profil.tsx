@@ -1,10 +1,11 @@
-import React, { useEffect, useState } from 'react'; import { View, Text, ScrollView, Switch } from 'react-native'; import { router } from 'expo-router'; import * as Haptics from 'expo-haptics'; import { useSafeAreaInsets } from 'react-native-safe-area-context'; import { colors, fontFamily } from '../../src/theme'; import { Card } from '../../src/components/Card'; import { Button } from '../../src/components/Button'; import { Input } from '../../src/components/Input'; import { SectionTitle } from '../../src/components/Typography'; import { useProfile } from '../../src/hooks/useProfile'; import { logout } from '../../src/services/auth';
+import React, { useEffect, useState } from 'react'; import { View, Text, ScrollView, Switch, TouchableOpacity, Modal, Linking } from 'react-native'; import { router } from 'expo-router'; import * as Haptics from 'expo-haptics'; import { useSafeAreaInsets } from 'react-native-safe-area-context'; import { Ionicons } from '@expo/vector-icons'; import { colors, fontFamily } from '../../src/theme'; import { Card } from '../../src/components/Card'; import { Button } from '../../src/components/Button'; import { Input } from '../../src/components/Input'; import { SectionTitle } from '../../src/components/Typography'; import { useProfile } from '../../src/hooks/useProfile'; import { logout } from '../../src/services/auth';
 
 export default function ProfilScreen() {
   const { profile, prefs, stats, saveProfile, savePrefs } = useProfile();
   const [prenom, setPrenom] = useState(''); const [nom, setNom] = useState(''); const [tel, setTel] = useState('');
   const [expl, setExpl] = useState(''); const [siret, setSiret] = useState(''); const [typeAgri, setTypeAgri] = useState('');
   const [notifs, setNotifs] = useState(false); const [uniteHa, setUniteHa] = useState(true);
+  const [legalModal, setLegalModal] = useState<{ title: string; body: string } | null>(null);
   const insets = useSafeAreaInsets();
 
   useEffect(() => { setPrenom(profile.prenom||''); setNom(profile.nom||''); setTel(profile.telephone||''); setExpl(profile.exploitation||''); setSiret(profile.siret||''); setTypeAgri(profile.typeAgriculture||''); setNotifs(prefs.notifications||false); setUniteHa(prefs.uniteHa!==false); }, [profile, prefs]);
@@ -38,6 +39,51 @@ export default function ProfilScreen() {
     <View style={{height:24}} />
 
     <Card><SectionTitle title="Securite" /><Button title="Se deconnecter" variant="secondary" onPress={async () => { await logout(); router.replace('/login'); }} haptic={false} /></Card>
+    <View style={{height:24}} />
+
+    <Card><SectionTitle title="Informations" />
+      {[
+        { icon: 'document-text-outline' as const, label: 'Mentions legales', body: 'Agria SAS au capital de 10 000\nSiege social : 12 rue des Ble, 75001 Paris\nRCS Paris 123 456 789\nDirecteur de publication : Jean Martin\nHebergeur : OVH, 2 rue Kellermann, 59100 Roubaix' },
+        { icon: 'shield-checkmark-outline' as const, label: 'CGU', body: 'Conditions Generales d\'Utilisation\n\n1. Objet\nAgria fournit un outil de gestion de parcelles agricoles a titre experimental.\n\n2. Donnees\nLes donnees saisies restent la propriete de l\'utilisateur. Agria s\'engage a ne pas les divulguer.\n\n3. Responsabilite\nCe service est fourni en l\'etat, sans garantie. L\'utilisation des donnees agronomiques est a titre indicatif uniquement.' },
+        { icon: 'mail-outline' as const, label: 'Contact', body: 'Email : contact@agria.fr\nTelephone : 01 23 45 67 89\nAdresse : 12 rue des Ble, 75001 Paris\n\nSupport technique : support@agria.fr\nService commercial : commercial@agria.fr' },
+      ].map((item, i) => (
+        <TouchableOpacity key={i} style={{ flexDirection: 'row', alignItems: 'center', paddingVertical: 12, borderBottomWidth: i < 2 ? 1 : 0, borderBottomColor: colors.border }} onPress={() => setLegalModal({ title: item.label, body: item.body })}>
+          <Ionicons name={item.icon} size={16} color={colors.primary} style={{ marginRight: 10 }} />
+          <Text style={{ fontSize: 14, fontWeight: '500', color: colors.text, fontFamily: fontFamily.sans }}>{item.label}</Text>
+        </TouchableOpacity>
+      ))}
+    </Card>
+    <View style={{height:24}} />
+
+    <Card><SectionTitle title="Reseaux sociaux" />
+      <View style={{ flexDirection: 'row', gap: 16, paddingVertical: 8 }}>
+        {[
+          { icon: 'logo-facebook' as const, label: 'Facebook' },
+          { icon: 'logo-twitter' as const, label: 'X / Twitter' },
+          { icon: 'logo-instagram' as const, label: 'Instagram' },
+          { icon: 'logo-linkedin' as const, label: 'LinkedIn' },
+        ].map((r, i) => (
+          <TouchableOpacity key={i} style={{ alignItems: 'center', gap: 4 }} onPress={() => setLegalModal({ title: r.label, body: 'Lien vers ' + r.label + ' (non fonctionnel - maquette).\n\nSuivez-nous pour les actualites Agria.' })}>
+            <View style={{ width: 40, height: 40, borderRadius: 20, backgroundColor: colors.primary, justifyContent: 'center', alignItems: 'center' }}>
+              <Ionicons name={r.icon} size={18} color={colors.text} />
+            </View>
+            <Text style={{ fontSize: 10, color: colors.textMuted, fontFamily: fontFamily.sans }}>{r.label}</Text>
+          </TouchableOpacity>
+        ))}
+      </View>
+    </Card>
+
+    <Modal visible={!!legalModal} transparent animationType="fade" onRequestClose={() => setLegalModal(null)}>
+      <TouchableOpacity style={{ flex: 1, backgroundColor: 'rgba(0,0,0,.4)', justifyContent: 'center', alignItems: 'center', padding: 24 }} activeOpacity={1} onPress={() => setLegalModal(null)}>
+        <View style={{ backgroundColor: colors.surface, borderRadius: 16, width: '100%', maxHeight: '70%', padding: 20 }}>
+          <Text style={{ fontSize: 18, fontWeight: '600', color: colors.primary, fontFamily: fontFamily.serif, marginBottom: 12 }}>{legalModal?.title}</Text>
+          <ScrollView><Text style={{ fontSize: 14, color: colors.text, lineHeight: 20, fontFamily: fontFamily.sans }}>{legalModal?.body}</Text></ScrollView>
+          <TouchableOpacity style={{ marginTop: 16, alignSelf: 'flex-end' }} onPress={() => setLegalModal(null)}>
+            <Text style={{ fontSize: 14, fontWeight: '600', color: colors.primary, fontFamily: fontFamily.sans }}>Fermer</Text>
+          </TouchableOpacity>
+        </View>
+      </TouchableOpacity>
+    </Modal>
     <View style={{height:100}} />
   </ScrollView>;
 }

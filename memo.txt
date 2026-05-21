@@ -23,5 +23,7 @@ fix :
 design :
 - tout fluidifier avec animations
 - revoir la disposition dans mon profil
-- 
+- fix design mobile : avec les skills de design/ui/ux que tu as a disposition, je veux que tu examines, identifies, verifies, et corriges toutes les erreurs ou points a ameliorer de design, d'ui/ux, comme des manques de fluidité, d'animations, etc.
 
+ - ajouter a l'endroit aduequat la possibilité d'acces a des (fictives, le projet est une maquette) : Mentions légales, CGU, Contact, Liens vers réseaux sociaux
+ - 

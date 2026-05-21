@@ -1,5 +1,5 @@
 import React, { useRef, useState, useCallback, useEffect } from 'react';
-import { View, Text, TouchableOpacity, TextInput, ScrollView, Animated, PanResponder } from 'react-native';
+import { View, Text, TouchableOpacity, TextInput, ScrollView, Animated, PanResponder, Keyboard } from 'react-native';
 import { WebView, WebViewMessageEvent } from 'react-native-webview';
 import { useLocalSearchParams, useFocusEffect } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -7,6 +7,7 @@ import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import { colors, radius, fontFamily } from '../../src/theme';
 import { DropDown } from '../../src/components/DropDown';
+import { DateWheelPicker } from '../../src/components/DateWheelPicker';
 import { getUserId } from '../../src/services/auth';
 import { loadChamps, addChamp, updateChamp, deleteChamp, Champ } from '../../src/services/champs';
 
@@ -24,7 +25,7 @@ const STADES = [
   { label: 'Floraison', value: 'floraison' }, { label: 'Maturation', value: 'maturation' }, { label: 'Recolte', value: 'recolte' },
 ];
 
-const HTML = `<!DOCTYPE html><html><head><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"><link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"><style>*{margin:0;padding:0}html,body,#map{width:100%;height:100%}.pt{background:rgba(61,46,31,.82)!important;border:1px solid rgba(255,253,246,.25)!important;box-shadow:none!important;font-weight:600;font-size:10px;color:#FFFDF6;padding:3px 9px!important;border-radius:12px!important;text-shadow:none!important;white-space:nowrap;pointer-events:auto!important}.pt::before{display:none!important}</style></head><body><div id="map"></div><script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script><script>
+const HTML = `<!DOCTYPE html><html><head><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"><link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"><style>*{margin:0;padding:0}html,body,#map{width:100%;height:100%}.pt{width:auto!important;height:auto!important;transform:translate(-50%,-50%)!important;text-align:center;background:rgba(61,46,31,.82)!important;border:1px solid rgba(255,253,246,.25)!important;box-shadow:none!important;font-weight:600;font-size:10px;color:#FFFDF6;padding:3px 9px!important;border-radius:12px!important;text-shadow:none!important;white-space:nowrap;pointer-events:auto!important}.pt::before{display:none!important}</style></head><body><div id="map"></div><script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script><script>
 var map=L.map('map',{zoomControl:!1,attributionControl:!1}).setView([46.5,2.3],6);L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',{maxZoom:19}).addTo(map);
 var drawing=!1,dp=[],dl=null,dm=[],pl={},bl={},sl=null,fm=null;
 function nt(t,d){window.ReactNativeWebView.postMessage(JSON.stringify({type:t,data:d}))}
@@ -52,13 +53,29 @@ export default function CarteScreen() {
   const [champCount, setChampCount] = useState(0);
   const [searchQ, setSearchQ] = useState('');
   const [searchRes, setSearchRes] = useState<Champ[]>([]);
+  const keyboardVisibleRef = useRef(false);
+  const panelSaveRef = useRef<(() => Promise<void>) | null>(null);
+
+  useEffect(() => {
+    const s1 = Keyboard.addListener('keyboardDidShow', () => { keyboardVisibleRef.current = true; });
+    const s2 = Keyboard.addListener('keyboardDidHide', () => { keyboardVisibleRef.current = false; });
+    return () => { s1.remove(); s2.remove(); };
+  }, []);
 
   const panelAnim = useRef(new Animated.Value(0)).current;
   const panResponder = useRef(PanResponder.create({
     onStartShouldSetPanResponder: () => false,
     onMoveShouldSetPanResponder: (_, g) => Math.abs(g.dy) > 4 && Math.abs(g.dy) > Math.abs(g.dx),
-    onPanResponderMove: Animated.event([null, { dy: panelAnim }], { useNativeDriver: false }),
+    onPanResponderMove: (_, g) => {
+      if (g.dy > 0) panelAnim.setValue(g.dy);
+    },
     onPanResponderRelease: (_, g) => {
+      if (keyboardVisibleRef.current && (g.dy > 40 || g.vy > 0.3)) {
+        Keyboard.dismiss();
+        if (panelSaveRef.current) panelSaveRef.current();
+        Animated.spring(panelAnim, { toValue: 0, useNativeDriver: true, tension: 120, friction: 14 }).start();
+        return;
+      }
       if (g.dy > 80 || g.vy > 0.5) {
         Animated.timing(panelAnim, { toValue: 600, duration: 180, useNativeDriver: true }).start(() => { setSo(false); panelAnim.setValue(0); });
       } else {
@@ -137,11 +154,11 @@ export default function CarteScreen() {
       <Btn icon="locate-outline" label="Localiser" onPress={() => { pm({ type: 'loc' }); Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); }} />
     </View>
     {drawing && <View style={{ position: 'absolute', top: '40%', alignSelf: 'center', backgroundColor: colors.text, paddingHorizontal: 24, paddingVertical: 12, borderRadius: 16 }}><Text style={{ color: colors.surface, fontSize: 14 }}>Cliquez pour tracer</Text>{surface ? <Text style={{ color: colors.primary, fontSize: 18, fontWeight: '600', textAlign: 'center', marginTop: 4, fontFamily: fontFamily.serif }}>{surface} ha</Text> : null}</View>}
-    {so && sel && <ParcelPanel sel={sel} panelAnim={panelAnim} panHandlers={panResponder.panHandlers} onClose={() => setSo(false)} onSaved={load} onDeleted={async () => { await deleteChamp(sel.id); setSo(false); load().then(() => pm({ type: 'rp', data: { ps, mid } })); }} />}
+    {so && sel && <ParcelPanel sel={sel} panelAnim={panelAnim} panHandlers={panResponder.panHandlers} onClose={() => setSo(false)} onSaved={load} onDeleted={async () => { await deleteChamp(sel.id); setSo(false); load().then(() => pm({ type: 'rp', data: { ps, mid } })); }} saveRef={panelSaveRef} />}
   </View>;
 }
 
-function ParcelPanel({ sel, panelAnim, panHandlers, onClose, onSaved, onDeleted }: { sel: Champ; panelAnim: Animated.Value; panHandlers: any; onClose: () => void; onSaved: () => void; onDeleted: () => void }) {
+function ParcelPanel({ sel, panelAnim, panHandlers, onClose, onSaved, onDeleted, saveRef }: { sel: Champ; panelAnim: Animated.Value; panHandlers: any; onClose: () => void; onSaved: () => void; onDeleted: () => void; saveRef: React.MutableRefObject<(() => Promise<void>) | null> }) {
   const [nom, setNom] = useState(sel.nom || '');
   const [culture, setCulture] = useState(sel.culture || '');
   const [typeSol, setTypeSol] = useState(sel.typeSol || '');
@@ -156,8 +173,11 @@ function ParcelPanel({ sel, panelAnim, panHandlers, onClose, onSaved, onDeleted 
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     setSaving(false); onSaved();
   };
-  return <Animated.View style={{ position: 'absolute', bottom: 0, left: 0, right: 0, backgroundColor: colors.surface, borderTopLeftRadius: 20, borderTopRightRadius: 20, maxHeight: '64%', transform: [{ translateY: panelAnim }] }} {...panHandlers}>
-    <View style={{ width: 40, height: 4, backgroundColor: colors.border, borderRadius: 2, alignSelf: 'center', marginTop: 12, marginBottom: 12 }} />
+  useEffect(() => { saveRef.current = save; }, [save]);
+  return <Animated.View style={{ position: 'absolute', bottom: 0, left: 0, right: 0, backgroundColor: colors.surface, borderTopLeftRadius: 20, borderTopRightRadius: 20, maxHeight: '64%', transform: [{ translateY: panelAnim }] }}>
+    <View style={{ alignItems: 'center', paddingTop: 12, paddingBottom: 12 }} {...panHandlers}>
+      <View style={{ width: 40, height: 4, backgroundColor: colors.border, borderRadius: 2 }} />
+    </View>
     <TouchableOpacity style={{ position: 'absolute', top: 8, right: 12, padding: 12 }} onPress={onClose} hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}><Ionicons name="close" size={18} color={colors.textMuted} /></TouchableOpacity>
     <ScrollView contentContainerStyle={{ paddingHorizontal: 24, paddingBottom: 40 }} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false} bounces={false}>
       <TextInput style={{ fontSize: 20, fontWeight: '600', color: colors.text, fontFamily: fontFamily.serif, marginBottom: 2 }} value={nom} onChangeText={setNom} placeholder="Nom de la parcelle" placeholderTextColor={colors.textMuted} />
@@ -167,7 +187,7 @@ function ParcelPanel({ sel, panelAnim, panHandlers, onClose, onSaved, onDeleted 
       <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: colors.border }}><Text style={{ fontSize: 14, color: colors.textSecondary }}>Stade</Text><DropDown value={stade} options={STADES} onChange={setStade} placeholder="Choisir" /></View>
       <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: colors.border }}>
         <Text style={{ fontSize: 14, color: colors.textSecondary }}>Date semis</Text>
-        <TextInput style={{ fontSize: 14, color: colors.text, textAlign: 'right', minWidth: 110, fontFamily: fontFamily.sans }} value={dateSemis} onChangeText={setDateSemis} placeholder="ex: 15/03/25" placeholderTextColor={colors.textMuted} />
+        <DateWheelPicker value={dateSemis} onChange={setDateSemis} />
       </View>
       <View style={{ marginTop: 14 }}>
         <Text style={{ fontSize: 13, color: colors.textSecondary, marginBottom: 6 }}>Notes (optionnel)</Text>
