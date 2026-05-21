@@ -1,5 +1,6 @@
-import React, { useState, useCallback } from 'react'; import { View, Text, ScrollView, TouchableOpacity, Alert } from 'react-native'; import { router, useFocusEffect } from 'expo-router'; import { Ionicons } from '@expo/vector-icons'; import { useSafeAreaInsets } from 'react-native-safe-area-context'; import { colors, radius, fontFamily } from '../../src/theme'; import { Card } from '../../src/components/Card'; import { Badge } from '../../src/components/Badge'; import { Input } from '../../src/components/Input'; import { SectionTitle } from '../../src/components/Typography'; import { LoaderBar } from '../../src/components/LoaderBar'; import { useWeather, useCitySearch } from '../../src/hooks/useWeather'; import { useChamps } from '../../src/hooks/useChamps'; import { deleteChamp, Champ } from '../../src/services/champs';
+import React, { useState, useCallback } from 'react'; import { View, Text, ScrollView, TouchableOpacity, Alert, LayoutAnimation, Platform, UIManager } from 'react-native'; import { router, useFocusEffect } from 'expo-router'; import { Ionicons } from '@expo/vector-icons'; import { useSafeAreaInsets } from 'react-native-safe-area-context'; import { colors, radius, fontFamily } from '../../src/theme'; import { Card } from '../../src/components/Card'; import { Badge } from '../../src/components/Badge'; import { Input } from '../../src/components/Input'; import { SectionTitle } from '../../src/components/Typography'; import { LoaderBar } from '../../src/components/LoaderBar'; import { useWeather, useCitySearch } from '../../src/hooks/useWeather'; import { useChamps } from '../../src/hooks/useChamps'; import { deleteChamp, Champ } from '../../src/services/champs';
 import { NotificationBell } from '../../src/components/NotificationBell';
+import { ScreenFade } from '../../src/components/ScreenFade';
 import * as Haptics from 'expo-haptics';
 
 export default function DashboardScreen() {
@@ -14,6 +15,15 @@ export default function DashboardScreen() {
   const cc: Record<string, number> = {}; champs.forEach(c => { const n = c.culture || 'Inconnu'; cc[n] = (cc[n] || 0) + 1; });
   const top = Object.entries(cc).sort((a, b) => b[1] - a[1])[0]?.[0] || '-';
 
+  if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
+    UIManager.setLayoutAnimationEnabledExperimental(true);
+  }
+
+  const handleExpand = (id: string) => {
+    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+    setExpandedParcel(expandedParcel === id ? null : id);
+  };
+
   const handleDelete = (c: Champ) => {
     Alert.alert('Supprimer ' + (c.nom || 'cette parcelle') + ' ?', c.surface + ' ha, ' + (c.culture || '?'), [
       { text: 'Annuler', style: 'cancel' },
@@ -23,11 +33,11 @@ export default function DashboardScreen() {
 
   useFocusEffect(useCallback(() => { reloadChamps(); }, []));
 
-  return <ScrollView style={{ flex: 1, backgroundColor: colors.bg }} contentContainerStyle={{ padding: 16, paddingTop: (insets.top || 0) + 16 }}>
+  return <ScreenFade><ScrollView style={{ flex: 1, backgroundColor: colors.bg }} contentContainerStyle={{ padding: 16, paddingTop: (insets.top || 0) + 16 }}>
     <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: 8, marginBottom: 16 }}>
       <Text style={{ fontSize: 22, fontWeight: '600', color: colors.primary, fontFamily: fontFamily.serif }}>Agria</Text>
       <View style={{ flexDirection: 'row', gap: 14, alignItems: 'center' }}>
-        <TouchableOpacity onPress={() => setShowSearch(!showSearch)} style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}><Ionicons name="search-outline" size={20} color={colors.textSecondary} /><Text style={{ fontSize: 11, color: colors.textMuted, fontWeight: '500' }}>Ville</Text></TouchableOpacity>
+        <TouchableOpacity onPress={() => setShowSearch(!showSearch)} style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}><Ionicons name="search-outline" size={20} color={colors.textSecondary} /><Text style={{ fontSize: 11, color: colors.textMuted, fontWeight: '500', fontFamily: fontFamily.sans }}>Ville</Text></TouchableOpacity>
         <NotificationBell />
       </View>
     </View>
@@ -49,7 +59,7 @@ export default function DashboardScreen() {
           <Ionicons name="partly-sunny" size={40} color={colors.primary} />
         </View>
         <Text style={{ fontSize: 56, fontWeight: '600', color: colors.text, fontFamily: fontFamily.serif }}>{meteo.temp}<Text style={{ fontSize: 22, fontWeight: '400', color: colors.textSecondary, fontFamily: fontFamily.sans }}>°C</Text></Text>
-        <Text style={{ fontSize: 14, color: colors.textMuted, marginBottom: 12, textTransform: 'capitalize' }}>{meteo.description}</Text>
+        <Text style={{ fontSize: 14, color: colors.textMuted, marginBottom: 12, textTransform: 'capitalize', fontFamily: fontFamily.sans }}>{meteo.description}</Text>
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, backgroundColor: 'rgba(232,184,75,0.08)', paddingHorizontal: 14, paddingVertical: 8, borderRadius: radius.sm, alignSelf: 'flex-start' }}>
           <Ionicons name="water-outline" size={14} color={colors.primary} />
           <Text style={{ fontSize: 14, fontWeight: '500', color: colors.text }}>{meteo.humidity}%</Text>
@@ -72,19 +82,19 @@ export default function DashboardScreen() {
       </ScrollView>
     </View>
 
-    <TouchableOpacity style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: showAlerts ? 16 : 24 }} onPress={() => setShowAlerts(!showAlerts)}>
+    <TouchableOpacity style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: showAlerts ? 16 : 24 }} onPress={() => { LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut); setShowAlerts(!showAlerts); }}>
       <Text style={{ fontSize: 18, fontWeight: '600', color: colors.text, letterSpacing: -0.2, fontFamily: fontFamily.serif }}>Alertes</Text>
       <Ionicons name={showAlerts ? 'chevron-up' : 'chevron-down'} size={14} color={colors.textMuted} />
     </TouchableOpacity>
     {showAlerts && <View style={{ marginBottom: 24, gap: 10 }}>
       <View style={{ backgroundColor: '#FEF3F0', borderRadius: radius.lg, padding: 16 }}>
-        <Text style={{ fontSize: 13, fontWeight: '600', color: colors.danger, marginBottom: 3 }}>Urgent</Text><Text style={{ fontSize: 13, color: '#8B4A3A', lineHeight: 18 }}>Risque de gel prevu cette nuit. Protegez les semis sensibles.</Text>
+        <Text style={{ fontSize: 13, fontWeight: '600', color: colors.danger, marginBottom: 3, fontFamily: fontFamily.sans }}>Urgent</Text><Text style={{ fontSize: 13, color: '#8B4A3A', lineHeight: 18, fontFamily: fontFamily.sans }}>Risque de gel prevu cette nuit. Protegez les semis sensibles.</Text>
       </View>
       <View style={{ backgroundColor: '#FDF4E8', borderRadius: radius.lg, padding: 16 }}>
-        <Text style={{ fontSize: 13, fontWeight: '600', color: colors.accent, marginBottom: 3 }}>Attention</Text><Text style={{ fontSize: 13, color: '#8B5E3A', lineHeight: 18 }}>Periode seche : irrigation recommandee dans les 48h.</Text>
+        <Text style={{ fontSize: 13, fontWeight: '600', color: colors.accent, marginBottom: 3, fontFamily: fontFamily.sans }}>Attention</Text><Text style={{ fontSize: 13, color: '#8B5E3A', lineHeight: 18, fontFamily: fontFamily.sans }}>Periode seche : irrigation recommandee dans les 48h.</Text>
       </View>
       <View style={{ backgroundColor: '#EEF5FA', borderRadius: radius.lg, padding: 16 }}>
-        <Text style={{ fontSize: 13, fontWeight: '600', color: '#5a8aa8', marginBottom: 3 }}>Info</Text><Text style={{ fontSize: 13, color: '#4A6A7A', lineHeight: 18 }}>Conditions favorables pour traitement fongique preventif.</Text>
+        <Text style={{ fontSize: 13, fontWeight: '600', color: '#5a8aa8', marginBottom: 3, fontFamily: fontFamily.sans }}>Info</Text><Text style={{ fontSize: 13, color: '#4A6A7A', lineHeight: 18, fontFamily: fontFamily.sans }}>Conditions favorables pour traitement fongique preventif.</Text>
       </View>
     </View>}
 
@@ -92,7 +102,7 @@ export default function DashboardScreen() {
       <SectionTitle title="Mes parcelles" />
       {champs.length === 0 ? <Card><Text style={{ fontSize: 14, color: colors.textMuted, textAlign: 'center' }}>Aucune parcelle.</Text></Card>
         : champs.map(c => <Card key={c.id} style={{ marginBottom: 10 }}>
-          <TouchableOpacity onPress={() => setExpandedParcel(expandedParcel === c.id ? null : c.id)} activeOpacity={0.7}>
+          <TouchableOpacity onPress={() => handleExpand(c.id)} activeOpacity={0.7}>
             <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
                 <Text style={{ fontSize: 15, fontWeight: '600', color: colors.text, fontFamily: fontFamily.sans }}>{c.nom}</Text>
@@ -142,5 +152,5 @@ export default function DashboardScreen() {
       </View>
     </View>
     <View style={{ height: 100 }} />
-  </ScrollView>;
+  </ScrollView></ScreenFade>;
 }

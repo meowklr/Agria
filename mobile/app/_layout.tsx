@@ -6,5 +6,5 @@ export default function RootLayout() {
     Outfit_300Light, Outfit_400Regular, Outfit_500Medium, Outfit_600SemiBold, Outfit_700Bold,
   });
   if (!fontsLoaded) return <View style={{ flex: 1, backgroundColor: colors.bg, justifyContent: 'center', alignItems: 'center' }}><ActivityIndicator color={colors.primary} /></View>;
-  return <GestureHandlerRootView style={{ flex: 1 }}><SafeAreaProvider><View style={{ flex: 1, backgroundColor: colors.bg }}><StatusBar style="dark" /><Stack screenOptions={{ headerShown: false }}><Stack.Screen name="index" /><Stack.Screen name="login" /><Stack.Screen name="(tabs)" /></Stack></View></SafeAreaProvider></GestureHandlerRootView>;
+  return <GestureHandlerRootView style={{ flex: 1 }}><SafeAreaProvider><View style={{ flex: 1, backgroundColor: colors.bg }}><StatusBar style="dark" /><Stack screenOptions={{ headerShown: false, animation: 'slide_from_right' }}><Stack.Screen name="index" /><Stack.Screen name="login" /><Stack.Screen name="notifications" /><Stack.Screen name="(tabs)" /></Stack></View></SafeAreaProvider></GestureHandlerRootView>;
 }

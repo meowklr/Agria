@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'; import { View, Text, ScrollView, TouchableOpacity, Alert } from 'react-native'; import { Ionicons } from '@expo/vector-icons'; import { colors, radius, fontFamily } from '../../src/theme'; import { Card } from '../../src/components/Card';
+import React, { useEffect, useState } from 'react'; import { View, Text, ScrollView, TouchableOpacity, Alert, LayoutAnimation, Platform, UIManager } from 'react-native'; import { Ionicons } from '@expo/vector-icons'; import { colors, radius, fontFamily } from '../../src/theme'; import { Card } from '../../src/components/Card';
 import * as Notifications from 'expo-notifications';
 
 Notifications.setNotificationHandler({
@@ -10,6 +10,7 @@ Notifications.setNotificationHandler({
     shouldShowList: true,
   }),
 }); import { Badge } from '../../src/components/Badge'; import { Button } from '../../src/components/Button'; import { Input } from '../../src/components/Input'; import { SectionTitle } from '../../src/components/Typography'; import { LoaderBar } from '../../src/components/LoaderBar'; import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { ScreenFade } from '../../src/components/ScreenFade';
 import { useDiagnostic } from '../../src/hooks/useDiagnostic';
 import { useNotifications } from '../../src/hooks/useNotifications';
 import * as Haptics from 'expo-haptics';
@@ -23,12 +24,15 @@ const SL: Record<string,string> = { jaunissement:'Jaunissement', taches:'Taches 
 export default function DiagnosticScreen() {
   const { result, history, loading, analyse, reset, loadHistory } = useDiagnostic();
   const [step, setStep] = useState(1); const [culture, setCulture] = useState(''); const [sympts, setSympts] = useState<string[]>([]); const [ville, setVille] = useState('');
-  const [email, setEmail] = useState('');
   const [expanded, setExpanded] = useState<number | null>(null);
   const [errVille, setErrVille] = useState(false);
   const [errCulture, setErrCulture] = useState(false);
   const [errSympts, setErrSympts] = useState(false);
+  const [email, setEmail] = useState('');
   const insets = useSafeAreaInsets();
+  if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
+    UIManager.setLayoutAnimationEnabledExperimental(true);
+  }
   useEffect(() => { 
     loadHistory(); 
     const subscription = Notifications.addNotificationResponseReceivedListener(response => {
@@ -81,7 +85,7 @@ export default function DiagnosticScreen() {
     }
   };
 
-  return <ScrollView style={{ flex: 1, backgroundColor: colors.bg }} contentContainerStyle={{ padding: 16, paddingTop: (insets.top || 0) + 16, paddingBottom: 100 }}>
+  return <ScreenFade><ScrollView style={{ flex: 1, backgroundColor: colors.bg }} contentContainerStyle={{ padding: 16, paddingTop: (insets.top || 0) + 16, paddingBottom: 100 }}>
     <View style={{ paddingVertical: 8, marginBottom: 16 }}><Text style={{ fontSize: 22, fontWeight: '600', color: colors.primary, fontFamily: fontFamily.serif }}>Diagnostic</Text></View>
     {loading && <View style={{ marginBottom: 16 }}><LoaderBar /></View>}
 
@@ -96,7 +100,7 @@ export default function DiagnosticScreen() {
           {CULTURES.map(c => <TouchableOpacity key={c} style={[{ width: '46%', padding: 20, backgroundColor: colors.surface, borderRadius: radius.lg, borderWidth: 1, borderColor: colors.border, alignItems: 'center', gap: 8 }, culture === c && { borderColor: colors.primary, borderWidth: 2, backgroundColor: 'rgba(232,184,75,.06)' }]} onPress={() => { setCulture(c); setErrCulture(false); }}><Ionicons name={CI[c]} size={24} color={culture === c ? colors.primary : colors.primaryHover} /><Text style={[{ fontSize: 14, fontWeight: '500', color: colors.textSecondary }, culture === c && { color: colors.text, fontWeight: '600' }]}>{CL[c]}</Text></TouchableOpacity>)}
         </View>
         {errCulture && <Text style={{ fontSize: 12, color: colors.danger, marginBottom: 10 }}>Veuillez selectionner une culture.</Text>}
-        <Button title="Suivant" onPress={() => { if (!culture) { setErrCulture(true); return; } setStep(2); Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); }} />
+        <Button title="Suivant" onPress={() => { if (!culture) { setErrCulture(true); return; } LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut); setStep(2); Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); }} />
       </View>}
 
       {step === 2 && <View>
@@ -105,7 +109,7 @@ export default function DiagnosticScreen() {
           {SYMPS.map(s => <TouchableOpacity key={s} style={[{ flexDirection: 'row', alignItems: 'center', gap: 14, paddingHorizontal: 16, minHeight: 50, backgroundColor: colors.surface, borderWidth: 2, borderColor: colors.border, borderRadius: radius.md }, sympts.includes(s) && { borderColor: colors.primary, backgroundColor: 'rgba(232,184,75,.06)' }]} onPress={() => { ts(s); setErrSympts(false); }}><Ionicons name={sympts.includes(s) ? 'checkbox' : 'square-outline'} size={20} color={sympts.includes(s) ? colors.primary : colors.textMuted} /><Text style={[{ fontSize: 14, color: colors.textSecondary }, sympts.includes(s) && { color: colors.text, fontWeight: '500' }]}>{SL[s]}</Text></TouchableOpacity>)}
         </View>
         {errSympts && <Text style={{ fontSize: 12, color: colors.danger, marginBottom: 10 }}>Veuillez selectionner au moins un symptome.</Text>}
-        <Button title="Suivant" onPress={() => { if (sympts.length === 0) { setErrSympts(true); return; } setStep(3); }} /><View style={{ height: 10 }} /><Button title="Retour" variant="secondary" onPress={() => { setStep(1); setErrSympts(false); }} />
+        <Button title="Suivant" onPress={() => { if (sympts.length === 0) { setErrSympts(true); return; } LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut); setStep(3); }} /><View style={{ height: 10 }} /><Button title="Retour" variant="secondary" onPress={() => { LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut); setStep(1); setErrSympts(false); }} />
       </View>}
 
       {step === 3 && <View>
@@ -114,7 +118,7 @@ export default function DiagnosticScreen() {
         {errVille && <Text style={{ fontSize: 12, color: colors.danger, marginTop: 6 }}>Veuillez entrer une ville pour continuer.</Text>}
         <Text style={{ fontSize: 13, color: colors.textMuted, marginVertical: 16 }}>Pour enrichir le diagnostic avec la meteo locale.</Text>
         <Button title="Analyser" onPress={async () => { if (!ville.trim()) { setErrVille(true); return; } Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium); await analyse(culture, sympts, ville.trim()); }} />
-        <View style={{ height: 10 }} /><Button title="Retour" variant="secondary" onPress={() => setStep(2)} />
+        <View style={{ height: 10 }} />        <Button title="Retour" variant="secondary" onPress={() => { LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut); setStep(2); }} />
       </View>}
     </> : <View>
       <Card style={{ marginBottom: 16 }}>
@@ -139,13 +143,13 @@ export default function DiagnosticScreen() {
         <Text style={{ fontSize: 12, color: colors.textMuted, marginTop: 6, marginLeft: 2 }}>Pour recevoir le rapport detaille de l'IA.</Text>
       </View>
       <Button title="Analyse détaillée par mail (IA)" onPress={async () => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium); await handleSendDetailedDiagnostic(); }} style={{ marginBottom: 12, backgroundColor: '#005b4f' }} />
-      <Button title="Nouveau diagnostic" variant="secondary" onPress={() => { reset(); setStep(1); setCulture(''); setSympts([]); setVille(''); setEmail(''); }} />
+      <Button title="Nouveau diagnostic" variant="secondary" onPress={() => { LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut); reset(); setStep(1); setCulture(''); setSympts([]); setVille(''); setEmail(''); }} />
     </View>}
 
     {history.length > 0 && <View style={{ marginTop: 32 }}>
       <SectionTitle title="Historique" />
       {history.map((h, i) => <Card key={i} style={{ marginBottom: 10 }}>
-        <TouchableOpacity onPress={() => setExpanded(expanded === i ? null : i)} activeOpacity={0.7}>
+        <TouchableOpacity onPress={() => { LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut); setExpanded(expanded === i ? null : i); }} activeOpacity={0.7}>
           <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}><Badge text={h.nom} variant={h.gravite} /><Ionicons name={expanded === i ? 'chevron-up' : 'chevron-down'} size={14} color={colors.textMuted} /></View>
             <Text style={{ fontSize: 11, color: colors.textMuted }}>{h.date}</Text>
@@ -161,5 +165,5 @@ export default function DiagnosticScreen() {
         </View>}
       </Card>)}
     </View>}
-  </ScrollView>;
+  </ScrollView></ScreenFade>;
 }
