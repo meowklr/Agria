@@ -1,4 +1,5 @@
 import { Tabs } from 'expo-router'; import { View, Text, TouchableOpacity } from 'react-native'; import { router } from 'expo-router'; import { useSafeAreaInsets } from 'react-native-safe-area-context'; import { colors } from '../../src/theme'; import { Ionicons } from '@expo/vector-icons';
+import { triggerAdminRefresh } from '../../src/services/adminRefresh';
 
 function TabIcon({ name, color }: { name: keyof typeof Ionicons.glyphMap; color: string }) {
   return <Ionicons name={name} size={22} color={color} />;
@@ -15,7 +16,12 @@ export default function AdminLayout() {
           </TouchableOpacity>
           <Text style={{ fontSize: 17, fontWeight: '600', color: colors.primary, fontFamily: 'Fraunces', letterSpacing: -0.3 }}>Back-office</Text>
         </View>
-        <Text style={{ fontSize: 10, color: 'rgba(168,152,128,0.4)' }}>Admin</Text>
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+          <TouchableOpacity onPress={triggerAdminRefresh} style={{ padding: 6 }} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
+            <Ionicons name="refresh-outline" size={20} color="rgba(168,152,128,0.6)" />
+          </TouchableOpacity>
+          <Text style={{ fontSize: 10, color: 'rgba(168,152,128,0.4)' }}>Admin</Text>
+        </View>
       </View>
       <Tabs screenOptions={{
         headerShown: false,

@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, ScrollView } from 'react-native';
 import { useFocusEffect } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { colors, radius, fontFamily } from '../../src/theme';
 import { loadAllUsers, loadAllChamps, AdminUser, AdminChamp } from '../../src/services/admin';
+import { onAdminRefresh } from '../../src/services/adminRefresh';
 
 export default function AdminDashboard() {
   const [users, setUsers] = useState<AdminUser[]>([]);
@@ -14,6 +15,7 @@ export default function AdminDashboard() {
     setUsers(u); setChamps(c);
   };
   useFocusEffect(React.useCallback(() => { load(); }, []));
+  useEffect(() => onAdminRefresh(load), []);
 
   const totalHa = champs.reduce((s, c) => s + (parseFloat(c.champ.surface) || 0), 0);
   const cultures: Record<string, number> = {};

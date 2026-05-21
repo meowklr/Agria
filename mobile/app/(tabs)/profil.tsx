@@ -1,47 +1,67 @@
-import React, { useEffect, useState } from 'react'; import { View, Text, ScrollView, Switch, TouchableOpacity, Modal } from 'react-native'; import { router } from 'expo-router'; import * as Haptics from 'expo-haptics'; import { useSafeAreaInsets } from 'react-native-safe-area-context'; import { Ionicons } from '@expo/vector-icons'; import { colors, fontFamily } from '../../src/theme'; import { Card } from '../../src/components/Card'; import { Button } from '../../src/components/Button'; import { Input } from '../../src/components/Input'; import { SectionTitle } from '../../src/components/Typography'; import { useProfile } from '../../src/hooks/useProfile'; import { logout } from '../../src/services/auth';
-import { ScreenFade } from '../../src/components/ScreenFade';
+import React, { useEffect, useState, useRef } from 'react'; import { View, Text, ScrollView, Switch, TouchableOpacity, Modal, Alert, Animated, LayoutAnimation, Platform, UIManager } from 'react-native'; import { router } from 'expo-router'; import * as Haptics from 'expo-haptics'; import { useSafeAreaInsets } from 'react-native-safe-area-context'; import { Ionicons } from '@expo/vector-icons'; import { colors, radius, fontFamily } from '../../src/theme'; import { Card } from '../../src/components/Card'; import { Button } from '../../src/components/Button'; import { Input } from '../../src/components/Input'; import { SectionTitle } from '../../src/components/Typography'; import { useProfile } from '../../src/hooks/useProfile'; import { logout, changePassword, updateEmail, getSessionEmail, getUserId } from '../../src/services/auth'; import { deleteOwnAccount } from '../../src/services/admin'; import { ScreenFade } from '../../src/components/ScreenFade';
+
+if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
+  UIManager.setLayoutAnimationEnabledExperimental(true);
+}
 
 export default function ProfilScreen() {
   const { profile, prefs, stats, saveProfile, savePrefs } = useProfile();
-  const [prenom, setPrenom] = useState(''); const [nom, setNom] = useState(''); const [tel, setTel] = useState(''); const [email, setEmail] = useState('');
+  const [prenom, setPrenom] = useState(''); const [nom, setNom] = useState(''); const [tel, setTel] = useState('');
   const [expl, setExpl] = useState(''); const [siret, setSiret] = useState(''); const [typeAgri, setTypeAgri] = useState('');
   const [notifs, setNotifs] = useState(false); const [uniteHa, setUniteHa] = useState(true);
   const [legalModal, setLegalModal] = useState<{ title: string; body: string } | null>(null);
+  const [newEmail, setNewEmail] = useState('');
+  const [oldPwd, setOldPwd] = useState(''); const [newPwd, setNewPwd] = useState('');
+  const [section, setSection] = useState<string | null>(null);
   const insets = useSafeAreaInsets();
 
-  useEffect(() => { setPrenom(profile.prenom||''); setNom(profile.nom||''); setTel(profile.telephone||''); setEmail(profile.email||''); setExpl(profile.exploitation||''); setSiret(profile.siret||''); setTypeAgri(profile.typeAgriculture||''); setNotifs(prefs.notifications||false); setUniteHa(prefs.uniteHa!==false); }, [profile, prefs]);
+  useEffect(() => { setPrenom(profile.prenom||''); setNom(profile.nom||''); setTel(profile.telephone||''); setExpl(profile.exploitation||''); setSiret(profile.siret||''); setTypeAgri(profile.typeAgriculture||''); setNotifs(prefs.notifications||false); setUniteHa(prefs.uniteHa!==false); }, [profile, prefs]);
+
+  const toggle = (s: string) => { LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut); setSection(section === s ? null : s); };
 
   const initials = ((prenom||'A')[0]+(nom||'A')[0]).toUpperCase();
-  const lbl = (t: string) => <Text style={{fontSize:13,fontWeight:'500',color:colors.textSecondary,marginBottom:6,textTransform:'uppercase',letterSpacing:0.4}}>{t}</Text>;
+  const lbl = (t: string) => <Text style={{fontSize:12,fontWeight:'500',color:colors.textSecondary,marginBottom:6,textTransform:'uppercase',letterSpacing:0.3,fontFamily:fontFamily.sans}}>{t}</Text>;
 
-  return <ScreenFade><ScrollView style={{flex:1,backgroundColor:colors.bg, overflow: 'visible'}} contentContainerStyle={{padding:16, paddingTop: (insets.top || 0) + 16, overflow: 'visible'}}>
+  return <ScreenFade><ScrollView style={{flex:1,backgroundColor:colors.bg}} contentContainerStyle={{padding:16, paddingTop: (insets.top || 0) + 16, paddingBottom: 100}}>
     <View style={{paddingVertical:8,marginBottom:16}}><Text style={{fontSize:22,fontWeight:'600',color:colors.primary,fontFamily:fontFamily.serif}}>Mon profil</Text></View>
 
-    <Card style={{ position: 'relative', paddingTop: 28, paddingBottom: 18, overflow: 'visible' }}>
-      <TouchableOpacity activeOpacity={0.9} style={{ position: 'absolute', top: -28, right: 16, width: 84, height: 84, borderRadius: 42, backgroundColor: colors.primary, justifyContent: 'center', alignItems: 'center', elevation: 6, zIndex: 60, shadowColor: '#000', shadowOffset: { width: 0, height: 6 }, shadowOpacity: 0.12, shadowRadius: 12, borderWidth: 4, borderColor: colors.surface }} onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); /* TODO: ouvrir le picker d'image */ }}>
-        <Text style={{ fontSize: 26, fontWeight: '700', color: colors.text }}>{initials}</Text>
-      </TouchableOpacity>
-      <View style={{ marginRight: 112, paddingLeft: 8 }}>
-        <SectionTitle title="Identite" />
-        {lbl('Prenom')}
-        <Input value={prenom} onChangeText={setPrenom} placeholder="Votre prenom" />
-        <View style={{ height: 8 }} />
-        {lbl('Nom')}
-        <Input value={nom} onChangeText={setNom} placeholder="Votre nom" />
-        <View style={{ height: 8 }} />
-        {lbl('Email')}
-        <Input value={email} onChangeText={setEmail} placeholder="Adresse email" keyboardType="email-address" autoCapitalize="none" />
-        <View style={{ height: 8 }} />
-        {lbl('Telephone')}
-        <Input value={tel} onChangeText={setTel} placeholder="Optionnel" keyboardType="phone-pad" />
-        <View style={{ height: 14 }} />
-        <Button title="Sauvegarder" onPress={async () => { await saveProfile({prenom,nom,telephone:tel,email,exploitation:expl,siret,typeAgriculture:typeAgri}); Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success); }} style={{ alignSelf: 'stretch' }} />
-      </View>
-    </Card>
-    <View style={{height:24}} />
-
-    <Card><SectionTitle title="Mon exploitation" />{lbl('Nom')}<Input value={expl} onChangeText={setExpl} placeholder="Nom exploitation" /><View style={{height:12}} />{lbl('SIRET')}<Input value={siret} onChangeText={setSiret} placeholder="14 chiffres" keyboardType="numeric" /><View style={{height:16}} /><Button title="Sauvegarder" onPress={async () => { await saveProfile({...profile,prenom,nom,telephone:tel,exploitation:expl,siret,typeAgriculture:typeAgri}); Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success); }} /></Card>
-    <View style={{height:24}} />
+    {/* DROPDOWN SECTIONS */}
+    <View style={{ gap: 8, marginBottom: 20 }}>
+      {[
+        { key: 'identite', icon: 'person-outline' as const, label: 'Identite', content: () => <View style={{gap:10}}>
+          {lbl('Prenom')}<Input value={prenom} onChangeText={setPrenom} placeholder="Prenom" />
+          {lbl('Nom')}<Input value={nom} onChangeText={setNom} placeholder="Nom" />
+          {lbl('Telephone')}<Input value={tel} onChangeText={setTel} placeholder="Optionnel" keyboardType="phone-pad" />
+          <Button title="Sauvegarder" onPress={async () => { await saveProfile({prenom,nom,telephone:tel}); Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success); }} />
+        </View> },
+        { key: 'exploitation', icon: 'home-outline' as const, label: 'Exploitation', content: () => <View style={{gap:10}}>
+          {lbl('Nom exploitation')}<Input value={expl} onChangeText={setExpl} placeholder="Nom exploitation" />
+          {lbl('SIRET')}<Input value={siret} onChangeText={setSiret} placeholder="14 chiffres" keyboardType="numeric" />
+          {lbl('Type agriculture')}<Input value={typeAgri} onChangeText={setTypeAgri} placeholder="Ex: polyculture" />
+          <Button title="Sauvegarder" onPress={async () => { await saveProfile({...profile,prenom,nom,telephone:tel,exploitation:expl,siret,typeAgriculture:typeAgri}); Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success); }} />
+        </View> },
+        { key: 'parametres', icon: 'settings-outline' as const, label: 'Parametres', content: () => <View style={{gap:10}}>
+          {lbl('Changer email')}<Input value={newEmail} onChangeText={setNewEmail} placeholder={profile.email || 'Nouvel email'} keyboardType="email-address" autoCapitalize="none" />
+          <Button title="Mettre a jour l'email" variant="secondary" onPress={async () => { try { const old = await getSessionEmail(); if (!old) throw new Error('Session introuvable.'); await updateEmail(old, newEmail); Alert.alert('OK', 'Email mis a jour.'); setNewEmail(''); } catch(e:any) { Alert.alert('Erreur', e.message); } }} />
+          <View style={{height:1,backgroundColor:colors.border}} />
+          {lbl('Changer mot de passe')}<Input value={oldPwd} onChangeText={setOldPwd} placeholder="Ancien mot de passe" secureTextEntry /><Input value={newPwd} onChangeText={setNewPwd} placeholder="Nouveau (4+ car.)" secureTextEntry />
+          <Button title="Changer le mot de passe" variant="secondary" onPress={async () => { try { const old = await getSessionEmail(); if (!old) throw new Error('Session introuvable.'); await changePassword(old, oldPwd, newPwd); Alert.alert('OK', 'Mot de passe change.'); setOldPwd(''); setNewPwd(''); } catch(e:any) { Alert.alert('Erreur', e.message); } }} />
+          <View style={{height:1,backgroundColor:colors.border}} />
+          <Button title="Supprimer mon compte" variant="secondary" onPress={() => { Alert.alert('Supprimer le compte', 'Toutes vos donnees seront definitivement perdues.', [{ text: 'Annuler', style: 'cancel' }, { text: 'Tout supprimer', style: 'destructive', onPress: async () => { try { const uid = await getUserId(); await deleteOwnAccount(uid); await logout(); router.replace('/login'); } catch(e:any) { Alert.alert('Erreur', e.message); } } }]); }} style={{ borderColor: colors.danger }} />
+        </View> },
+      ].map(item => (
+        <View key={item.key} style={{ backgroundColor: colors.surface, borderRadius: radius.md, borderWidth: 1, borderColor: colors.border, overflow: 'hidden' }}>
+          <TouchableOpacity onPress={() => toggle(item.key)} style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 16, paddingVertical: 14 }} activeOpacity={0.7}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+              <Ionicons name={item.icon} size={18} color={section === item.key ? colors.primary : colors.textSecondary} />
+              <Text style={{ fontSize: 14, fontWeight: '600', color: section === item.key ? colors.primary : colors.text, fontFamily: fontFamily.sans }}>{item.label}</Text>
+            </View>
+            <Ionicons name={section === item.key ? 'chevron-up' : 'chevron-down'} size={14} color={colors.textMuted} />
+          </TouchableOpacity>
+          {section === item.key && <View style={{ padding: 16, borderTopWidth: 1, borderTopColor: colors.border, backgroundColor: 'rgba(253,248,238,0.5)' }}>{item.content()}</View>}
+        </View>
+      ))}
+    </View>
 
     <Card><SectionTitle title="Statistiques" />
       <View style={{flexDirection:'row',justifyContent:'space-between',paddingVertical:14,borderBottomWidth:1,borderBottomColor:colors.border}}><Text style={{fontSize:12,color:colors.textMuted}}>Champs</Text><Text style={{fontSize:18,fontWeight:'700',color:colors.text,fontFamily:fontFamily.serif}}>{stats.nbChamps}</Text></View>
@@ -102,6 +122,5 @@ export default function ProfilScreen() {
         </View>
       </TouchableOpacity>
     </Modal>
-    <View style={{height:100}} />
   </ScrollView></ScreenFade>;
 }

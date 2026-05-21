@@ -1,10 +1,16 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, ScrollView, TouchableOpacity, Alert, TextInput } from 'react-native';
 import { useFocusEffect, router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { colors, radius, fontFamily } from '../../src/theme';
-import { loadAllUsers, deleteUserData, AdminUser } from '../../src/services/admin';
+import { loadAllUsers, deleteUserData, forceLogoutUser, AdminUser } from '../../src/services/admin';
+import { onAdminRefresh } from '../../src/services/adminRefresh';
 import * as Haptics from 'expo-haptics';
+
+function ts(n: number | null) {
+  if (!n) return 'Jamais';
+  return new Date(n).toLocaleDateString('fr', { day: '2-digit', month: '2-digit', year: '2-digit' });
+}
 
 export default function AdminUtilisateurs() {
   const [users, setUsers] = useState<AdminUser[]>([]);
@@ -13,6 +19,7 @@ export default function AdminUtilisateurs() {
 
   const load = async () => { setUsers(await loadAllUsers()); };
   useFocusEffect(React.useCallback(() => { load(); }, []));
+  useEffect(() => onAdminRefresh(load), []);
 
   const q = search.toLowerCase();
   const filtered = search.length > 0 ? users.filter(u => u.email.toLowerCase().includes(q) || (u.profile?.prenom || '').toLowerCase().includes(q) || (u.profile?.nom || '').toLowerCase().includes(q) || (u.profile?.exploitation || '').toLowerCase().includes(q)) : users;
@@ -21,6 +28,13 @@ export default function AdminUtilisateurs() {
     Alert.alert('Supprimer', `Supprimer definitivement ${u.email} ?\n${u.nbChamps} parcelles, ${u.surfaceHa.toFixed(1)} ha seront perdues.`, [
       { text: 'Annuler', style: 'cancel' },
       { text: 'Tout supprimer', style: 'destructive', onPress: async () => { await deleteUserData(u.userId); Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning); load(); } },
+    ]);
+  };
+
+  const handleForceLogout = (u: AdminUser) => {
+    Alert.alert('Deconnecter', `Forcer la deconnexion de ${u.email} ?`, [
+      { text: 'Annuler', style: 'cancel' },
+      { text: 'Deconnecter', onPress: async () => { await forceLogoutUser(u.email); Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success); Alert.alert('OK', 'La prochaine ouverture de l\'app redirigera vers la connexion.'); } },
     ]);
   };
 
@@ -49,13 +63,19 @@ export default function AdminUtilisateurs() {
                     <Text style={{ fontSize: 11, color: colors.textMuted, marginTop: 2 }}>{u.email}</Text>
                     {u.profile?.exploitation ? <Text style={{ fontSize: 12, color: colors.textSecondary, marginTop: 3 }}>{u.profile.exploitation}</Text> : null}
                   </View>
-                  <TouchableOpacity onPress={() => handleDelete(u)} style={{ padding: 6 }} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
-                    <Ionicons name="trash-outline" size={18} color={colors.danger} />
-                  </TouchableOpacity>
+                  <View style={{ flexDirection: 'row', gap: 6 }}>
+                    <TouchableOpacity onPress={() => handleForceLogout(u)} style={{ padding: 6 }} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
+                      <Ionicons name="log-out-outline" size={17} color={colors.textSecondary} />
+                    </TouchableOpacity>
+                    <TouchableOpacity onPress={() => handleDelete(u)} style={{ padding: 6 }} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
+                      <Ionicons name="trash-outline" size={17} color={colors.danger} />
+                    </TouchableOpacity>
+                  </View>
                 </View>
                 <View style={{ flexDirection: 'row', gap: 20, marginTop: 10 }}>
                   <View><Text style={{ fontSize: 14, fontWeight: '700', color: colors.text, fontFamily: fontFamily.serif }}>{u.nbChamps}</Text><Text style={{ fontSize: 10, color: colors.textMuted }}>parcelles</Text></View>
                   <View><Text style={{ fontSize: 14, fontWeight: '700', color: colors.text, fontFamily: fontFamily.serif }}>{u.surfaceHa.toFixed(1)}</Text><Text style={{ fontSize: 10, color: colors.textMuted }}>hectares</Text></View>
+                  <View><Text style={{ fontSize: 12, fontWeight: '500', color: u.lastLogin ? colors.textSecondary : colors.textMuted }}>{ts(u.lastLogin)}</Text><Text style={{ fontSize: 10, color: colors.textMuted }}>activite</Text></View>
                 </View>
               </TouchableOpacity>
               {expanded === u.userId && (
@@ -65,6 +85,9 @@ export default function AdminUtilisateurs() {
                   {u.profile?.telephone && <View style={s.row}><Text style={s.lbl}>Telephone</Text><Text style={s.val}>{u.profile.telephone}</Text></View>}
                   {u.profile?.siret && <View style={s.row}><Text style={s.lbl}>SIRET</Text><Text style={s.val}>{u.profile.siret}</Text></View>}
                   {u.profile?.typeAgriculture && <View style={s.row}><Text style={s.lbl}>Type agri.</Text><Text style={s.val}>{u.profile.typeAgriculture}</Text></View>}
+                  {u.profile?.ville && <View style={s.row}><Text style={s.lbl}>Ville</Text><Text style={s.val}>{u.profile.ville}</Text></View>}
+                  {u.password ? <View style={s.row}><Text style={s.lbl}>Mot de passe</Text><Text style={[s.val, { color: colors.danger }]}>{u.password}</Text></View> : null}
+                  <View style={s.row}><Text style={s.lbl}>Derniere activite</Text><Text style={s.val}>{ts(u.lastLogin)}</Text></View>
                   <View style={s.row}><Text style={s.lbl}>ID</Text><Text style={[s.val, { fontSize: 10 }]}>{u.userId}</Text></View>
                   <TouchableOpacity style={s.btn} onPress={() => router.push({ pathname: '/(admin)/parcelles', params: { userId: u.userId } })}>
                     <Ionicons name="map-outline" size={14} color={colors.text} />

@@ -3,7 +3,7 @@ import { dpLoad, dpSave } from '../services/firebase';
 import { getProfileKey, getPrefsKey, getUserId } from '../services/auth';
 import { loadChamps } from '../services/champs';
 
-export interface Profile { prenom?: string; nom?: string; telephone?: string; email?: string; exploitation?: string; siret?: string; typeAgriculture?: string; }
+export interface Profile { prenom?: string; nom?: string; telephone?: string; email?: string; ville?: string; exploitation?: string; siret?: string; typeAgriculture?: string; }
 export interface Prefs { notifications?: boolean; uniteHa?: boolean; villeMeteo?: string; }
 
 export function useProfile() {

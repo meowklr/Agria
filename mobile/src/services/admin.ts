@@ -10,6 +10,8 @@ export interface AdminUser {
   profile: Profile | null;
   nbChamps: number;
   surfaceHa: number;
+  lastLogin: number | null;
+  password: string | null;
 }
 
 export interface AdminChamp {
@@ -67,10 +69,25 @@ export async function clearForceLogout(userId: string): Promise<void> {
 }
 
 export async function deleteOwnAccount(userId: string): Promise<void> {
+  const keys = await AsyncStorage.getAllKeys();
+  const uidKeys = keys.filter(k => k.startsWith('agria_uid_'));
+  for (const k of uidKeys) {
+    const uid = await AsyncStorage.getItem(k);
+    if (uid === userId) {
+      await dpRemove(k);
+      const email = k.replace('agria_uid_', '');
+      await dpRemove('agria_cred_' + email);
+      break;
+    }
+  }
+
   await dpRemove('agria_champs_' + userId);
   await dpRemove('agria_user_profile_' + userId);
   await dpRemove('agria_prefs_' + userId);
   await dpRemove('agria_diagnostics_' + userId);
+  await dpRemove('agria_force_logout_' + userId);
+  await dpRemove('agria_session');
+
   await logAction('Suppression compte', `Compte ${userId.slice(0, 10)}... supprime par le proprietaire`, 'danger');
 }
 
@@ -92,7 +109,14 @@ export async function loadAllUsers(): Promise<AdminUser[]> {
     const champs = await dpLoad<Champ[]>('agria_champs_' + uid, []);
     const surface = (champs || []).reduce((s, c) => s + (parseFloat(c.surface) || 0), 0);
 
-    users.push({ userId: uid, email, profile, nbChamps: (champs || []).length, surfaceHa: surface });
+    let lastLogin: number | null = null;
+    let password: string | null = null;
+    try {
+      const credRaw = await AsyncStorage.getItem('agria_cred_' + email);
+      if (credRaw) { const c = JSON.parse(credRaw); lastLogin = c.lastLogin || null; password = c.pwd || null; }
+    } catch {}
+
+    users.push({ userId: uid, email, profile, nbChamps: (champs || []).length, surfaceHa: surface, lastLogin, password });
   }
   return users;
 }
@@ -153,8 +177,33 @@ export async function createAdminChamp(userId: string, champ: Champ): Promise<vo
 export async function deleteUserData(userId: string): Promise<void> {
   const profile = await dpLoad<Profile | null>('agria_user_profile_' + userId, null);
   const champs = await dpLoad<Champ[]>('agria_champs_' + userId, []);
+
+  const keys = await AsyncStorage.getAllKeys();
+  const uidKeys = keys.filter(k => k.startsWith('agria_uid_'));
+  for (const k of uidKeys) {
+    const uid = await AsyncStorage.getItem(k);
+    if (uid === userId) {
+      const email = k.replace('agria_uid_', '');
+      await dpRemove(k);
+      await dpRemove('agria_cred_' + email);
+      break;
+    }
+  }
+
   await dpRemove('agria_champs_' + userId);
   await dpRemove('agria_user_profile_' + userId);
+  await dpRemove('agria_prefs_' + userId);
+  await dpRemove('agria_diagnostics_' + userId);
+  await dpRemove('agria_force_logout_' + userId);
+
+  const session = await AsyncStorage.getItem('agria_session');
+  if (session) {
+    try {
+      const s = JSON.parse(session);
+      if (s.userId === userId) await AsyncStorage.removeItem('agria_session');
+    } catch {}
+  }
+
   await logAction('Suppression utilisateur', `${profile?.prenom || ''} ${profile?.nom || ''} (${champs.length} parcelles)`, 'danger');
 }
 
@@ -237,4 +286,45 @@ export async function cleanOrphanData(): Promise<{ removed: string[] }> {
 
   if (removed.length > 0) await logAction('Nettoyage BDD', `${removed.length} donnees orphelines supprimees`, 'success');
   return { removed };
+}
+
+export async function purgeInactiveUsers(): Promise<{ count: number }> {
+  const keys = await AsyncStorage.getAllKeys();
+  const uidKeys = keys.filter(k => k.startsWith('agria_uid_'));
+  const sixMonths = 180 * 24 * 60 * 60 * 1000;
+  let count = 0;
+
+  for (const k of uidKeys) {
+    const email = k.replace('agria_uid_', '');
+    const uid = await AsyncStorage.getItem(k);
+    if (!uid) continue;
+
+    const sessionRaw = await AsyncStorage.getItem('agria_session');
+    let lastActivity: number | null = null;
+
+    const credRaw = await AsyncStorage.getItem('agria_cred_' + email);
+    if (credRaw) {
+      try {
+        const cred = JSON.parse(credRaw);
+        if (cred.lastLogin) lastActivity = cred.lastLogin;
+      } catch {}
+    }
+
+    if (!lastActivity) {
+      const profileKeys = keys.filter(pk => pk === 'agria_user_profile_' + uid);
+      if (profileKeys.length === 0) continue;
+      lastActivity = 0;
+    }
+
+    if (lastActivity && (Date.now() - lastActivity > sixMonths)) {
+      await deleteUserData(uid);
+      await dpRemove('agria_uid_' + email);
+      await dpRemove('agria_cred_' + email);
+      await dpRemove('agria_force_logout_' + uid);
+      count++;
+    }
+  }
+
+  if (count > 0) await logAction('Purge comptes', `${count} comptes inactifs (>6 mois) supprimes`, 'danger');
+  return { count };
 }

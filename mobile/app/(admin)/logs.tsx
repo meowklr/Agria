@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, ScrollView, TouchableOpacity, Alert } from 'react-native';
 import { useFocusEffect } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { colors, radius, fontFamily } from '../../src/theme';
-import { loadLogs, listOrphanData, cleanOrphanData, clearLogs, AdminLog } from '../../src/services/admin';
+import { loadLogs, listOrphanData, cleanOrphanData, clearLogs, purgeInactiveUsers, AdminLog } from '../../src/services/admin';
+import { onAdminRefresh } from '../../src/services/adminRefresh';
 
 const TYPE_STYLE: Record<string, { bg: string; color: string }> = {
   success: { bg: '#EAF3E0', color: colors.success },
@@ -22,6 +23,7 @@ export default function AdminLogs() {
 
   const load = async () => { setLogs(await loadLogs()); };
   useFocusEffect(React.useCallback(() => { load(); }, []));
+  useEffect(() => onAdminRefresh(load), []);
 
   const handleClean = async () => {
     const orphans = await listOrphanData();
@@ -44,19 +46,34 @@ export default function AdminLogs() {
     ]);
   };
 
+  const handlePurge = () => {
+    Alert.alert('Purge comptes inactifs', 'Supprimer tous les comptes sans activite depuis plus de 6 mois ?\nCette action est irreversible.', [
+      { text: 'Annuler', style: 'cancel' },
+      { text: 'Purger', style: 'destructive', onPress: async () => {
+        const r = await purgeInactiveUsers();
+        Alert.alert('Purge terminee', r.count + ' compte(s) inactif(s) supprime(s).');
+        load();
+      }},
+    ]);
+  };
+
   return <ScrollView style={{ flex: 1, backgroundColor: colors.bg }} contentContainerStyle={{ padding: 16 }}>
-    <View style={{ flexDirection: 'row', gap: 10, marginBottom: 20 }}>
+    <View style={{ flexDirection: 'row', gap: 10, marginBottom: 6 }}>
       <TouchableOpacity onPress={handleClean} style={{ flex: 1, backgroundColor: colors.surface, borderRadius: radius.md, padding: 14, borderWidth: 1, borderColor: 'rgba(181,83,58,.3)', alignItems: 'center' }}>
         <Ionicons name="flash-outline" size={20} color={colors.danger} style={{ marginBottom: 4 }} />
         <Text style={{ fontSize: 13, fontWeight: '600', color: colors.danger, fontFamily: fontFamily.sans }}>Nettoyer BDD</Text>
         <Text style={{ fontSize: 10, color: colors.textMuted, marginTop: 2, textAlign: 'center' }}>Donnees orphelines</Text>
       </TouchableOpacity>
-      <TouchableOpacity onPress={handleClearLogs} style={{ flex: 1, backgroundColor: colors.surface, borderRadius: radius.md, padding: 14, borderWidth: 1, borderColor: colors.border, alignItems: 'center' }}>
-        <Ionicons name="trash-outline" size={20} color={colors.textMuted} style={{ marginBottom: 4 }} />
-        <Text style={{ fontSize: 13, fontWeight: '600', color: colors.textSecondary, fontFamily: fontFamily.sans }}>Vider logs</Text>
-        <Text style={{ fontSize: 10, color: colors.textMuted, marginTop: 2 }}>{logs.length} entree{logs.length > 1 ? 's' : ''}</Text>
+      <TouchableOpacity onPress={handlePurge} style={{ flex: 1, backgroundColor: colors.surface, borderRadius: radius.md, padding: 14, borderWidth: 1, borderColor: 'rgba(181,83,58,.3)', alignItems: 'center' }}>
+        <Ionicons name="skull-outline" size={20} color={colors.danger} style={{ marginBottom: 4 }} />
+        <Text style={{ fontSize: 13, fontWeight: '600', color: colors.danger, fontFamily: fontFamily.sans }}>Purger inactifs</Text>
+        <Text style={{ fontSize: 10, color: colors.textMuted, marginTop: 2, textAlign: 'center' }}>Comptes {'>'}6 mois</Text>
       </TouchableOpacity>
     </View>
+    <TouchableOpacity onPress={handleClearLogs} style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 20, padding: 10, backgroundColor: colors.surface, borderRadius: radius.md, borderWidth: 1, borderColor: colors.border, alignSelf: 'flex-end' }}>
+      <Ionicons name="trash-outline" size={14} color={colors.textMuted} />
+      <Text style={{ fontSize: 12, fontWeight: '600', color: colors.textSecondary, fontFamily: fontFamily.sans }}>Vider logs ({logs.length})</Text>
+    </TouchableOpacity>
 
     {logs.length === 0 ? <Text style={{ textAlign: 'center', color: colors.textMuted, marginTop: 20 }}>Aucune activite.</Text> : (
       <View style={{ gap: 6 }}>

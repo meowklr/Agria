@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, ScrollView, TouchableOpacity, Alert, TextInput, Modal } from 'react-native';
 import { useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
@@ -6,6 +6,7 @@ import { colors, radius, fontFamily } from '../../src/theme';
 import { loadAllChamps, loadAllUsers, deleteAdminChamp, updateAdminChamp, createAdminChamp, AdminChamp, AdminUser } from '../../src/services/admin';
 import { Badge } from '../../src/components/Badge';
 import { DropDown } from '../../src/components/DropDown';
+import { onAdminRefresh } from '../../src/services/adminRefresh';
 import * as Haptics from 'expo-haptics';
 
 const CULTURES = [
@@ -43,6 +44,7 @@ export default function AdminParcelles() {
     setChamps(c); setUsers(u);
   };
   useFocusEffect(React.useCallback(() => { load(); }, []));
+  useEffect(() => onAdminRefresh(load), []);
 
   const filtered = userId ? champs.filter(c => c.userId === userId) : champs;
   const q = search.toLowerCase();
