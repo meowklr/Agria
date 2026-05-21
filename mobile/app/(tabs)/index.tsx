@@ -1,5 +1,6 @@
 import React, { useState, useCallback } from 'react'; import { View, Text, ScrollView, TouchableOpacity, Alert, LayoutAnimation, Platform, UIManager } from 'react-native'; import { router, useFocusEffect } from 'expo-router'; import { Ionicons } from '@expo/vector-icons'; import { useSafeAreaInsets } from 'react-native-safe-area-context'; import { colors, radius, fontFamily } from '../../src/theme'; import { Card } from '../../src/components/Card'; import { Badge } from '../../src/components/Badge'; import { Input } from '../../src/components/Input'; import { SectionTitle } from '../../src/components/Typography'; import { LoaderBar } from '../../src/components/LoaderBar'; import { useWeather, useCitySearch } from '../../src/hooks/useWeather'; import { useChamps } from '../../src/hooks/useChamps'; import { deleteChamp, Champ } from '../../src/services/champs';
 import { useMorningRiskAlert } from '../../src/hooks/useMorningRiskAlert';
+import { useAlerts } from '../../src/hooks/useAlerts';
 import { NotificationBell } from '../../src/components/NotificationBell';
 import { ScreenFade } from '../../src/components/ScreenFade';
 import * as Haptics from 'expo-haptics';
@@ -7,6 +8,7 @@ import * as Haptics from 'expo-haptics';
 export default function DashboardScreen() {
   const { meteo, previsions, loading: wl, city, setCity, refresh } = useWeather('Paris');
   const { champs, refresh: reloadChamps } = useChamps();
+  const { alerts, loading: alertsLoading, refresh: refreshAlerts } = useAlerts();
   useMorningRiskAlert(champs);
   const { results, query, setQuery } = useCitySearch();
   const [showSearch, setShowSearch] = useState(false);
@@ -33,7 +35,7 @@ export default function DashboardScreen() {
     ]);
   };
 
-  useFocusEffect(useCallback(() => { reloadChamps(); }, []));
+  useFocusEffect(useCallback(() => { reloadChamps(); refreshAlerts(); }, [reloadChamps, refreshAlerts]));
 
   return <ScreenFade><ScrollView style={{ flex: 1, backgroundColor: colors.bg }} contentContainerStyle={{ padding: 16, paddingTop: (insets.top || 0) + 16 }}>
     <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: 8, marginBottom: 16 }}>
@@ -89,15 +91,16 @@ export default function DashboardScreen() {
       <Ionicons name={showAlerts ? 'chevron-up' : 'chevron-down'} size={14} color={colors.textMuted} />
     </TouchableOpacity>
     {showAlerts && <View style={{ marginBottom: 24, gap: 10 }}>
-      <View style={{ backgroundColor: '#FEF3F0', borderRadius: radius.lg, padding: 16 }}>
-        <Text style={{ fontSize: 13, fontWeight: '600', color: colors.danger, marginBottom: 3, fontFamily: fontFamily.sans }}>Urgent</Text><Text style={{ fontSize: 13, color: '#8B4A3A', lineHeight: 18, fontFamily: fontFamily.sans }}>Risque de gel prevu cette nuit. Protegez les semis sensibles.</Text>
-      </View>
-      <View style={{ backgroundColor: '#FDF4E8', borderRadius: radius.lg, padding: 16 }}>
-        <Text style={{ fontSize: 13, fontWeight: '600', color: colors.accent, marginBottom: 3, fontFamily: fontFamily.sans }}>Attention</Text><Text style={{ fontSize: 13, color: '#8B5E3A', lineHeight: 18, fontFamily: fontFamily.sans }}>Periode seche : irrigation recommandee dans les 48h.</Text>
-      </View>
-      <View style={{ backgroundColor: '#EEF5FA', borderRadius: radius.lg, padding: 16 }}>
-        <Text style={{ fontSize: 13, fontWeight: '600', color: '#5a8aa8', marginBottom: 3, fontFamily: fontFamily.sans }}>Info</Text><Text style={{ fontSize: 13, color: '#4A6A7A', lineHeight: 18, fontFamily: fontFamily.sans }}>Conditions favorables pour traitement fongique preventif.</Text>
-      </View>
+      {alertsLoading ? <Card><LoaderBar /></Card> : alerts.length === 0 ? <Card><Text style={{ fontSize: 14, color: colors.textMuted, textAlign: 'center' }}>Aucune alerte récente. Les alertes météo reçues via Make apparaîtront ici.</Text></Card> : alerts.slice(0, 4).map((alert) => {
+        const levelStyle = alert.level === 'danger' ? { backgroundColor: '#FEF3F0', title: colors.danger, body: '#8B4A3A' }
+          : alert.level === 'warning' ? { backgroundColor: '#FDF4E8', title: colors.accent, body: '#8B5E3A' }
+          : { backgroundColor: '#EEF5FA', title: '#5a8aa8', body: '#4A6A7A' };
+        return <View key={alert.id} style={{ backgroundColor: levelStyle.backgroundColor, borderRadius: radius.lg, padding: 16 }}>
+          <Text style={{ fontSize: 13, fontWeight: '600', color: levelStyle.title, marginBottom: 3, fontFamily: fontFamily.sans }}>{alert.title}</Text>
+          <Text style={{ fontSize: 13, color: levelStyle.body, lineHeight: 18, fontFamily: fontFamily.sans }}>{alert.body}</Text>
+          <Text style={{ fontSize: 11, color: colors.textMuted, marginTop: 8, fontFamily: fontFamily.sans }}>{new Date(alert.date).toLocaleString()}</Text>
+        </View>;
+      })}
     </View>}
 
     <View style={{ marginBottom: 24 }}>

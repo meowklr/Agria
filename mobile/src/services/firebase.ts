@@ -55,6 +55,35 @@ export async function dpLoadAll<T>(prefix: string): Promise<T[]> {
   return r;
 }
 
+export async function dpLoadAllObjects<T>(prefix: string): Promise<Array<{ key: string; value: T }>> {
+  const database = getDb();
+  if (database) {
+    try {
+      const snap = await get(ref(database, 'agriaData'));
+      if (snap.exists()) {
+        const data = snap.val();
+        const r: Array<{ key: string; value: T }> = [];
+        const sp = safeKey(prefix);
+        for (const k in data) {
+          if (k.indexOf(sp) === 0 && data[k]) r.push({ key: k, value: data[k] });
+        }
+        if (r.length > 0) return r;
+      }
+    } catch {}
+  }
+  const r: Array<{ key: string; value: T }> = [];
+  const keys = await AsyncStorage.getAllKeys();
+  for (const k of keys) {
+    if (k && k.indexOf(prefix) === 0) {
+      try {
+        const v = await AsyncStorage.getItem(k);
+        if (v) r.push({ key: k, value: JSON.parse(v) });
+      } catch {}
+    }
+  }
+  return r;
+}
+
 export async function dpListKeys(prefix: string): Promise<{ key: string; value: string }[]> {
   const results: { key: string; value: string }[] = [];
   const seen = new Set<string>();
@@ -67,7 +96,6 @@ export async function dpListKeys(prefix: string): Promise<{ key: string; value: 
         const data = snap.val();
         const sp = safeKey(prefix);
         for (const rawKey in data) {
-          const unsafeKey = rawKey.replace(/_/g, (m: string, i: number) => { return '.'; });
           if (rawKey.indexOf(sp) === 0 && data[rawKey]) {
             const val = JSON.stringify(data[rawKey]);
             results.push({ key: rawKey, value: val });
@@ -90,19 +118,7 @@ export async function dpListKeys(prefix: string): Promise<{ key: string; value: 
   return results;
 }
 
-export async function dpSyncToFirebase(key: string, value: string): Promise<void> {
-  const database = getDb();
-  if (database) {
-    try { await set(ref(database, 'agriaData/' + safeKey(key)), JSON.parse(value)); } catch {}
-  }
-}
-
 export async function dpGetAllKeys(prefix: string): Promise<string[]> {
   const keys = await AsyncStorage.getAllKeys();
-  return keys.filter(k => k && k.indexOf(prefix) === 0);
+  return keys.filter(k => k && typeof k === 'string' && k.indexOf(prefix) === 0) as string[];
 }
-  const r: T[] = []; const keys = await AsyncStorage.getAllKeys();
-  for (const k of keys) { if (k && k.indexOf(prefix) === 0) { try { const v = await AsyncStorage.getItem(k); if (v) r.push(JSON.parse(v)); } catch {} } }
-  return r;
-}
-export function dpGetAllKeys(prefix: string): string[] { return []; }
