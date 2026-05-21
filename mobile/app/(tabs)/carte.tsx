@@ -8,6 +8,7 @@ import * as Haptics from 'expo-haptics';
 import { colors, radius, fontFamily } from '../../src/theme';
 import { DropDown } from '../../src/components/DropDown';
 import { DateWheelPicker } from '../../src/components/DateWheelPicker';
+import { ScreenFade } from '../../src/components/ScreenFade';
 import { getUserId } from '../../src/services/auth';
 import { loadChamps, addChamp, updateChamp, deleteChamp, Champ } from '../../src/services/champs';
 
@@ -31,7 +32,7 @@ var drawing=!1,dp=[],dl=null,dm=[],pl={},sl=null,fm=null;
 function nt(t,d){window.ReactNativeWebView.postMessage(JSON.stringify({type:t,data:d}))}
 function gep(){var pts=[];Object.values(pl).forEach(function(po){var c=po.getLatLngs();(Array.isArray(c[0])?c[0]:c).forEach(function(ll){pts.push(ll)})});return pts}
 function snp(ll){var c=gep();if(dp.length>0)c.push(dp[0]);var md=15,mr=ll;for(var i=0;i<c.length;i++){var d=ll.distanceTo(c[i]);if(d<md){md=d;mr=c[i]}}return mr}
-function rp(ps,mid){Object.values(pl).forEach(function(l){map.removeLayer(l)});pl={};ps.forEach(function(p){if(!p.data.polygonCoords||p.data.polygonCoords.length<3)return;var im=p.owner===mid;var cs=p.data.polygonCoords.map(function(pt){return[pt[0],pt[1]]});var po=L.polygon(cs,{fillColor:im?'#7A9E5A':'#c4b8a8',fillOpacity:im?.18:.08,color:im?'#3D2E1F':'#b0a090',weight:im?2:1.5,dashArray:im?null:'6 4'}).addTo(map);if(im){po.bindTooltip(p.data.nom||'Parcelle',{className:'pt',permanent:!0,direction:'center',offset:[0,0],interactive:!0});setTimeout(function(){var tip=po.getTooltip();if(tip){var el=tip.getElement();if(el){el.addEventListener('click',function(ev){L.DomEvent.stopPropagation(ev);if(drawing)return;if(sl){sl.setStyle({weight:sl.options.isMine?2:1,fillOpacity:sl.options.isMine?.18:.08})}sl=po;po.setStyle({weight:4,fillOpacity:.3,color:'#E8B84B'});map.fitBounds(L.latLngBounds(cs),{padding:[60,60],maxZoom:16,animate:!0,duration:.5});nt('ps',p.data)})}},0)}po.on('click',function(e){L.DomEvent.stopPropagation(e);if(drawing)return;if(sl){sl.setStyle({weight:sl.options.isMine?2:1,fillOpacity:sl.options.isMine?.18:.08})}sl=po;po.setStyle({weight:4,fillOpacity:.3,color:'#E8B84B'});map.fitBounds(L.latLngBounds(cs),{padding:[60,60],maxZoom:16,animate:!0,duration:.5});nt('ps',p.data)});pl[p.data.id]=po})}
+function rp(ps,mid){Object.values(pl).forEach(function(l){map.removeLayer(l)});pl={};ps.forEach(function(p){if(!p.data.polygonCoords||p.data.polygonCoords.length<3)return;var im=p.owner===mid;var cs=p.data.polygonCoords.map(function(pt){return[pt[0],pt[1]]});var po=L.polygon(cs,{fillColor:im?'#7A9E5A':'#c4b8a8',fillOpacity:im?.18:.08,color:im?'#3D2E1F':'#b0a090',weight:im?2:1.5,dashArray:im?null:'6 4'}).addTo(map);if(im){po.bindTooltip(p.data.nom||'Parcelle',{className:'pt',permanent:!0,direction:'center',offset:[0,0],interactive:!0});setTimeout(function(){var tip=po.getTooltip();if(tip){var el=tip.getElement();if(el){el.addEventListener('click',function(ev){L.DomEvent.stopPropagation(ev);if(drawing)return;if(sl){sl.setStyle({weight:sl.options.isMine?2:1,fillOpacity:sl.options.isMine?.18:.08})}sl=po;po.setStyle({weight:4,fillOpacity:.3,color:'#E8B84B'});map.fitBounds(L.latLngBounds(cs),{padding:[60,60],maxZoom:16,animate:!0,duration:.5});nt('ps',p.data)})}}},0)}po.on('click',function(e){L.DomEvent.stopPropagation(e);if(drawing)return;if(sl){sl.setStyle({weight:sl.options.isMine?2:1,fillOpacity:sl.options.isMine?.18:.08})}sl=po;po.setStyle({weight:4,fillOpacity:.3,color:'#E8B84B'});map.fitBounds(L.latLngBounds(cs),{padding:[60,60],maxZoom:16,animate:!0,duration:.5});nt('ps',p.data)});pl[p.data.id]=po})}
 function sd(){if(drawing)return;drawing=!0;dp=[];dm=[];if(fm){map.removeLayer(fm);fm=null}nt('ds')}
 function ed(f){if(!drawing)return;drawing=!1;if(dl){map.removeLayer(dl);dl=null}dm.forEach(function(m){map.removeLayer(m)});dm=[];if(fm){map.removeLayer(fm);fm=null}if(f&&dp.length>=3){var cs=dp.map(function(ll){return[ll.lat,ll.lng]});var ha=ca(dp);nt('dc',{coords:cs,surface:ha.toFixed(2)})}dp=[];nt('de')}
 map.on('click',function(e){if(drawing){var ll=snp(e.latlng);if(dp.length>=2&&ll.distanceTo(dp[0])<30){ed(!0);return}dp.push(ll);if(dl)map.removeLayer(dl);if(dp.length>=2)dl=L.polyline(dp,{color:'#E8B84B',weight:3,dashArray:'8 6',opacity:.9}).addTo(map);var mk=L.circleMarker(ll,{radius:6,color:'#E8B84B',fillColor:'#FFFDF6',fillOpacity:1,weight:3}).addTo(map);dm.push(mk);if(dp.length===1){if(fm)map.removeLayer(fm);fm=L.circleMarker(dp[0],{radius:12,color:'#D4A853',fillColor:'#E8B84B',fillOpacity:.35,weight:3,dashArray:'4 2'}).addTo(map)}if(dp.length>=3)nt('su',ca(dp).toFixed(2))}});
@@ -138,7 +139,7 @@ export default function CarteScreen() {
 
   const searchTop = (insets.top || 0) + 54;
 
-  return <View style={{ flex: 1 }}>
+  return <ScreenFade><View style={{ flex: 1 }}>
     <WebView ref={wv} source={{ html: HTML }} style={{ flex: 1 }} onMessage={hm} javaScriptEnabled domStorageEnabled geolocationEnabled onLoad={() => pm({ type: 'rp', data: { ps, mid } })} />
     <View style={{ position: 'absolute', top: searchTop, left: 12, right: 12, gap: 8 }}>
       <View style={{ flexDirection: 'row', backgroundColor: 'rgba(255,253,246,.94)', borderRadius: radius.md, borderWidth: 1, borderColor: colors.border, alignItems: 'center', paddingHorizontal: 12, gap: 8 }}>
@@ -157,7 +158,7 @@ export default function CarteScreen() {
     </View>
     {drawing && <View style={{ position: 'absolute', top: '40%', alignSelf: 'center', backgroundColor: colors.text, paddingHorizontal: 24, paddingVertical: 12, borderRadius: 16, alignItems: 'center' }}><Text style={{ color: colors.surface, fontSize: 14 }}>Cliquez pour tracer</Text>{surface ? <Text style={{ color: colors.primary, fontSize: 18, fontWeight: '600', textAlign: 'center', marginTop: 4, fontFamily: fontFamily.serif }}>{surface} ha</Text> : null}<TouchableOpacity onPress={() => { pm({ type: 'ed' }); Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); }} style={{ marginTop: 8, paddingHorizontal: 14, paddingVertical: 6, borderRadius: 10, borderWidth: 1, borderColor: 'rgba(255,100,80,.5)' }}><Text style={{ color: '#c0392b', fontSize: 12, fontWeight: '600', fontFamily: fontFamily.sans }}>Annuler</Text></TouchableOpacity></View>}
     {so && sel && <ParcelPanel sel={sel} panelAnim={panelAnim} panHandlers={panResponder.panHandlers} onClose={() => setSo(false)} onSaved={load} onDeleted={async () => { await deleteChamp(sel.id); setSo(false); load().then(() => pm({ type: 'rp', data: { ps, mid } })); }} saveRef={panelSaveRef} />}
-  </View>;
+  </View></ScreenFade>;
 }
 
 function ParcelPanel({ sel, panelAnim, panHandlers, onClose, onSaved, onDeleted, saveRef }: { sel: Champ; panelAnim: Animated.Value; panHandlers: any; onClose: () => void; onSaved: () => void; onDeleted: () => void; saveRef: React.MutableRefObject<(() => Promise<void>) | null> }) {
@@ -168,19 +169,31 @@ function ParcelPanel({ sel, panelAnim, panHandlers, onClose, onSaved, onDeleted,
   const [dateSemis, setDateSemis] = useState(sel.dateSemis || '');
   const [notes, setNotes] = useState(sel.notes || '');
   const [saving, setSaving] = useState(false);
-  useEffect(() => { setNom(sel.nom || ''); setCulture(sel.culture || ''); setTypeSol(sel.typeSol || ''); setStade(sel.stade || ''); setDateSemis(sel.dateSemis || ''); setNotes(sel.notes || ''); }, [sel.id]);
+  const [dateError, setDateError] = useState(false);
+  const enterAnim = useRef(new Animated.Value(600)).current;
+  useEffect(() => { setNom(sel.nom || ''); setCulture(sel.culture || ''); setTypeSol(sel.typeSol || ''); setStade(sel.stade || ''); setDateSemis(sel.dateSemis || ''); setNotes(sel.notes || ''); Animated.spring(enterAnim, { toValue: 0, useNativeDriver: true, tension: 120, friction: 14 }).start(); }, [sel.id]);
   const save = async () => {
+    if (dateSemis) {
+      const parts = dateSemis.split('/');
+      if (parts.length === 3) {
+        const d = new Date(parseInt(parts[2], 10), parseInt(parts[1], 10) - 1, parseInt(parts[0], 10));
+        if (d > new Date()) { setDateError(true); return; }
+      }
+    }
     setSaving(true);
     await updateChamp(sel.id, { ...sel, nom, culture, typeSol, stade, dateSemis, notes });
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     setSaving(false); onSaved();
   };
   useEffect(() => { saveRef.current = save; }, [save]);
-  return <Animated.View style={{ position: 'absolute', bottom: 0, left: 0, right: 0, backgroundColor: colors.surface, borderTopLeftRadius: 20, borderTopRightRadius: 20, maxHeight: '64%', transform: [{ translateY: panelAnim }] }}>
+  const animateClose = () => {
+    Animated.timing(enterAnim, { toValue: 600, duration: 180, useNativeDriver: true }).start(() => onClose());
+  };
+  return <Animated.View style={{ position: 'absolute', bottom: 0, left: 0, right: 0, backgroundColor: colors.surface, borderTopLeftRadius: 20, borderTopRightRadius: 20, maxHeight: '64%', transform: [{ translateY: Animated.add(panelAnim, enterAnim) }] }}>
     <View style={{ alignItems: 'center', paddingTop: 12, paddingBottom: 12 }} {...panHandlers}>
       <View style={{ width: 40, height: 4, backgroundColor: colors.border, borderRadius: 2 }} />
     </View>
-    <TouchableOpacity style={{ position: 'absolute', top: 8, right: 12, padding: 12 }} onPress={onClose} hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}><Ionicons name="close" size={18} color={colors.textMuted} /></TouchableOpacity>
+    <TouchableOpacity style={{ position: 'absolute', top: 8, right: 12, padding: 12 }} onPress={animateClose} hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}><Ionicons name="close" size={18} color={colors.textMuted} /></TouchableOpacity>
     <ScrollView contentContainerStyle={{ paddingHorizontal: 24, paddingBottom: 40 }} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false} bounces={false}>
       <TextInput style={{ fontSize: 20, fontWeight: '600', color: colors.text, fontFamily: fontFamily.serif, marginBottom: 2 }} value={nom} onChangeText={setNom} placeholder="Nom de la parcelle" placeholderTextColor={colors.textMuted} />
       <Text style={{ fontSize: 13, color: colors.textMuted, marginBottom: 16 }}>{sel.surface || '?'} ha</Text>
@@ -189,12 +202,17 @@ function ParcelPanel({ sel, panelAnim, panHandlers, onClose, onSaved, onDeleted,
       <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: colors.border }}><Text style={{ fontSize: 14, color: colors.textSecondary }}>Stade</Text><DropDown value={stade} options={STADES} onChange={setStade} placeholder="Choisir" /></View>
       <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: colors.border }}>
         <Text style={{ fontSize: 14, color: colors.textSecondary }}>Date semis</Text>
-        <DateWheelPicker value={dateSemis} onChange={setDateSemis} />
+        <DateWheelPicker value={dateSemis} onChange={(d) => { setDateSemis(d); setDateError(false); }} />
       </View>
       <View style={{ marginTop: 14 }}>
         <Text style={{ fontSize: 13, color: colors.textSecondary, marginBottom: 6 }}>Notes (optionnel)</Text>
         <TextInput style={{ minHeight: 60, paddingHorizontal: 14, paddingVertical: 10, borderWidth: 1.5, borderColor: colors.border, borderRadius: radius.md, backgroundColor: colors.surface, color: colors.text, fontSize: 14, textAlignVertical: 'top', fontFamily: fontFamily.sans }} value={notes} onChangeText={setNotes} placeholder="Notes sur la parcelle..." placeholderTextColor={colors.textMuted} multiline />
       </View>
+      {dateError && <View style={{ marginTop: 12, backgroundColor: '#FEF3F0', borderRadius: radius.sm, padding: 10, flexDirection: 'row', alignItems: 'flex-start', gap: 8 }}>
+        <Ionicons name="alert-circle" size={15} color={colors.danger} style={{ marginTop: 1 }} />
+        <Text style={{ flex: 1, fontSize: 12, color: colors.danger, fontWeight: '500', fontFamily: fontFamily.sans }}>La date de semis ne peut pas etre dans le futur.</Text>
+        <TouchableOpacity onPress={() => setDateError(false)}><Ionicons name="close" size={14} color={colors.danger} /></TouchableOpacity>
+      </View>}
       <View style={{ flexDirection: 'row', gap: 10, marginTop: 20 }}>
         <TouchableOpacity onPress={save} disabled={saving} style={{ flex: 1, backgroundColor: colors.primary, borderRadius: radius.md, paddingVertical: 12, alignItems: 'center' }}><Text style={{ fontSize: 15, fontWeight: '600', color: colors.text, fontFamily: fontFamily.sans }}>{saving ? '...' : 'Sauvegarder'}</Text></TouchableOpacity>
         <TouchableOpacity onPress={onDeleted} style={{ backgroundColor: 'transparent', borderWidth: 1.5, borderColor: colors.danger, borderRadius: radius.md, paddingVertical: 12, paddingHorizontal: 16, alignItems: 'center' }}><Ionicons name="trash-outline" size={18} color={colors.danger} /></TouchableOpacity>

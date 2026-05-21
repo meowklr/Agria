@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react'; import { View, Text, ScrollView, Switch, TouchableOpacity, Modal } from 'react-native'; import { router } from 'expo-router'; import * as Haptics from 'expo-haptics'; import { useSafeAreaInsets } from 'react-native-safe-area-context'; import { Ionicons } from '@expo/vector-icons'; import { colors, fontFamily } from '../../src/theme'; import { Card } from '../../src/components/Card'; import { Button } from '../../src/components/Button'; import { Input } from '../../src/components/Input'; import { SectionTitle } from '../../src/components/Typography'; import { useProfile } from '../../src/hooks/useProfile'; import { logout } from '../../src/services/auth';
+import { ScreenFade } from '../../src/components/ScreenFade';
 
 export default function ProfilScreen() {
   const { profile, prefs, stats, saveProfile, savePrefs } = useProfile();
@@ -13,7 +14,7 @@ export default function ProfilScreen() {
   const initials = ((prenom||'A')[0]+(nom||'A')[0]).toUpperCase();
   const lbl = (t: string) => <Text style={{fontSize:13,fontWeight:'500',color:colors.textSecondary,marginBottom:6,textTransform:'uppercase',letterSpacing:0.4}}>{t}</Text>;
 
-  return <ScrollView style={{flex:1,backgroundColor:colors.bg, overflow: 'visible'}} contentContainerStyle={{padding:16, paddingTop: (insets.top || 0) + 16, overflow: 'visible'}}>
+  return <ScreenFade><ScrollView style={{flex:1,backgroundColor:colors.bg, overflow: 'visible'}} contentContainerStyle={{padding:16, paddingTop: (insets.top || 0) + 16, overflow: 'visible'}}>
     <View style={{paddingVertical:8,marginBottom:16}}><Text style={{fontSize:22,fontWeight:'600',color:colors.primary,fontFamily:fontFamily.serif}}>Mon profil</Text></View>
 
     <Card style={{ position: 'relative', paddingTop: 28, paddingBottom: 18, overflow: 'visible' }}>
@@ -102,5 +103,5 @@ export default function ProfilScreen() {
       </TouchableOpacity>
     </Modal>
     <View style={{height:100}} />
-  </ScrollView>;
+  </ScrollView></ScreenFade>;
 }
