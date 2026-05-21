@@ -9,6 +9,7 @@ Notifications.setNotificationHandler({
   }),
 }); import { Badge } from '../../src/components/Badge'; import { Button } from '../../src/components/Button'; import { Input } from '../../src/components/Input'; import { SectionTitle } from '../../src/components/Typography'; import { LoaderBar } from '../../src/components/LoaderBar'; import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useDiagnostic } from '../../src/hooks/useDiagnostic';
+import { useNotifications } from '../../src/hooks/useNotifications';
 import * as Haptics from 'expo-haptics';
 
 const CULTURES = ['ble','mais','tournesol','colza','vigne'];
@@ -20,6 +21,7 @@ const SL: Record<string,string> = { jaunissement:'Jaunissement', taches:'Taches 
 export default function DiagnosticScreen() {
   const { result, history, loading, analyse, reset, loadHistory } = useDiagnostic();
   const [step, setStep] = useState(1); const [culture, setCulture] = useState(''); const [sympts, setSympts] = useState<string[]>([]); const [ville, setVille] = useState('');
+  const [email, setEmail] = useState('');
   const [expanded, setExpanded] = useState<number | null>(null);
   const [errVille, setErrVille] = useState(false);
   const [errCulture, setErrCulture] = useState(false);
@@ -35,14 +37,19 @@ export default function DiagnosticScreen() {
     });
     return () => subscription.remove();
   }, []);
+  const { add } = useNotifications();
   const ts = (s: string) => setSympts(p => p.includes(s) ? p.filter(x => x !== s) : [...p, s]);
 
   const handleSendDetailedDiagnostic = async () => {
     if (!result) return;
+    if (!email.trim()) {
+      Alert.alert('Email requis', 'Veuillez saisir votre adresse email pour recevoir l\'analyse.');
+      return;
+    }
     try {
       // Remplacez cette URL par celle de votre webhook Make.com
       const webhookUrl = 'REMOVED_MAKE_WEBHOOK_URL';
-      const payload = { culture, symptomes: sympts, ville, diagnostic: result.nom, gravite: result.gravite, explication: result.explication, recommandations: result.recommandations, meteo: result.meteo };
+      const payload = { culture, symptomes: sympts, ville, email: email.trim(), diagnostic: result.nom, gravite: result.gravite, explication: result.explication, recommandations: result.recommandations, meteo: result.meteo };
       
       const res = await fetch(webhookUrl, {
         method: 'POST',
@@ -61,6 +68,9 @@ export default function DiagnosticScreen() {
         },
         trigger: null,
       });
+
+      // Enregistrer aussi dans la cloche interne de l'app
+      try { await add('Analyse terminée 🌾', responseText); } catch (e) { console.warn('Erreur en sauvegardant la notif interne', e); }
 
       Alert.alert('Envoyé', 'L\'analyse a été effectuée et envoyée avec succès.');
     } catch (e) {
@@ -122,8 +132,12 @@ export default function DiagnosticScreen() {
         <SectionTitle title="Recommandations" />
         {result.recommandations.map((r, i) => <View key={i} style={{ flexDirection: 'row', alignItems: 'flex-start', gap: 12, paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: colors.border }}><Ionicons name="checkmark-circle" size={14} color={colors.success} style={{ marginTop: 3 }} /><Text style={{ flex: 1, fontSize: 14, color: colors.textSecondary, lineHeight: 20 }}>{r}</Text></View>)}
       </Card>
+      <View style={{ marginBottom: 16 }}>
+        <Input value={email} onChangeText={setEmail} placeholder="Votre adresse email (obligatoire)" keyboardType="email-address" autoCapitalize="none" />
+        <Text style={{ fontSize: 12, color: colors.textMuted, marginTop: 6, marginLeft: 2 }}>Pour recevoir le rapport detaille de l'IA.</Text>
+      </View>
       <Button title="Analyse détaillée par mail (IA)" onPress={async () => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium); await handleSendDetailedDiagnostic(); }} style={{ marginBottom: 12, backgroundColor: '#005b4f' }} />
-      <Button title="Nouveau diagnostic" variant="secondary" onPress={() => { reset(); setStep(1); setCulture(''); setSympts([]); setVille(''); }} />
+      <Button title="Nouveau diagnostic" variant="secondary" onPress={() => { reset(); setStep(1); setCulture(''); setSympts([]); setVille(''); setEmail(''); }} />
     </View>}
 
     {history.length > 0 && <View style={{ marginTop: 32 }}>
