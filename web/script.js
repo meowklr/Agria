@@ -565,6 +565,22 @@ function genererRecommandations(maladie) {
   return recos[maladie] || ['Consulter un technicien agricole.','Mettre en place une surveillance renforcee.','Prevoir un traitement adapte.'];
 }
 
+function formatCultureLabel(culture) {
+  var map = { ble: 'Blé', mais: 'Maïs', tournesol: 'Tournesol', colza: 'Colza', vigne: 'Vigne' };
+  return map[culture] || culture || 'Culture';
+}
+
+function buildDiagnosticTitle(culture, nom) {
+  var prefixes = ['Analyse', 'Diagnostic', 'Rapport', 'Observation'];
+  var prefix = prefixes[Math.floor(Math.random() * prefixes.length)];
+  return prefix + ' ' + formatCultureLabel(culture) + ' - ' + nom;
+}
+
+function formatDateTime(ts) {
+  var d = new Date(ts || Date.now());
+  return d.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' }) + ' ' + d.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+}
+
 /* ---------- DIAG HISTORY ---------- */
 
 function getDiagKey() { return 'agria_diagnostics_' + getUserId(); }
@@ -584,7 +600,7 @@ function renderDiagnosticHistory() {
       var d = diags[i];
       var badgeClass = d.gravite === 'danger' ? 'badge-danger' : d.gravite === 'warning' ? 'badge-warning' : 'badge-info';
       var item = document.createElement('div'); item.className = 'card diag-history-item reveal';
-      item.innerHTML = '<div class="diag-history-header"><span class="badge ' + badgeClass + '">' + d.nom + '</span><span class="diag-history-date">' + (d.date || '') + '</span></div><div class="diag-history-meta">' + (d.culture || '?') + ' - ' + (d.ville || '?') + ' - ' + (d.symptomes ? d.symptomes.length + ' symptomes' : '') + '</div>';
+      item.innerHTML = '<div class="diag-history-header"><span class="badge ' + badgeClass + '">' + (d.titre || d.nom) + '</span><span class="diag-history-date">' + (d.createdAt ? formatDateTime(d.createdAt) : (d.date || '')) + '</span></div><div class="diag-history-meta">' + (d.culture || '?') + ' - ' + (d.ville || '?') + ' - ' + (d.symptomes ? d.symptomes.length + ' symptomes' : '') + '</div>';
       (function(diag) { item.addEventListener('click', function() { showDiagDetail(diag); }); })(d);
       container.appendChild(item);
     }
@@ -593,11 +609,11 @@ function renderDiagnosticHistory() {
 }
 
 function showDiagDetail(diag) {
-  var html = '<h2 class="sheet-title">' + diag.nom + '</h2>' +
+  var html = '<h2 class="sheet-title">' + (diag.titre || diag.nom) + '</h2>' +
     '<div class="form-group"><span class="badge ' + (diag.gravite==='danger'?'badge-danger':diag.gravite==='warning'?'badge-warning':'badge-info') + '">' + (diag.gravite==='danger'?'Urgent':diag.gravite==='warning'?'Attention':'Info') + '</span></div>' +
     '<div class="form-group"><label class="form-label">Culture</label><p style="font-size:14px;color:var(--text)">' + (diag.culture||'?') + '</p></div>' +
     '<div class="form-group"><label class="form-label">Ville</label><p style="font-size:14px;color:var(--text)">' + (diag.ville||'?') + '</p></div>' +
-    '<div class="form-group"><label class="form-label">Date</label><p style="font-size:14px;color:var(--text)">' + (diag.date||'?') + '</p></div>' +
+    '<div class="form-group"><label class="form-label">Date</label><p style="font-size:14px;color:var(--text)">' + (diag.createdAt ? formatDateTime(diag.createdAt) : (diag.date||'?')) + '</p></div>' +
     '<div class="form-group"><label class="form-label">Symptomes</label><p style="font-size:14px;color:var(--text)">' + (diag.symptomes?diag.symptomes.join(', '):'?') + '</p></div>' +
     '<div class="form-group"><label class="form-label">Explication</label><p style="font-size:13px;color:var(--text-secondary);line-height:1.6">' + (diag.explication||'?') + '</p></div>' +
     '<div class="form-group"><label class="form-label">Recommandations</label><ul class="diag-reco-list">';
@@ -609,7 +625,7 @@ function showDiagDetail(diag) {
 function renderResultat(diagnostic) {
   var badge = document.getElementById('diagBadge');
   if (badge) { var bc, bt; if (diagnostic.gravite==='danger'){bc='badge-danger';bt='Urgent';} else if(diagnostic.gravite==='warning'){bc='badge-warning';bt='Attention';} else{bc='badge-info';bt='Information';} badge.className='badge '+bc; badge.textContent=bt; }
-  var titre = document.getElementById('diagTitre'); if (titre) scrambleEffect(titre, 'Diagnostic : ' + diagnostic.nom, 800);
+  var titre = document.getElementById('diagTitre'); if (titre) scrambleEffect(titre, buildDiagnosticTitle(window.currentDiagnostic ? window.currentDiagnostic.culture : '', diagnostic.nom), 800);
   var explication = document.getElementById('diagExplication'); if (explication) typewriterEffect(explication, diagnostic.explication, 25);
   var meteoGrid = document.getElementById('diagMeteoGrid');
   if (meteoGrid) meteoGrid.innerHTML = '<div class="diag-meteo-item">Precip. 7 jours<strong>' + calculPrecipTotal(diagnostic.meteo.precipitations7j) + ' mm</strong></div><div class="diag-meteo-item">T max moy.<strong>' + calculMoyenne(diagnostic.meteo.tempMax) + ' C</strong></div><div class="diag-meteo-item">T min moy.<strong>' + calculMoyenne(diagnostic.meteo.tempMin) + ' C</strong></div>';
@@ -933,7 +949,7 @@ function initDiagnostic() {
   for (var k = 0; k < boutonsRetour.length; k++) { boutonsRetour[k].addEventListener('click', function() { changerEtape(parseInt(this.getAttribute('data-prev'))); }); }
 
   var btnAnalyser = document.getElementById('btnAnalyser');
-  if (btnAnalyser) { btnAnalyser.addEventListener('click', async function() { var cb = document.querySelectorAll('#etape2 input[type="checkbox"]:checked'); symptomesChoisis = []; for (var m = 0; m < cb.length; m++) symptomesChoisis.push(cb[m].value); var vi = document.getElementById('diagnosticVille'); var ville = vi ? vi.value.trim() : 'Paris'; if (!ville) ville = 'Paris'; btnAnalyser.disabled = true; btnAnalyser.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Analyse...'; try { var coords = await fetchCoordonnees(ville); var meteoData = await fetchOpenMeteo(coords.lat, coords.lon); var diagnostic = genererDiagnostic(cultureChoisie, symptomesChoisis, meteoData); var diagToSave = { nom: diagnostic.nom, gravite: diagnostic.gravite, explication: diagnostic.explication, recommandations: diagnostic.recommandations, culture: cultureChoisie, symptomes: symptomesChoisis, ville: ville, meteo: meteoData, date: new Date().toLocaleDateString('fr-FR',{day:'numeric',month:'short',year:'numeric'})+' '+new Date().toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'}) }; window.currentDiagnostic = diagToSave; addDiagnostic(diagToSave); renderDiagnosticHistory(); renderResultat(diagnostic); var form = document.getElementById('diagnosticForm'), resultat = document.getElementById('diagnosticResultat'), steps = document.getElementById('diagnosticSteps'); if (form) { form.style.opacity = '0'; form.style.transition = 'opacity 0.15s'; } if (resultat) { resultat.classList.remove('d-none'); resultat.style.opacity = '0'; resultat.style.transition = 'opacity 0.3s var(--ease-spring)'; } setTimeout(function() { if (form) form.classList.add('d-none'); if (resultat) resultat.style.opacity = '1'; }, 150); if (steps) steps.classList.add('d-none'); } catch (err) { showToast('Erreur : ' + err.message, 'error'); } btnAnalyser.disabled = false; btnAnalyser.innerHTML = '<i class="fa-solid fa-magnifying-glass"></i> Analyser'; }); }
+  if (btnAnalyser) { btnAnalyser.addEventListener('click', async function() { var cb = document.querySelectorAll('#etape2 input[type="checkbox"]:checked'); symptomesChoisis = []; for (var m = 0; m < cb.length; m++) symptomesChoisis.push(cb[m].value); var vi = document.getElementById('diagnosticVille'); var ville = vi ? vi.value.trim() : 'Paris'; if (!ville) ville = 'Paris'; btnAnalyser.disabled = true; btnAnalyser.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Analyse...'; try { var coords = await fetchCoordonnees(ville); var meteoData = await fetchOpenMeteo(coords.lat, coords.lon); var diagnostic = genererDiagnostic(cultureChoisie, symptomesChoisis, meteoData); var createdAt = Date.now(); var diagToSave = { nom: diagnostic.nom, titre: buildDiagnosticTitle(cultureChoisie, diagnostic.nom), gravite: diagnostic.gravite, explication: diagnostic.explication, recommandations: diagnostic.recommandations, culture: cultureChoisie, symptomes: symptomesChoisis, ville: ville, meteo: meteoData, createdAt: createdAt, date: formatDateTime(createdAt) }; window.currentDiagnostic = diagToSave; addDiagnostic(diagToSave); renderDiagnosticHistory(); renderResultat(diagnostic); var form = document.getElementById('diagnosticForm'), resultat = document.getElementById('diagnosticResultat'), steps = document.getElementById('diagnosticSteps'); if (form) { form.style.opacity = '0'; form.style.transition = 'opacity 0.15s'; } if (resultat) { resultat.classList.remove('d-none'); resultat.style.opacity = '0'; resultat.style.transition = 'opacity 0.3s var(--ease-spring)'; } setTimeout(function() { if (form) form.classList.add('d-none'); if (resultat) resultat.style.opacity = '1'; }, 150); if (steps) steps.classList.add('d-none'); } catch (err) { showToast('Erreur : ' + err.message, 'error'); } btnAnalyser.disabled = false; btnAnalyser.innerHTML = '<i class="fa-solid fa-magnifying-glass"></i> Analyser'; }); }
 
   var btnNouveau = document.getElementById('btnNouveauDiagnostic');
   if (btnNouveau) { btnNouveau.addEventListener('click', function() { var form = document.getElementById('diagnosticForm'), resultat = document.getElementById('diagnosticResultat'), steps = document.getElementById('diagnosticSteps'); if (form) { form.classList.remove('d-none'); form.style.opacity = '0'; form.style.transition = 'opacity 0.3s var(--ease-spring)'; } if (resultat) { resultat.style.opacity = '0'; resultat.style.transition = 'opacity 0.15s'; } setTimeout(function() { if (resultat) resultat.classList.add('d-none'); if (form) form.style.opacity = '1'; }, 150); if (steps) steps.classList.remove('d-none'); var radios = document.querySelectorAll('input[name="culture"]'); for (var n = 0; n < radios.length; n++) radios[n].checked = false; var checks = document.querySelectorAll('#etape2 input[type="checkbox"]'); for (var q = 0; q < checks.length; q++) checks[q].checked = false; var vi = document.getElementById('diagnosticVille'); if (vi) vi.value = ''; cultureChoisie = null; symptomesChoisis = []; etapeCourante = 1; window.currentDiagnostic = null; changerEtape(1); }); }

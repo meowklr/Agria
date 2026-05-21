@@ -20,6 +20,15 @@ const CI: Record<string,keyof typeof Ionicons.glyphMap> = { ble:'leaf', mais:'le
 const SYMPS = ['jaunissement','taches','fletrissement','insectes','croissance','pourriture'];
 const SL: Record<string,string> = { jaunissement:'Jaunissement', taches:'Taches brunes', fletrissement:'Fletrissement', insectes:"Presence d'insectes", croissance:'Croissance ralentie', pourriture:'Pourriture' };
 
+function labelCulture(culture: string) {
+  const map: Record<string, string> = { ble: 'Blé', mais: 'Maïs', tournesol: 'Tournesol', colza: 'Colza', vigne: 'Vigne' };
+  return map[culture] || culture || 'Culture';
+}
+
+function buildDiagTitle(culture: string, nom: string) {
+  return `Analyse ${labelCulture(culture)} - ${nom}`;
+}
+
 export default function DiagnosticScreen() {
   const { result, history, loading, analyse, reset, loadHistory } = useDiagnostic();
   const [step, setStep] = useState(1); const [culture, setCulture] = useState(''); const [sympts, setSympts] = useState<string[]>([]); const [ville, setVille] = useState('');
@@ -61,10 +70,11 @@ export default function DiagnosticScreen() {
 
       // Make.com doit absolument comporter un module "Webhook Response" finale retournant le texte !
       const responseText = await res.text();
+      const notificationTitle = buildDiagTitle(culture, result.nom);
 
       await Notifications.scheduleNotificationAsync({
         content: {
-          title: "Analyse terminée 🌾",
+          title: notificationTitle,
           body: "Votre diagnostic détaillé a été généré par l'IA. Appuyez pour le consulter.",
           data: { reportText: responseText },
         },
@@ -72,7 +82,7 @@ export default function DiagnosticScreen() {
       });
 
       // Enregistrer aussi dans la cloche interne de l'app
-      try { await add('Analyse terminée 🌾', responseText); } catch (e) { console.warn('Erreur en sauvegardant la notif interne', e); }
+      try { await add(notificationTitle, responseText); } catch (e) { console.warn('Erreur en sauvegardant la notif interne', e); }
 
       Alert.alert('Envoyé', 'L\'analyse a été effectuée et envoyée avec succès.');
     } catch (e) {
@@ -119,7 +129,7 @@ export default function DiagnosticScreen() {
     </> : <View>
       <Card style={{ marginBottom: 16 }}>
         <View style={{ marginBottom: 12 }}><Badge text={result.gravite === 'danger' ? 'Urgent' : result.gravite === 'warning' ? 'Attention' : 'Info'} variant={result.gravite} /></View>
-        <Text style={{ fontSize: 20, fontWeight: '600', color: colors.text, marginBottom: 10, fontFamily: fontFamily.serif }}>Diagnostic : {result.nom}</Text>
+        <Text style={{ fontSize: 20, fontWeight: '600', color: colors.text, marginBottom: 10, fontFamily: fontFamily.serif }}>{buildDiagTitle(culture, result.nom)}</Text>
         <Text style={{ fontSize: 14, color: colors.textSecondary, lineHeight: 22 }}>{result.explication}</Text>
       </Card>
       <Card style={{ marginBottom: 16 }}>
@@ -147,7 +157,7 @@ export default function DiagnosticScreen() {
       {history.map((h, i) => <Card key={i} style={{ marginBottom: 10 }}>
         <TouchableOpacity onPress={() => setExpanded(expanded === i ? null : i)} activeOpacity={0.7}>
           <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
-            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}><Badge text={h.nom} variant={h.gravite} /><Ionicons name={expanded === i ? 'chevron-up' : 'chevron-down'} size={14} color={colors.textMuted} /></View>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}><Badge text={h.titre || h.nom} variant={h.gravite} /><Ionicons name={expanded === i ? 'chevron-up' : 'chevron-down'} size={14} color={colors.textMuted} /></View>
             <Text style={{ fontSize: 11, color: colors.textMuted }}>{h.date}</Text>
           </View>
           <Text style={{ fontSize: 12, color: colors.textMuted }}>{h.culture} - {h.ville} - {h.symptomes.length} symptomes</Text>
