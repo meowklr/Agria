@@ -645,9 +645,40 @@ async function renderProfileStats() {
   nb.textContent = champs.length;
   var totalHa = 0; for (var i = 0; i < champs.length; i++) totalHa += parseFloat(champs[i].surface) || 0;
   surface.textContent = totalHa.toFixed(1) + ' ha';
+  // Ensure the stat numbers fit on one line by shrinking font-size if necessary
+  autoFitNumber(nb);
+  autoFitNumber(surface);
+  autoFitNumber(cultures);
   var listeCultures = []; for (var j = 0; j < champs.length; j++) { if (champs[j].culture && listeCultures.indexOf(champs[j].culture) === -1) listeCultures.push(champs[j].culture); }
   cultures.textContent = listeCultures.length > 0 ? listeCultures.join(', ') : 'Aucune';
 }
+
+// Shrink-to-fit helper: reduce font-size until content fits within its container
+function autoFitNumber(el) {
+  if (!el) return;
+  // start from computed font-size or 22
+  var cs = window.getComputedStyle(el);
+  var base = parseFloat(cs.fontSize) || 22;
+  var min = 10;
+  var fs = base;
+  el.style.whiteSpace = 'nowrap';
+  el.style.display = 'inline-block';
+  el.style.fontSize = fs + 'px';
+  // try to shrink until it fits
+  while (el.scrollWidth > el.clientWidth && fs > min) {
+    fs -= 1;
+    el.style.fontSize = fs + 'px';
+  }
+}
+
+function fitAllStatsDebounced() {
+  if (window._fitStatsTimeout) clearTimeout(window._fitStatsTimeout);
+  window._fitStatsTimeout = setTimeout(function() {
+    var els = document.querySelectorAll('.stat-value'); els.forEach(autoFitNumber);
+  }, 120);
+}
+
+window.addEventListener('resize', fitAllStatsDebounced);
 
 async function initProfil() {
   var profile = await loadProfile();
@@ -658,14 +689,14 @@ async function initProfil() {
   var inputEmail = document.getElementById('profilEmail'), inputTel = document.getElementById('profilTel');
   if (inputPrenom) inputPrenom.value = profile.prenom || '';
   if (inputNom) inputNom.value = profile.nom || '';
-  if (inputEmail) inputEmail.value = emailUser;
+  if (inputEmail) inputEmail.value = profile.email || emailUser || '';
   if (inputTel) inputTel.value = profile.telephone || '';
 
   var avatar = document.getElementById('profilAvatar');
   if (avatar) { var p = (profile.prenom || 'A')[0].toUpperCase(); var n = (profile.nom || 'A')[0].toUpperCase(); avatar.textContent = p + n; }
 
   var btnSaveId = document.getElementById('btnSaveIdentite');
-  if (btnSaveId) { btnSaveId.addEventListener('click', async function() { profile.prenom = inputPrenom ? inputPrenom.value.trim() : ''; profile.nom = inputNom ? inputNom.value.trim() : ''; profile.telephone = inputTel ? inputTel.value.trim() : ''; await saveProfile(profile); if (avatar) { var pp = (profile.prenom||'A')[0].toUpperCase(); var nn = (profile.nom||'A')[0].toUpperCase(); avatar.textContent = pp + nn; } showToast('Profil sauvegarde.', 'success'); }); }
+  if (btnSaveId) { btnSaveId.addEventListener('click', async function() { profile.prenom = inputPrenom ? inputPrenom.value.trim() : ''; profile.nom = inputNom ? inputNom.value.trim() : ''; profile.telephone = inputTel ? inputTel.value.trim() : ''; profile.email = inputEmail ? inputEmail.value.trim() : (profile.email||''); await saveProfile(profile); if (avatar) { var pp = (profile.prenom||'A')[0].toUpperCase(); var nn = (profile.nom||'A')[0].toUpperCase(); avatar.textContent = pp + nn; } showToast('Profil sauvegarde.', 'success'); }); }
 
   var inputExpl = document.getElementById('profilExploitationNom'), inputSiret = document.getElementById('profilSiret'), selectType = document.getElementById('profilTypeAgri');
   if (inputExpl) inputExpl.value = profile.exploitation || '';
