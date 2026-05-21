@@ -54,4 +54,34 @@ export async function dpLoadAll<T>(prefix: string): Promise<T[]> {
   for (const k of keys) { if (k && k.indexOf(prefix) === 0) { try { const v = await AsyncStorage.getItem(k); if (v) r.push(JSON.parse(v)); } catch {} } }
   return r;
 }
+
+export async function dpLoadAllObjects<T>(prefix: string): Promise<Array<{ key: string; value: T }>> {
+  const database = getDb();
+  if (database) {
+    try {
+      const snap = await get(ref(database, 'agriaData'));
+      if (snap.exists()) {
+        const data = snap.val();
+        const r: Array<{ key: string; value: T }> = [];
+        const sp = safeKey(prefix);
+        for (const k in data) {
+          if (k.indexOf(sp) === 0 && data[k]) r.push({ key: k, value: data[k] });
+        }
+        if (r.length > 0) return r;
+      }
+    } catch {}
+  }
+  const r: Array<{ key: string; value: T }> = [];
+  const keys = await AsyncStorage.getAllKeys();
+  for (const k of keys) {
+    if (k && k.indexOf(prefix) === 0) {
+      try {
+        const v = await AsyncStorage.getItem(k);
+        if (v) r.push({ key: k, value: JSON.parse(v) });
+      } catch {}
+    }
+  }
+  return r;
+}
+
 export function dpGetAllKeys(prefix: string): string[] { return []; }
