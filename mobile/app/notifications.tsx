@@ -1,22 +1,33 @@
-import React, { useEffect } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, Alert } from 'react-native';
-import { router } from 'expo-router';
+import React, { useEffect, useMemo, useState } from 'react';
+import { View, Text, ScrollView, TouchableOpacity } from 'react-native';
+import { router, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { colors, radius, fontFamily } from '@/theme';
 import { useNotifications } from '@/hooks/useNotifications';
-import * as Haptics from 'expo-haptics';
 
 export default function NotificationsScreen() {
   const { notifs, markRead, markAllRead, reload } = useNotifications();
   const insets = useSafeAreaInsets();
+  const params = useLocalSearchParams<{ reportTitle?: string; reportText?: string }>();
+  const [openedReport, setOpenedReport] = useState<{ title: string; text: string } | null>(null);
 
   useEffect(() => { reload(); }, []);
+  useEffect(() => {
+    if (params.reportText) {
+      setOpenedReport({ title: params.reportTitle || 'Analyse terminée', text: String(params.reportText) });
+    }
+  }, [params.reportText, params.reportTitle]);
 
   const handlePress = (n: any) => {
     markRead(n.id);
-    Alert.alert(n.title, n.text);
+    setOpenedReport({ title: n.title, text: n.text });
   };
+
+  const reportPreview = useMemo(() => {
+    if (!openedReport) return '';
+    return openedReport.text.length > 260 ? openedReport.text.slice(0, 260) + '…' : openedReport.text;
+  }, [openedReport]);
 
   return (
     <View style={{ flex: 1, backgroundColor: colors.bg }}>
@@ -32,6 +43,20 @@ export default function NotificationsScreen() {
         )}
       </View>
       <ScrollView contentContainerStyle={{ padding: 16 }}>
+        {openedReport && (
+          <View style={{ marginBottom: 16, backgroundColor: colors.surface, borderRadius: radius.lg, borderWidth: 1, borderColor: colors.border, padding: 16, gap: 10 }}>
+            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+              <Text style={{ fontSize: 16, fontWeight: '700', color: colors.text, flex: 1, fontFamily: fontFamily.sans }}>{openedReport.title}</Text>
+              <TouchableOpacity onPress={() => setOpenedReport(null)} style={{ paddingLeft: 12 }}>
+                <Ionicons name="close" size={18} color={colors.textMuted} />
+              </TouchableOpacity>
+            </View>
+            <Text style={{ fontSize: 13, color: colors.textSecondary, fontFamily: fontFamily.sans, lineHeight: 20 }}>{openedReport.text}</Text>
+            {reportPreview.length > 0 && reportPreview !== openedReport.text && (
+              <Text style={{ fontSize: 11, color: colors.textMuted, fontFamily: fontFamily.sans }}>Le rapport est tronqué à l’écran. Ouvre la notification pour revenir ici.</Text>
+            )}
+          </View>
+        )}
         {notifs.length === 0 ? (
           <Text style={{ textAlign: 'center', color: colors.textMuted, marginTop: 40, fontFamily: fontFamily.sans }}>Aucune notification.</Text>
         ) : (

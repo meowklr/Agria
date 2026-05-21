@@ -193,6 +193,55 @@ function getUserId() {
 function getPrefsKey() { return 'agria_prefs_' + getUserId(); }
 function getChampsKey() { return 'agria_champs_' + getUserId(); }
 function getProfileKey() { return 'agria_user_profile_' + getUserId(); }
+function getNotificationsKey() { return 'agria_notifications_' + getUserId(); }
+
+function formatNotificationDate(ts) {
+  var d = new Date(ts || Date.now());
+  return d.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' }) + ' ' + d.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+}
+
+async function loadNotifications() { return await dpLoad(getNotificationsKey(), []); }
+async function saveNotifications(notifs) { await dpSave(getNotificationsKey(), notifs); }
+
+async function addNotification(title, text, meta) {
+  var notifs = await loadNotifications();
+  var now = Date.now();
+  var item = { id: generateId(), title: title, text: text, meta: meta || {}, read: false, createdAt: now, date: formatNotificationDate(now) };
+  notifs.unshift(item);
+  if (notifs.length > 30) notifs = notifs.slice(0, 30);
+  await saveNotifications(notifs);
+  return item;
+}
+
+async function markNotificationRead(id) {
+  var notifs = await loadNotifications();
+  var updated = notifs.map(function(n) { return n.id === id ? Object.assign({}, n, { read: true }) : n; });
+  await saveNotifications(updated);
+  return updated;
+}
+
+async function markAllNotificationsRead() {
+  var notifs = await loadNotifications();
+  var updated = notifs.map(function(n) { return Object.assign({}, n, { read: true }); });
+  await saveNotifications(updated);
+  return updated;
+}
+
+function getUnreadNotificationCount(notifs) {
+  var count = 0;
+  for (var i = 0; i < notifs.length; i++) if (!notifs[i].read) count++;
+  return count;
+}
+
+function updateNotificationBadge() {
+  var badge = document.getElementById('notifBadge');
+  if (!badge) return;
+  loadNotifications().then(function(notifs) {
+    var count = getUnreadNotificationCount(notifs);
+    if (count > 0) { badge.textContent = count > 99 ? '99+' : String(count); badge.classList.remove('d-none'); }
+    else { badge.classList.add('d-none'); }
+  });
+}
 
 /* ---------- EFFECTS ---------- */
 
@@ -632,6 +681,18 @@ function renderResultat(diagnostic) {
   var recos = document.getElementById('diagRecommandations'); if (recos) { recos.innerHTML = ''; for (var i = 0; i < diagnostic.recommandations.length; i++) { var li = document.createElement('li'); li.innerHTML = '<i class="fa-solid fa-circle-check"></i>' + diagnostic.recommandations[i]; recos.appendChild(li); } }
 }
 
+function renderWebNotificationDetail(notif) {
+  var container = document.getElementById('notifDetailCard');
+  if (!container) return;
+  var title = notif ? (notif.title || 'Notification') : 'Notification';
+  var text = notif ? (notif.text || '') : '';
+  var date = notif ? (notif.date || formatNotificationDate(notif.createdAt)) : '';
+  container.style.display = 'block';
+  container.innerHTML = '<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:10px"><div><div class="badge badge-info" style="margin-bottom:8px">Rapport reçu</div><h2 class="section-title" style="margin-bottom:6px">' + title + '</h2><div class="diag-history-date">' + date + '</div></div><button type="button" class="btn btn-secondary" style="width:auto;min-height:40px;padding:0 14px" id="closeNotifDetailBtn">Fermer</button></div><div class="card" style="background:var(--bg);box-shadow:none"><p style="white-space:pre-wrap;color:var(--text-secondary);line-height:1.7;font-size:14px">' + text + '</p></div>';
+  var closeBtn = document.getElementById('closeNotifDetailBtn');
+  if (closeBtn) closeBtn.addEventListener('click', function() { container.style.display = 'none'; container.innerHTML = ''; });
+}
+
 /* ---------- MODAL ---------- */
 
 function openSheet(contentHtml) {
@@ -928,6 +989,9 @@ async function renderDashboardStats() {
 
 async function initDashboard() {
   var ville = getDefaultVille(); chargerMeteo(ville);
+  updateNotificationBadge();
+  var notifBtn = document.getElementById('headerNotifBtn');
+  if (notifBtn) notifBtn.addEventListener('click', function() { transitionPage('notifications.html'); });
   var searchInput = document.getElementById('meteoVilleInput');
   if (searchInput) { searchInput.value = ''; searchInput.placeholder = 'Rechercher une ville...'; initCitySearch(searchInput, function(sel) { setDefaultVille(sel); chargerMeteo(sel); searchInput.value = sel; }); }
   var searchBtn = document.getElementById('meteoSearchBtn');
@@ -971,11 +1035,15 @@ function initDiagnostic() {
       try {
         btnDetailedDiag.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Envoi en cours...';
         btnDetailedDiag.disabled = true;
-        await fetch(webhookUrl, {
+        var response = await fetch(webhookUrl, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payloadToMake)
         });
+        var responseText = await response.text();
+        var notifTitle = buildDiagnosticTitle(window.currentDiagnostic.culture, window.currentDiagnostic.nom);
+        await addNotification(notifTitle, responseText, { source: 'make-webhook', culture: window.currentDiagnostic.culture, ville: window.currentDiagnostic.ville });
+        updateNotificationBadge();
         showToast('Votre demande a bien ete envoyee a l\'IA via Make.', 'success');
       } catch (err) {
         console.error(err);
@@ -987,10 +1055,50 @@ function initDiagnostic() {
     });
   }
 
+  updateNotificationBadge();
+
   function changerEtape(numero) { etapeCourante = numero; var etapes = document.querySelectorAll('.diag-etape'); for (var i = 0; i < etapes.length; i++) etapes[i].classList.remove('active'); var etapeActive = document.getElementById('etape'+numero); if (etapeActive) etapeActive.classList.add('active'); var steps = document.querySelectorAll('.diag-steps .step'); for (var j = 0; j < steps.length; j++) { var sn = parseInt(steps[j].getAttribute('data-step')); steps[j].classList.remove('active','completed'); if (sn === numero) steps[j].classList.add('active'); else if (sn < numero) steps[j].classList.add('completed'); } }
 
   var lastCulture = localStorage.getItem('agria_last_culture'); if (lastCulture) { var radio = document.querySelector('input[name="culture"][value="'+lastCulture+'"]'); if (radio) radio.checked = true; }
   renderDiagnosticHistory();
+}
+
+function initNotificationsPage() {
+  var list = document.getElementById('notifList');
+  var countBadge = document.getElementById('notifCountBadge');
+  var backBtn = document.getElementById('notifBackBtn');
+  var markAllBtn = document.getElementById('notifMarkAllBtn');
+  var detailCard = document.getElementById('notifDetailCard');
+
+  if (backBtn) backBtn.addEventListener('click', function() { transitionPage('dashboard.html'); });
+  if (markAllBtn) markAllBtn.addEventListener('click', async function() { await markAllNotificationsRead(); renderNotificationsPage(); updateNotificationBadge(); });
+
+  async function renderNotificationsPage() {
+    if (!list) return;
+    var notifs = await loadNotifications();
+    if (countBadge) countBadge.textContent = String(getUnreadNotificationCount(notifs));
+    list.innerHTML = '';
+
+    if (notifs.length === 0) {
+      list.innerHTML = '<p class="diag-history-empty">Aucune notification.</p>';
+      if (detailCard) { detailCard.style.display = 'none'; detailCard.innerHTML = ''; }
+      return;
+    }
+
+    for (var i = 0; i < notifs.length; i++) {
+      (function(n) {
+        var item = document.createElement('button');
+        item.type = 'button';
+        item.className = 'card';
+        item.style.cssText = 'width:100%;text-align:left;margin-bottom:10px;display:block;background:' + (n.read ? 'var(--surface)' : '#FEF3F0') + ';border-color:' + (n.read ? 'var(--border)' : 'rgba(217, 83, 79, 0.2)') + ';';
+        item.innerHTML = '<div class="diag-history-header"><span class="badge ' + (n.read ? 'badge-info' : 'badge-danger') + '">' + n.title + '</span><span class="diag-history-date">' + (n.date || formatNotificationDate(n.createdAt)) + '</span></div><div class="diag-history-meta" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + (n.text || '') + '</div>';
+        item.addEventListener('click', async function() { await markNotificationRead(n.id); await renderNotificationsPage(); renderWebNotificationDetail(n); updateNotificationBadge(); });
+        list.appendChild(item);
+      })(notifs[i]);
+    }
+  }
+
+  renderNotificationsPage();
 }
 
 /* ---------- BOOT ---------- */
@@ -1002,4 +1110,5 @@ document.addEventListener('DOMContentLoaded', function() {
   if (page === 'dashboard') initDashboard();
   if (page === 'diagnostic') initDiagnostic();
   if (page === 'profil') initProfil();
+  if (page === 'notifications') initNotificationsPage();
 });

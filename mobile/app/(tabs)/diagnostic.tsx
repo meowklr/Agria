@@ -44,13 +44,6 @@ export default function DiagnosticScreen() {
   }
   useEffect(() => { 
     loadHistory(); 
-    const subscription = Notifications.addNotificationResponseReceivedListener(response => {
-      const data = response.notification.request.content.data as any;
-      if (data && data.reportText) {
-        Alert.alert("Rapport complet de l'IA", data.reportText as string);
-      }
-    });
-    return () => subscription.remove();
   }, []);
   const { add } = useNotifications();
   const ts = (s: string) => setSympts(p => p.includes(s) ? p.filter(x => x !== s) : [...p, s]);
@@ -80,7 +73,7 @@ export default function DiagnosticScreen() {
         content: {
           title: notificationTitle,
           body: "Votre diagnostic détaillé a été généré par l'IA. Appuyez pour le consulter.",
-          data: { reportText: responseText },
+          data: { reportTitle: notificationTitle, reportText: responseText },
         },
         trigger: null,
       });
