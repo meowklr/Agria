@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'; import { View, Text, ScrollView, Switch, TouchableOpacity, Modal, Linking } from 'react-native'; import { router } from 'expo-router'; import * as Haptics from 'expo-haptics'; import { useSafeAreaInsets } from 'react-native-safe-area-context'; import { Ionicons } from '@expo/vector-icons'; import { colors, fontFamily } from '../../src/theme'; import { Card } from '../../src/components/Card'; import { Button } from '../../src/components/Button'; import { Input } from '../../src/components/Input'; import { SectionTitle } from '../../src/components/Typography'; import { useProfile } from '../../src/hooks/useProfile'; import { logout } from '../../src/services/auth';
+import React, { useEffect, useState } from 'react'; import { View, Text, ScrollView, Switch, TouchableOpacity, Modal } from 'react-native'; import { router } from 'expo-router'; import * as Haptics from 'expo-haptics'; import { useSafeAreaInsets } from 'react-native-safe-area-context'; import { Ionicons } from '@expo/vector-icons'; import { colors, fontFamily } from '../../src/theme'; import { Card } from '../../src/components/Card'; import { Button } from '../../src/components/Button'; import { Input } from '../../src/components/Input'; import { SectionTitle } from '../../src/components/Typography'; import { useProfile } from '../../src/hooks/useProfile'; import { logout } from '../../src/services/auth';
 
 export default function ProfilScreen() {
   const { profile, prefs, stats, saveProfile, savePrefs } = useProfile();
@@ -59,7 +59,7 @@ export default function ProfilScreen() {
       <View style={{ flexDirection: 'row', gap: 16, paddingVertical: 8 }}>
         {[
           { icon: 'logo-facebook' as const, label: 'Facebook' },
-          { icon: 'logo-twitter' as const, label: 'X / Twitter' },
+          { icon: 'logo-twitter' as const, label: 'X' },
           { icon: 'logo-instagram' as const, label: 'Instagram' },
           { icon: 'logo-linkedin' as const, label: 'LinkedIn' },
         ].map((r, i) => (

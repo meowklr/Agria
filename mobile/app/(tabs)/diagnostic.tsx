@@ -6,6 +6,8 @@ Notifications.setNotificationHandler({
     shouldShowAlert: true,
     shouldPlaySound: true,
     shouldSetBadge: false,
+    shouldShowBanner: true,
+    shouldShowList: true,
   }),
 }); import { Badge } from '../../src/components/Badge'; import { Button } from '../../src/components/Button'; import { Input } from '../../src/components/Input'; import { SectionTitle } from '../../src/components/Typography'; import { LoaderBar } from '../../src/components/LoaderBar'; import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useDiagnostic } from '../../src/hooks/useDiagnostic';
@@ -28,9 +30,9 @@ export default function DiagnosticScreen() {
   useEffect(() => { 
     loadHistory(); 
     const subscription = Notifications.addNotificationResponseReceivedListener(response => {
-      const data = response.notification.request.content.data;
+      const data = response.notification.request.content.data as any;
       if (data && data.reportText) {
-        Alert.alert("Rapport complet de l'IA", data.reportText);
+        Alert.alert("Rapport complet de l'IA", data.reportText as string);
       }
     });
     return () => subscription.remove();

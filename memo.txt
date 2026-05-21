@@ -27,3 +27,8 @@ design :
 
  - ajouter a l'endroit aduequat la possibilité d'acces a des (fictives, le projet est une maquette) : Mentions légales, CGU, Contact, Liens vers réseaux sociaux
  - 
+
+
+soucis : les badges de nom de parcelles ne fonctionnent toujours pas. en fait le bage et le nom de la parcelle sont maintenant bien liés et le nom est dans le badge, mais leur comportement est mauvais. il faut que le badge soit lié a la position de sa parcelle correspondante, et il doit etre fixe. cependant, on doit pouvoir le voir distinctemement peu importe le niveau de zoom, SAUF si evidemment, le badge est en dehors de la surface visible de la carte.
+
+fix design mineurs : affichage du nombre d'hectares en badges trop long, carte identité mal disposée.
