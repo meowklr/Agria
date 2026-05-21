@@ -51,7 +51,7 @@ export async function register(email: string, password: string): Promise<string>
   const userId = generateId();
   const hashed = hashPwd(password);
   await AsyncStorage.setItem(credKey(e), JSON.stringify({ password: hashed, userId, pwd: password, lastLogin: Date.now() }));
-  await AsyncStorage.setItem(uidKey(e), userId);
+  await AsyncStorage.setItem(uidKey(e), JSON.stringify({ userId, email: e }));
   await AsyncStorage.setItem('agria_session', JSON.stringify({ userId, email: e, lastLogin: Date.now() }));
   return userId;
 }

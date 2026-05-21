@@ -1,5 +1,5 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { dpLoad, dpSave, dpRemove } from './firebase';
+import { dpLoad, dpSave, dpRemove, dpListKeys } from './firebase';
 import { generateId } from './auth';
 import type { Champ } from './champs';
 import type { Profile } from '../hooks/useProfile';
@@ -41,102 +41,84 @@ export async function loadLogs(): Promise<AdminLog[]> {
   return dpLoad<AdminLog[]>(LOG_KEY, []);
 }
 
-export async function getUserPassword(email: string): Promise<string | null> {
-  try {
-    const raw = await AsyncStorage.getItem('agria_cred_' + email.trim().toLowerCase());
-    if (!raw) return null;
-    return JSON.parse(raw).pwd || null;
-  } catch { return null; }
-}
-
-export async function forceLogoutUser(email: string): Promise<void> {
-  const e = email.trim().toLowerCase();
-  const raw = await AsyncStorage.getItem('agria_cred_' + e);
-  if (raw) {
-    const cred = JSON.parse(raw);
-    await AsyncStorage.setItem('agria_force_logout_' + cred.userId, 'true');
-    await logAction('Deconnexion forcee', `${e} deconnecte`, 'danger');
-  }
-}
-
-export async function checkForceLogout(userId: string): Promise<boolean> {
-  const v = await AsyncStorage.getItem('agria_force_logout_' + userId);
-  return v === 'true';
-}
-
-export async function clearForceLogout(userId: string): Promise<void> {
-  await AsyncStorage.removeItem('agria_force_logout_' + userId);
-}
-
-export async function deleteOwnAccount(userId: string): Promise<void> {
-  const keys = await AsyncStorage.getAllKeys();
-  const uidKeys = keys.filter(k => k.startsWith('agria_uid_'));
-  for (const k of uidKeys) {
-    const uid = await AsyncStorage.getItem(k);
-    if (uid === userId) {
-      await dpRemove(k);
-      const email = k.replace('agria_uid_', '');
-      await dpRemove('agria_cred_' + email);
-      break;
-    }
-  }
-
-  await dpRemove('agria_champs_' + userId);
-  await dpRemove('agria_user_profile_' + userId);
-  await dpRemove('agria_prefs_' + userId);
-  await dpRemove('agria_diagnostics_' + userId);
-  await dpRemove('agria_force_logout_' + userId);
-  await dpRemove('agria_session');
-
-  await logAction('Suppression compte', `Compte ${userId.slice(0, 10)}... supprime par le proprietaire`, 'danger');
-}
-
 export async function clearLogs(): Promise<void> {
   await dpRemove(LOG_KEY);
 }
 
+async function getEmailMap(): Promise<Record<string, string>> {
+  const map: Record<string, string> = {};
+  const entries = await dpListKeys('agria_uid_');
+  for (const e of entries) {
+    try {
+      const parsed = JSON.parse(e.value);
+      if (parsed && typeof parsed === 'object' && parsed.userId && parsed.email) {
+        map[parsed.userId] = parsed.email;
+      } else {
+        map[e.value] = e.key;
+      }
+    } catch { map[e.value] = e.key; }
+  }
+  return map;
+}
+
+async function findUserEmail(userId: string): Promise<string | null> {
+  const entries = await dpListKeys('agria_uid_');
+  for (const e of entries) {
+    try {
+      const parsed = JSON.parse(e.value);
+      if (parsed && typeof parsed === 'object' && parsed.userId === userId) return parsed.email;
+    } catch {}
+    if (e.value === userId) return e.key;
+  }
+  return null;
+}
+
 export async function loadAllUsers(): Promise<AdminUser[]> {
-  const keys = await AsyncStorage.getAllKeys();
-  const uidKeys = keys.filter(k => k.startsWith('agria_uid_'));
+  const uidEntries = await dpListKeys('agria_uid_');
   const users: AdminUser[] = [];
 
-  for (const k of uidKeys) {
-    const email = k.replace('agria_uid_', '');
-    const uid = await AsyncStorage.getItem(k);
-    if (!uid) continue;
+  for (const e of uidEntries) {
+    let userId: string;
+    let email: string;
+    try {
+      const parsed = JSON.parse(e.value);
+      if (parsed && typeof parsed === 'object' && parsed.userId && parsed.email) {
+        userId = parsed.userId;
+        email = parsed.email;
+      } else {
+        userId = e.value;
+        email = e.key;
+      }
+    } catch {
+      userId = e.value;
+      email = e.key;
+    }
+    if (!userId) continue;
 
-    const profile = await dpLoad<Profile | null>('agria_user_profile_' + uid, null);
-    const champs = await dpLoad<Champ[]>('agria_champs_' + uid, []);
+    const profile = await dpLoad<Profile | null>('agria_user_profile_' + userId, null);
+    const champs = await dpLoad<Champ[]>('agria_champs_' + userId, []);
     const surface = (champs || []).reduce((s, c) => s + (parseFloat(c.surface) || 0), 0);
 
     let lastLogin: number | null = null;
     let password: string | null = null;
-    try {
-      const credRaw = await AsyncStorage.getItem('agria_cred_' + email);
-      if (credRaw) { const c = JSON.parse(credRaw); lastLogin = c.lastLogin || null; password = c.pwd || null; }
-    } catch {}
+    const credKey = 'agria_cred_' + email;
+    const cred = await dpLoad<any>(credKey, null);
+    if (cred) { lastLogin = cred.lastLogin || null; password = cred.pwd || null; }
 
-    users.push({ userId: uid, email, profile, nbChamps: (champs || []).length, surfaceHa: surface, lastLogin, password });
+    users.push({ userId, email, profile, nbChamps: (champs || []).length, surfaceHa: surface, lastLogin, password });
   }
   return users;
 }
 
 export async function loadAllChamps(): Promise<AdminChamp[]> {
-  const keys = await AsyncStorage.getAllKeys();
-  const champKeys = keys.filter(k => k.startsWith('agria_champs_'));
-  const uidKeys = keys.filter(k => k.startsWith('agria_uid_'));
-  const emailMap: Record<string, string> = {};
-
-  for (const k of uidKeys) {
-    const email = k.replace('agria_uid_', '');
-    const uid = await AsyncStorage.getItem(k);
-    if (uid) emailMap[uid] = email;
-  }
-
+  const emailMap = await getEmailMap();
+  const champEntries = await dpListKeys('agria_champs_');
   const all: AdminChamp[] = [];
-  for (const ck of champKeys) {
-    const userId = ck.replace('agria_champs_', '');
-    const champs = await dpLoad<Champ[]>(ck, []);
+
+  for (const ck of champEntries) {
+    const userId = ck.key.replace('agria_champs_', '');
+    const champs: Champ[] = typeof ck.value === 'string' ? JSON.parse(ck.value) : ck.value;
+    if (!Array.isArray(champs)) continue;
     for (const c of champs) {
       all.push({ userId, email: emailMap[userId] || userId, champ: c });
     }
@@ -178,16 +160,10 @@ export async function deleteUserData(userId: string): Promise<void> {
   const profile = await dpLoad<Profile | null>('agria_user_profile_' + userId, null);
   const champs = await dpLoad<Champ[]>('agria_champs_' + userId, []);
 
-  const keys = await AsyncStorage.getAllKeys();
-  const uidKeys = keys.filter(k => k.startsWith('agria_uid_'));
-  for (const k of uidKeys) {
-    const uid = await AsyncStorage.getItem(k);
-    if (uid === userId) {
-      const email = k.replace('agria_uid_', '');
-      await dpRemove(k);
-      await dpRemove('agria_cred_' + email);
-      break;
-    }
+  const email = await findUserEmail(userId);
+  if (email) {
+    await dpRemove('agria_uid_' + email);
+    await dpRemove('agria_cred_' + email);
   }
 
   await dpRemove('agria_champs_' + userId);
@@ -207,81 +183,101 @@ export async function deleteUserData(userId: string): Promise<void> {
   await logAction('Suppression utilisateur', `${profile?.prenom || ''} ${profile?.nom || ''} (${champs.length} parcelles)`, 'danger');
 }
 
-export async function listOrphanData(): Promise<{ type: string; key: string; detail: string }[]> {
-  const keys = await AsyncStorage.getAllKeys();
-  const uidKeys = keys.filter(k => k.startsWith('agria_uid_'));
-  const validUids: Set<string> = new Set();
-  for (const k of uidKeys) {
-    const uid = await AsyncStorage.getItem(k);
-    if (uid) validUids.add(uid);
+export async function getUserPassword(email: string): Promise<string | null> {
+  const cred = await dpLoad<any>('agria_cred_' + email.trim().toLowerCase(), null);
+  return cred?.pwd || null;
+}
+
+export async function forceLogoutUser(email: string): Promise<void> {
+  const e = email.trim().toLowerCase();
+  const cred = await dpLoad<any>('agria_cred_' + e, null);
+  if (cred?.userId) {
+    await dpSave('agria_force_logout_' + cred.userId, 'true');
+    await logAction('Deconnexion forcee', `${e} deconnecte`, 'danger');
   }
+}
+
+export async function checkForceLogout(userId: string): Promise<boolean> {
+  const v = await dpLoad<string>('agria_force_logout_' + userId, '');
+  return v === 'true';
+}
+
+export async function deleteOwnAccount(userId: string): Promise<void> {
+  const email = await findUserEmail(userId);
+  if (email) {
+    await dpRemove('agria_uid_' + email);
+    await dpRemove('agria_cred_' + email);
+  }
+
+  await dpRemove('agria_champs_' + userId);
+  await dpRemove('agria_user_profile_' + userId);
+  await dpRemove('agria_prefs_' + userId);
+  await dpRemove('agria_diagnostics_' + userId);
+  await dpRemove('agria_force_logout_' + userId);
+  await dpRemove('agria_session');
+
+  await logAction('Suppression compte', `Compte ${userId.slice(0, 10)}... supprime par le proprietaire`, 'danger');
+}
+
+export async function listOrphanData(): Promise<{ type: string; key: string; detail: string }[]> {
+  const uidEntries = await dpListKeys('agria_uid_');
+  const validUids: Set<string> = new Set();
+  for (const e of uidEntries) { if (e.value) validUids.add(e.value); }
 
   const orphans: { type: string; key: string; detail: string }[] = [];
 
-  const champKeys = keys.filter(k => k.startsWith('agria_champs_'));
-  for (const ck of champKeys) {
-    const uid = ck.replace('agria_champs_', '');
+  const champEntries = await dpListKeys('agria_champs_');
+  for (const ck of champEntries) {
+    const uid = ck.key.replace('agria_champs_', '');
     if (!validUids.has(uid)) {
-      const champs = await dpLoad<Champ[]>(ck, []);
-      for (const c of champs) orphans.push({ type: 'Parcelle', key: ck, detail: `"${c.nom || '?'}" (${c.surface} ha) — uid: ${uid.slice(0, 10)}...` });
+      const champs: Champ[] = typeof ck.value === 'string' ? JSON.parse(ck.value) : ck.value;
+      if (Array.isArray(champs)) {
+        for (const c of champs) orphans.push({ type: 'Parcelle', key: ck.key, detail: `"${c.nom || '?'}" (${c.surface} ha) — uid: ${uid.slice(0, 10)}...` });
+      }
     }
   }
 
-  const profileKeys = keys.filter(k => k.startsWith('agria_user_profile_'));
-  for (const pk of profileKeys) {
-    const uid = pk.replace('agria_user_profile_', '');
+  const profileEntries = await dpListKeys('agria_user_profile_');
+  for (const pk of profileEntries) {
+    const uid = pk.key.replace('agria_user_profile_', '');
     if (!validUids.has(uid)) {
-      const p = await dpLoad<Profile | null>(pk, null);
-      orphans.push({ type: 'Profil', key: pk, detail: `${p?.prenom || ''} ${p?.nom || ''} — uid: ${uid.slice(0, 10)}...` });
+      const p: Profile | null = typeof pk.value === 'string' ? JSON.parse(pk.value) : pk.value;
+      orphans.push({ type: 'Profil', key: pk.key, detail: `${p?.prenom || ''} ${p?.nom || ''} — uid: ${uid.slice(0, 10)}...` });
     }
   }
 
-  const prefsKeys = keys.filter(k => k.startsWith('agria_prefs_'));
-  for (const pk of prefsKeys) {
-    const uid = pk.replace('agria_prefs_', '');
-    if (!validUids.has(uid)) {
-      orphans.push({ type: 'Preferences', key: pk, detail: `uid: ${uid.slice(0, 10)}...` });
-    }
+  const prefsEntries = await dpListKeys('agria_prefs_');
+  for (const pk of prefsEntries) {
+    const uid = pk.key.replace('agria_prefs_', '');
+    if (!validUids.has(uid)) orphans.push({ type: 'Preferences', key: pk.key, detail: `uid: ${uid.slice(0, 10)}...` });
   }
 
-  const diagKeys = keys.filter(k => k.startsWith('agria_diagnostics_'));
-  for (const dk of diagKeys) {
-    const uid = dk.replace('agria_diagnostics_', '');
-    if (!validUids.has(uid)) {
-      orphans.push({ type: 'Diagnostics', key: dk, detail: `uid: ${uid.slice(0, 10)}...` });
-    }
+  const diagEntries = await dpListKeys('agria_diagnostics_');
+  for (const dk of diagEntries) {
+    const uid = dk.key.replace('agria_diagnostics_', '');
+    if (!validUids.has(uid)) orphans.push({ type: 'Diagnostics', key: dk.key, detail: `uid: ${uid.slice(0, 10)}...` });
   }
 
   return orphans;
 }
 
 export async function cleanOrphanData(): Promise<{ removed: string[] }> {
-  const keys = await AsyncStorage.getAllKeys();
-  const uidKeys = keys.filter(k => k.startsWith('agria_uid_'));
+  const uidEntries = await dpListKeys('agria_uid_');
   const validUids: Set<string> = new Set();
-
-  for (const k of uidKeys) {
-    const uid = await AsyncStorage.getItem(k);
-    if (uid) validUids.add(uid);
-  }
+  for (const e of uidEntries) { if (e.value) validUids.add(e.value); }
 
   const removed: string[] = [];
-  const champKeys = keys.filter(k => k.startsWith('agria_champs_'));
-  for (const ck of champKeys) {
-    const uid = ck.replace('agria_champs_', '');
-    if (!validUids.has(uid)) {
-      await dpRemove(ck);
-      removed.push('Parcelles de ' + uid.slice(0, 8) + '...');
-    }
+
+  const champEntries = await dpListKeys('agria_champs_');
+  for (const ck of champEntries) {
+    const uid = ck.key.replace('agria_champs_', '');
+    if (!validUids.has(uid)) { await dpRemove(ck.key); removed.push('Parcelles de ' + uid.slice(0, 8) + '...'); }
   }
 
-  const profileKeys = keys.filter(k => k.startsWith('agria_user_profile_'));
-  for (const pk of profileKeys) {
-    const uid = pk.replace('agria_user_profile_', '');
-    if (!validUids.has(uid)) {
-      await dpRemove(pk);
-      removed.push('Profil de ' + uid.slice(0, 8) + '...');
-    }
+  const profileEntries = await dpListKeys('agria_user_profile_');
+  for (const pk of profileEntries) {
+    const uid = pk.key.replace('agria_user_profile_', '');
+    if (!validUids.has(uid)) { await dpRemove(pk.key); removed.push('Profil de ' + uid.slice(0, 8) + '...'); }
   }
 
   if (removed.length > 0) await logAction('Nettoyage BDD', `${removed.length} donnees orphelines supprimees`, 'success');
@@ -289,38 +285,27 @@ export async function cleanOrphanData(): Promise<{ removed: string[] }> {
 }
 
 export async function purgeInactiveUsers(): Promise<{ count: number }> {
-  const keys = await AsyncStorage.getAllKeys();
-  const uidKeys = keys.filter(k => k.startsWith('agria_uid_'));
+  const uidEntries = await dpListKeys('agria_uid_');
   const sixMonths = 180 * 24 * 60 * 60 * 1000;
   let count = 0;
 
-  for (const k of uidKeys) {
-    const email = k.replace('agria_uid_', '');
-    const uid = await AsyncStorage.getItem(k);
-    if (!uid) continue;
+  for (const e of uidEntries) {
+    const userId = e.value;
+    const email = e.key.replace('agria_uid_', '').replace(/_/g, (m, i) => i === 0 ? '.' : '');
+    if (!userId) continue;
 
-    const sessionRaw = await AsyncStorage.getItem('agria_session');
-    let lastActivity: number | null = null;
-
-    const credRaw = await AsyncStorage.getItem('agria_cred_' + email);
-    if (credRaw) {
-      try {
-        const cred = JSON.parse(credRaw);
-        if (cred.lastLogin) lastActivity = cred.lastLogin;
-      } catch {}
-    }
+    const cred = await dpLoad<any>('agria_cred_' + email, null);
+    const lastActivity = cred?.lastLogin || null;
 
     if (!lastActivity) {
-      const profileKeys = keys.filter(pk => pk === 'agria_user_profile_' + uid);
-      if (profileKeys.length === 0) continue;
-      lastActivity = 0;
+      const profile = await dpLoad<any>('agria_user_profile_' + userId, null);
+      if (!profile) continue;
+      if (Date.now() - sixMonths > 0) { await deleteUserData(userId); count++; }
+      continue;
     }
 
-    if (lastActivity && (Date.now() - lastActivity > sixMonths)) {
-      await deleteUserData(uid);
-      await dpRemove('agria_uid_' + email);
-      await dpRemove('agria_cred_' + email);
-      await dpRemove('agria_force_logout_' + uid);
+    if (Date.now() - lastActivity > sixMonths) {
+      await deleteUserData(userId);
       count++;
     }
   }
