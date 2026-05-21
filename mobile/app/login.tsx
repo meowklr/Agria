@@ -14,7 +14,7 @@ export default function LoginScreen() {
         <Button title="Creer un compte" variant="secondary" onPress={() => go(email)} />
       </View>
       <View style={{flexDirection:'row',alignItems:'center',gap:12,marginVertical:16}}><View style={{flex:1,height:1,backgroundColor:colors.border}} /><Text style={{fontSize:13,color:colors.textMuted}}>ou</Text><View style={{flex:1,height:1,backgroundColor:colors.border}} /></View>
-      <Button title="Acces developpeur" variant="secondary" onPress={async () => { await login('dev@agria.fr'); router.replace('/(tabs)'); }} haptic={false} />
+      <Button title="Acces developpeur" variant="secondary" onPress={async () => { await login('dev@agria.fr'); router.replace('/(admin)'); }} haptic={false} />
     </ScrollView>
   </KeyboardAvoidingView>;
 }

@@ -125,14 +125,11 @@ export default function DashboardScreen() {
             <TouchableOpacity style={{ flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 12, paddingVertical: 7, borderRadius: radius.sm, backgroundColor: colors.bg }} onPress={() => { router.push({ pathname: '/(tabs)/carte', params: { parcelId: c.id } }); Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); }}>
               <Ionicons name="map-outline" size={14} color={colors.primary} /><Text style={{ fontSize: 12, fontWeight: '600', color: colors.primary, fontFamily: fontFamily.sans }}>Voir</Text>
             </TouchableOpacity>
-            {expandedParcel === c.id && <>
-            <TouchableOpacity style={{ flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 12, paddingVertical: 7, borderRadius: radius.sm, backgroundColor: colors.bg }} onPress={() => { router.push({ pathname: '/(tabs)/carte', params: { parcelId: c.id } }); }}>
-              <Ionicons name="create-outline" size={14} color={colors.textSecondary} /><Text style={{ fontSize: 12, fontWeight: '600', color: colors.textSecondary, fontFamily: fontFamily.sans }}>Editer</Text>
-            </TouchableOpacity>
+            {expandedParcel === c.id &&
             <TouchableOpacity style={{ flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 12, paddingVertical: 7, borderRadius: radius.sm, backgroundColor: colors.bg }} onPress={() => handleDelete(c)}>
               <Ionicons name="trash-outline" size={14} color={colors.danger} /><Text style={{ fontSize: 12, fontWeight: '600', color: colors.danger, fontFamily: fontFamily.sans }}>Suppr.</Text>
             </TouchableOpacity>
-            </>}
+            }
           </View>
         </Card>)}
     </View>
