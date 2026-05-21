@@ -911,17 +911,25 @@ function initDiagnostic() {
   if (btnDetailedDiag) {
     btnDetailedDiag.addEventListener('click', async function() {
       if (!window.currentDiagnostic) return;
+      
+      var emailUser = prompt("A quelle adresse email souhaitez-vous envoyer l'analyse detaillee ?");
+      if (!emailUser || emailUser.trim() === '') return;
+      
       var webhookUrl = 'REMOVED_MAKE_WEBHOOK_URL';
       var oldHtml = btnDetailedDiag.innerHTML;
+      
+      // On rajoute l'email dans l'objet envoye
+      var payloadToMake = Object.assign({}, window.currentDiagnostic, { email: emailUser.trim() });
+      
       try {
         btnDetailedDiag.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Envoi en cours...';
         btnDetailedDiag.disabled = true;
         await fetch(webhookUrl, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(window.currentDiagnostic)
+          body: JSON.stringify(payloadToMake)
         });
-        showToast('Votre demande de diagnostic pousse a bien ete envoyee a l\'IA via Make.', 'success');
+        showToast('Votre demande a bien ete envoyee a l\'IA via Make.', 'success');
       } catch (err) {
         console.error(err);
         showToast('Erreur lors de l\'envoi du diagnostic.', 'error');

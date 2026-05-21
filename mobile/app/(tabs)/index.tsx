@@ -1,4 +1,5 @@
 import React, { useState, useCallback } from 'react'; import { View, Text, ScrollView, TouchableOpacity, Alert } from 'react-native'; import { router, useFocusEffect } from 'expo-router'; import { Ionicons } from '@expo/vector-icons'; import { useSafeAreaInsets } from 'react-native-safe-area-context'; import { colors, radius, fontFamily } from '../../src/theme'; import { Card } from '../../src/components/Card'; import { Badge } from '../../src/components/Badge'; import { Input } from '../../src/components/Input'; import { SectionTitle } from '../../src/components/Typography'; import { LoaderBar } from '../../src/components/LoaderBar'; import { useWeather, useCitySearch } from '../../src/hooks/useWeather'; import { useChamps } from '../../src/hooks/useChamps'; import { deleteChamp, Champ } from '../../src/services/champs';
+import { NotificationBell } from '../../src/components/NotificationBell';
 import * as Haptics from 'expo-haptics';
 
 export default function DashboardScreen() {
@@ -27,7 +28,7 @@ export default function DashboardScreen() {
       <Text style={{ fontSize: 22, fontWeight: '600', color: colors.primary, fontFamily: fontFamily.serif }}>Agria</Text>
       <View style={{ flexDirection: 'row', gap: 14, alignItems: 'center' }}>
         <TouchableOpacity onPress={() => setShowSearch(!showSearch)} style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}><Ionicons name="search-outline" size={20} color={colors.textSecondary} /><Text style={{ fontSize: 11, color: colors.textMuted, fontWeight: '500' }}>Ville</Text></TouchableOpacity>
-        <Ionicons name="notifications-outline" size={20} color={colors.textSecondary} />
+        <NotificationBell />
       </View>
     </View>
 
