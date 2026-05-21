@@ -801,6 +801,29 @@ textarea.input {
   margin-top: 2px;
 }
 
+/* ---------- PROFILE PAGE TWEAKS ---------- */
+/* Make inputs extend to the right edge of the card even when avatar overlaps */
+body[data-page="profil"] .profile-section:first-child .card {
+  /* keep room for rounded corners but reduce right padding so inputs appear to the edge */
+  padding: 20px 12px 20px 20px;
+}
+
+body[data-page="profil"] .profile-avatar {
+  z-index: 90; /* ensure avatar is above card */
+  right: 16px; /* keep consistent offset */
+}
+
+/* Ensure form content uses full width inside the card */
+body[data-page="profil"] .profile-section .card > div {
+  width: 100%;
+}
+
+/* Slightly reduce input horizontal padding so they visually reach closer to edge */
+body[data-page="profil"] .input {
+  padding-left: 14px;
+  padding-right: 14px;
+}
+
 /* Parcels (dashboard) */
 
 .parcel-card {
