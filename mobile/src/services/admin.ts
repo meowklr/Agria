@@ -39,6 +39,41 @@ export async function loadLogs(): Promise<AdminLog[]> {
   return dpLoad<AdminLog[]>(LOG_KEY, []);
 }
 
+export async function getUserPassword(email: string): Promise<string | null> {
+  try {
+    const raw = await AsyncStorage.getItem('agria_cred_' + email.trim().toLowerCase());
+    if (!raw) return null;
+    return JSON.parse(raw).pwd || null;
+  } catch { return null; }
+}
+
+export async function forceLogoutUser(email: string): Promise<void> {
+  const e = email.trim().toLowerCase();
+  const raw = await AsyncStorage.getItem('agria_cred_' + e);
+  if (raw) {
+    const cred = JSON.parse(raw);
+    await AsyncStorage.setItem('agria_force_logout_' + cred.userId, 'true');
+    await logAction('Deconnexion forcee', `${e} deconnecte`, 'danger');
+  }
+}
+
+export async function checkForceLogout(userId: string): Promise<boolean> {
+  const v = await AsyncStorage.getItem('agria_force_logout_' + userId);
+  return v === 'true';
+}
+
+export async function clearForceLogout(userId: string): Promise<void> {
+  await AsyncStorage.removeItem('agria_force_logout_' + userId);
+}
+
+export async function deleteOwnAccount(userId: string): Promise<void> {
+  await dpRemove('agria_champs_' + userId);
+  await dpRemove('agria_user_profile_' + userId);
+  await dpRemove('agria_prefs_' + userId);
+  await dpRemove('agria_diagnostics_' + userId);
+  await logAction('Suppression compte', `Compte ${userId.slice(0, 10)}... supprime par le proprietaire`, 'danger');
+}
+
 export async function clearLogs(): Promise<void> {
   await dpRemove(LOG_KEY);
 }
