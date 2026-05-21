@@ -1,16 +1,38 @@
 import React, { useState, useCallback } from 'react'; import { View, Text, ScrollView, TouchableOpacity, Alert, LayoutAnimation, Platform, UIManager } from 'react-native'; import { router, useFocusEffect } from 'expo-router'; import { Ionicons } from '@expo/vector-icons'; import { useSafeAreaInsets } from 'react-native-safe-area-context'; import { colors, radius, fontFamily } from '../../src/theme'; import { Card } from '../../src/components/Card'; import { Badge } from '../../src/components/Badge'; import { Input } from '../../src/components/Input'; import { SectionTitle } from '../../src/components/Typography'; import { LoaderBar } from '../../src/components/LoaderBar'; import { useWeather, useCitySearch } from '../../src/hooks/useWeather'; import { useChamps } from '../../src/hooks/useChamps'; import { deleteChamp, Champ } from '../../src/services/champs';
-import { useMorningRiskAlert } from '../../src/hooks/useMorningRiskAlert';
 import { useAlerts } from '../../src/hooks/useAlerts';
+import { addAlert } from '../../src/services/alerts';
+import { sendMorningRiskAlert } from '../../src/services/riskAlert';
 import { NotificationBell } from '../../src/components/NotificationBell';
 import { ScreenFade } from '../../src/components/ScreenFade';
+import * as Notifications from 'expo-notifications';
 import * as Haptics from 'expo-haptics';
 
 export default function DashboardScreen() {
   const { meteo, previsions, loading: wl, city, setCity, refresh } = useWeather('Paris');
   const { champs, refresh: reloadChamps } = useChamps();
   const { alerts, loading: alertsLoading, refresh: refreshAlerts } = useAlerts();
-  useMorningRiskAlert(champs);
   const { results, query, setQuery } = useCitySearch();
+  const [refreshingRisk, setRefreshingRisk] = useState(false);
+
+  const handleRefreshRisk = async () => {
+    setRefreshingRisk(true);
+    try {
+      const result = await sendMorningRiskAlert(city, champs);
+      await addAlert({ title: result.title, body: result.body, date: new Date().toISOString(), alert: { level: 'info', label: 'Manuel' }, city });
+      await refreshAlerts();
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      if (Notifications) {
+        await Notifications.scheduleNotificationAsync({
+          content: { title: result.title, body: result.body, data: {} },
+          trigger: null,
+        });
+      }
+    } catch (e: any) {
+      Alert.alert('Erreur', 'Impossible de rafraichir les alertes.');
+    } finally {
+      setRefreshingRisk(false);
+    }
+  };
   const [showSearch, setShowSearch] = useState(false);
   const [showAlerts, setShowAlerts] = useState(true);
   const [expandedParcel, setExpandedParcel] = useState<string | null>(null);
@@ -89,6 +111,11 @@ export default function DashboardScreen() {
     <TouchableOpacity style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: showAlerts ? 16 : 24 }} onPress={() => { LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut); setShowAlerts(!showAlerts); }}>
       <Text style={{ fontSize: 18, fontWeight: '600', color: colors.text, letterSpacing: -0.2, fontFamily: fontFamily.serif }}>Alertes</Text>
       <Ionicons name={showAlerts ? 'chevron-up' : 'chevron-down'} size={14} color={colors.textMuted} />
+      {showAlerts && (
+        <TouchableOpacity onPress={handleRefreshRisk} disabled={refreshingRisk} style={{ marginLeft: 'auto', padding: 4, opacity: refreshingRisk ? 0.5 : 1 }}>
+          <Ionicons name="refresh-outline" size={16} color={colors.primary} />
+        </TouchableOpacity>
+      )}
     </TouchableOpacity>
     {showAlerts && <View style={{ marginBottom: 24, gap: 10 }}>
       {alertsLoading ? <Card><LoaderBar /></Card> : alerts.length === 0 ? <Card><Text style={{ fontSize: 14, color: colors.textMuted, textAlign: 'center' }}>Aucune alerte récente. Les alertes météo reçues via Make apparaîtront ici.</Text></Card> : alerts.slice(0, 4).map((alert) => {
