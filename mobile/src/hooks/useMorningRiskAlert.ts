@@ -19,21 +19,22 @@ export function useMorningRiskAlert(champs: Champ[]) {
       const lastSent = await AsyncStorage.getItem(LAST_DAILY_ALERT_KEY);
       if (lastSent === today) return;
 
-      const permission = await Notifications.requestPermissionsAsync();
-      if (!(permission.granted || permission.status === 'granted')) return;
-
       const city = prefs.villeMeteo || 'Paris';
       try {
         const alert = await sendMorningRiskAlert(city, champs);
-        await Notifications.scheduleNotificationAsync({
-          content: {
-            title: alert.title,
-            body: alert.body,
-            data: { source: 'dailyRiskAlert' },
-          },
-          trigger: null,
-        });
         await AsyncStorage.setItem(LAST_DAILY_ALERT_KEY, today);
+
+        const permission = await Notifications.requestPermissionsAsync();
+        if (permission.granted || permission.status === 'granted') {
+          await Notifications.scheduleNotificationAsync({
+            content: {
+              title: alert.title,
+              body: alert.body,
+              data: { source: 'dailyRiskAlert' },
+            },
+            trigger: null,
+          });
+        }
       } catch (error) {
         console.warn('Erreur en envoyant l’alerte météo quotidienne', error);
       }

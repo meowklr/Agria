@@ -19,20 +19,29 @@ function buildFieldSummary(champs: Champ[]) {
   return `Parcelles: ${champs.length}. Cultures: ${entries.join(', ')}.`;
 }
 
-function computeRiskLevel(meteo: MeteoData, champs: Champ[]): { level: RiskLevel; label: string; reason: string } {
+function computeRiskLevel(meteo: MeteoData, champs: Champ[]): { level: RiskLevel; label: string; reason: string; score: number; factors: Record<string, boolean | number> } {
   const desc = meteo.description.toLowerCase();
   let score = 0;
-  if (meteo.temp <= 2) score += 2;
-  else if (meteo.temp <= 7) score += 1;
-  if (meteo.humidity >= 85) score += 2;
-  else if (meteo.humidity >= 70) score += 1;
-  if (desc.includes('pluie') || desc.includes('averse') || desc.includes('orage')) score += 2;
-  if (desc.includes('neige') || desc.includes('verglas') || desc.includes('gel')) score += 2;
-  if (hasSensitiveCulture(champs)) score += 1;
+  const factors: Record<string, boolean | number> = {
+    cold: false,
+    cool: false,
+    highHumidity: false,
+    mediumHumidity: false,
+    rainOrStorm: false,
+    freezeRisk: false,
+    sensitiveCulture: hasSensitiveCulture(champs),
+  };
 
-  if (score >= 5) return { level: 'danger', label: 'GRAVE', reason: 'Conditions froides et humides, fortement défavorables aux cultures sensibles.' };
-  if (score >= 3) return { level: 'warning', label: 'ATTENTION', reason: 'Conditions à risque modéré : suivez de près vos parcelles.' };
-  return { level: 'info', label: 'INFO', reason: 'Conditions stables. Restez vigilant selon l’évolution météo.' };
+  if (meteo.temp <= 2) { score += 2; factors.cold = true; }
+  else if (meteo.temp <= 7) { score += 1; factors.cool = true; }
+  if (meteo.humidity >= 85) { score += 2; factors.highHumidity = true; }
+  else if (meteo.humidity >= 70) { score += 1; factors.mediumHumidity = true; }
+  if (desc.includes('pluie') || desc.includes('averse') || desc.includes('orage')) { score += 2; factors.rainOrStorm = true; }
+  if (desc.includes('neige') || desc.includes('verglas') || desc.includes('gel')) { score += 2; factors.freezeRisk = true; }
+
+  if (score >= 5) return { level: 'danger', label: 'GRAVE', reason: 'Conditions froides et humides, fortement défavorables aux cultures sensibles.', score, factors };
+  if (score >= 3) return { level: 'warning', label: 'ATTENTION', reason: 'Conditions à risque modéré : suivez de près vos parcelles.', score, factors };
+  return { level: 'info', label: 'INFO', reason: 'Conditions stables. Restez vigilant selon l’évolution météo.', score, factors };
 }
 
 function buildMessage(city: string, meteo: MeteoData, champs: Champ[], riskLevel: RiskLevel) {
@@ -55,7 +64,14 @@ export async function sendMorningRiskAlert(city: string, champs: Champ[]) {
     city,
     weather: meteo,
     forecast: selectForecasts(previsions),
-    fields: champs.map(c => ({ id: c.id, nom: c.nom, culture: c.culture, surface: c.surface, stade: c.stade })),
+    fields: champs.map(c => ({ id: c.id, nom: c.nom, culture: c.culture, surface: c.surface, stade: c.stade, dateSemis: c.dateSemis, typeSol: c.typeSol, irrigation: c.irrigation })),
+    risk: {
+      level: risk.level,
+      score: risk.score,
+      label: risk.label,
+      reason: risk.reason,
+      computedFactors: risk.factors,
+    },
     alert: {
       level: risk.level,
       label: risk.label,
