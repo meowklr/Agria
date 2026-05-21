@@ -108,6 +108,16 @@ export default function CarteScreen() {
 
   const pm = useCallback((msg: any) => wv.current?.postMessage(JSON.stringify(msg)), []);
 
+  const reloadAndSync = useCallback(async () => {
+    const uid = await getUserId();
+    setMid(uid);
+    const c = await loadChamps();
+    const updated = c.map(x => ({ data: x, owner: uid }));
+    setPs(updated);
+    setChampCount(c.length);
+    pm({ type: 'rp', data: { ps: updated, mid: uid } });
+  }, [pm]);
+
   const hm = useCallback((e: WebViewMessageEvent) => {
     try { const { type, data } = JSON.parse(e.nativeEvent.data);
       if (type === 'ps') { setSel(data); setSo(true); }
@@ -157,7 +167,7 @@ export default function CarteScreen() {
       <Btn icon="locate-outline" label="Localiser" onPress={() => { pm({ type: 'loc' }); Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); }} />
     </View>
     {drawing && <View style={{ position: 'absolute', top: '40%', alignSelf: 'center', backgroundColor: colors.text, paddingHorizontal: 24, paddingVertical: 12, borderRadius: 16, alignItems: 'center' }}><Text style={{ color: colors.surface, fontSize: 14 }}>Cliquez pour tracer</Text>{surface ? <Text style={{ color: colors.primary, fontSize: 18, fontWeight: '600', textAlign: 'center', marginTop: 4, fontFamily: fontFamily.serif }}>{surface} ha</Text> : null}<TouchableOpacity onPress={() => { pm({ type: 'ed' }); Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); }} style={{ marginTop: 8, paddingHorizontal: 14, paddingVertical: 6, borderRadius: 10, borderWidth: 1, borderColor: 'rgba(255,100,80,.5)' }}><Text style={{ color: '#c0392b', fontSize: 12, fontWeight: '600', fontFamily: fontFamily.sans }}>Annuler</Text></TouchableOpacity></View>}
-    {so && sel && <ParcelPanel sel={sel} panelAnim={panelAnim} panHandlers={panResponder.panHandlers} onClose={() => setSo(false)} onSaved={load} onDeleted={async () => { await deleteChamp(sel.id); setSo(false); load().then(() => pm({ type: 'rp', data: { ps, mid } })); }} saveRef={panelSaveRef} />}
+    {so && sel && <ParcelPanel sel={sel} panelAnim={panelAnim} panHandlers={panResponder.panHandlers} onClose={() => setSo(false)} onSaved={reloadAndSync} onDeleted={async () => { await deleteChamp(sel.id); setSo(false); reloadAndSync(); }} saveRef={panelSaveRef} />}
   </View></ScreenFade>;
 }
 
@@ -170,6 +180,7 @@ function ParcelPanel({ sel, panelAnim, panHandlers, onClose, onSaved, onDeleted,
   const [notes, setNotes] = useState(sel.notes || '');
   const [saving, setSaving] = useState(false);
   const [dateError, setDateError] = useState(false);
+  const [savedOk, setSavedOk] = useState(false);
   const enterAnim = useRef(new Animated.Value(600)).current;
   useEffect(() => { setNom(sel.nom || ''); setCulture(sel.culture || ''); setTypeSol(sel.typeSol || ''); setStade(sel.stade || ''); setDateSemis(sel.dateSemis || ''); setNotes(sel.notes || ''); Animated.spring(enterAnim, { toValue: 0, useNativeDriver: true, tension: 120, friction: 14 }).start(); }, [sel.id]);
   const save = async () => {
@@ -183,7 +194,7 @@ function ParcelPanel({ sel, panelAnim, panHandlers, onClose, onSaved, onDeleted,
     setSaving(true);
     await updateChamp(sel.id, { ...sel, nom, culture, typeSol, stade, dateSemis, notes });
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-    setSaving(false); onSaved();
+    setSaving(false); setSavedOk(true); setTimeout(() => setSavedOk(false), 1800); onSaved();
   };
   useEffect(() => { saveRef.current = save; }, [save]);
   const animateClose = () => {
@@ -212,6 +223,10 @@ function ParcelPanel({ sel, panelAnim, panHandlers, onClose, onSaved, onDeleted,
         <Ionicons name="alert-circle" size={15} color={colors.danger} style={{ marginTop: 1 }} />
         <Text style={{ flex: 1, fontSize: 12, color: colors.danger, fontWeight: '500', fontFamily: fontFamily.sans }}>La date de semis ne peut pas etre dans le futur.</Text>
         <TouchableOpacity onPress={() => setDateError(false)}><Ionicons name="close" size={14} color={colors.danger} /></TouchableOpacity>
+      </View>}
+      {savedOk && <View style={{ marginTop: 12, backgroundColor: '#EAF3E0', borderRadius: radius.sm, padding: 10, flexDirection: 'row', alignItems: 'flex-start', gap: 8 }}>
+        <Ionicons name="checkmark-circle" size={15} color={colors.success} style={{ marginTop: 1 }} />
+        <Text style={{ flex: 1, fontSize: 12, color: colors.success, fontWeight: '500', fontFamily: fontFamily.sans }}>Parcelle sauvegardee.</Text>
       </View>}
       <View style={{ flexDirection: 'row', gap: 10, marginTop: 20 }}>
         <TouchableOpacity onPress={save} disabled={saving} style={{ flex: 1, backgroundColor: colors.primary, borderRadius: radius.md, paddingVertical: 12, alignItems: 'center' }}><Text style={{ fontSize: 15, fontWeight: '600', color: colors.text, fontFamily: fontFamily.sans }}>{saving ? '...' : 'Sauvegarder'}</Text></TouchableOpacity>

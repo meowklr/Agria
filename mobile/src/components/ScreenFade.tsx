@@ -7,11 +7,16 @@ export function ScreenFade({ children }: { children: React.ReactNode }) {
 
   useFocusEffect(
     useCallback(() => {
-      opacity.setValue(0.85);
-      Animated.spring(opacity, { toValue: 1, useNativeDriver: true, tension: 120, friction: 14 }).start();
-      return () => {};
+      Animated.timing(opacity, { toValue: 1, duration: 260, useNativeDriver: true }).start();
+      return () => {
+        opacity.setValue(0);
+      };
     }, [])
   );
 
-  return <Animated.View style={{ flex: 1, opacity }}>{children}</Animated.View>;
+  return (
+    <Animated.View style={{ flex: 1, opacity }}>
+      {children}
+    </Animated.View>
+  );
 }

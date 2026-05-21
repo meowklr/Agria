@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>Agria — Brand Book A4</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+@page { size: A4; margin: 0; }
+* { -webkit-print-color-adjust: exact; print-color-adjust: exact; margin: 0; padding: 0; box-sizing: border-box; }
+:root {
+  --g: #E8B84B; --t: #C4704A; --s: #7A9E5A; --d: #B5533A;
+  --bg: #FDF8EE; --sf: #FFFDF6; --tx: #3D2E1F; --t2: #6B5D4F; --tm: #A89880; --bd: #EBE3D3;
+  --serif: 'Fraunces', serif; --sans: 'Outfit', sans-serif;
+}
+.page {
+  width: 210mm; height: 297mm; padding: 18mm 16mm 14mm;
+  background: var(--bg); color: var(--tx); font-family: var(--sans);
+  display: flex; flex-direction: column; gap: 10mm;
+}
+
+/* HEAD */
+.head { display: flex; justify-content: space-between; align-items: flex-end; }
+.lockup { display: flex; align-items: center; gap: 10px; }
+.lockup-icon {
+  width: 44px; height: 44px; border-radius: 11px; background: var(--g);
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--serif); font-size: 22px; font-weight: 700; color: var(--tx);
+}
+.lockup-name { font-family: var(--serif); font-size: 36px; font-weight: 700; color: var(--tx); letter-spacing: -0.03em; }
+.lockup-name span { color: var(--g); }
+.head-meta { text-align: right; }
+.head-meta .ver { font-size: 10px; color: var(--tm); text-transform: uppercase; letter-spacing: 0.06em; }
+.head-meta .tag { font-family: var(--serif); font-size: 15px; color: var(--t2); font-style: italic; margin-top: 2px; }
+
+/* COLORS ROW */
+.section-label { font-size: 9px; color: var(--tm); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 4mm; }
+.colors-row { display: flex; gap: 8px; }
+.color-tile { flex: 1; border-radius: 10px; overflow: hidden; border: 1px solid var(--bd); }
+.color-fill { height: 30mm; }
+.color-info { padding: 6px 8px; background: var(--sf); font-family: var(--sans); }
+.color-info .hex { font-size: 12px; font-weight: 600; color: var(--tx); }
+.color-info .label { font-size: 9px; color: var(--tm); margin-top: 1px; }
+
+/* TWO COL: Type + Principles */
+.two-col { display: flex; gap: 8px; flex: 1; }
+.col-card { flex: 1; background: var(--sf); border: 1px solid var(--bd); border-radius: 10px; padding: 4mm; display: flex; flex-direction: column; gap: 3mm; }
+
+/* TYPOGRAPHY CARD */
+.typo-display { font-family: var(--serif); font-size: 26px; font-weight: 600; line-height: 1.1; }
+.typo-body { font-family: var(--sans); font-size: 10px; line-height: 1.6; color: var(--t2); }
+.typo-weights { display: flex; gap: 6px; font-size: 20px; font-family: var(--serif); }
+.typo-w-label { font-size: 8px; color: var(--tm); text-transform: uppercase; letter-spacing: 0.05em; }
+
+/* PRINCIPLES CARD */
+.pr-grid { display: flex; flex-direction: column; gap: 3mm; }
+.pr-item { display: flex; gap: 6px; align-items: baseline; }
+.pr-num { font-family: var(--serif); font-size: 16px; font-weight: 700; color: var(--g); min-width: 18px; }
+.pr-text strong { font-size: 10px; color: var(--tx); display: block; margin-bottom: 1px; }
+.pr-text span { font-size: 8px; color: var(--t2); line-height: 1.4; }
+
+/* WORDMARKS ROW */
+.wm-row { display: flex; gap: 8px; }
+.wm-tile { flex: 1; background: var(--sf); border: 1px solid var(--bd); border-radius: 10px; padding: 4mm; display: flex; align-items: center; gap: 8px; }
+.wm-tile.dark { background: var(--tx); }
+.wm-tile .wm-icon-sm {
+  width: 28px; height: 28px; border-radius: 7px; background: var(--g);
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--serif); font-size: 14px; font-weight: 700; color: var(--tx);
+}
+.wm-tile.dark .wm-icon-sm { color: var(--tx); }
+.wm-tile .wm-name-sm { font-family: var(--serif); font-size: 18px; font-weight: 700; letter-spacing: -0.02em; }
+.wm-tile.dark .wm-name-sm { color: var(--sf); }
+.wm-split-sm { font-family: var(--serif); font-size: 18px; letter-spacing: -0.02em; }
+.wm-split-sm .w { font-weight: 700; }
+.wm-split-sm .l { font-weight: 400; color: var(--t2); }
+
+/* FOOTER */
+.foot { display: flex; justify-content: space-between; font-size: 8px; color: var(--tm); border-top: 1px solid var(--bd); padding-top: 3mm; }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <!-- HEAD -->
+  <div class="head">
+    <div class="lockup">
+      <div class="lockup-icon">A</div>
+      <div class="lockup-name">Agri<span>a</span></div>
+    </div>
+    <div class="head-meta">
+      <div class="ver">Brand Book v1.0</div>
+      <div class="tag">Gestion agricole de precision</div>
+    </div>
+  </div>
+
+  <!-- COLORS -->
+  <div>
+    <div class="section-label">Palette</div>
+    <div class="colors-row">
+      <div class="color-tile"><div class="color-fill" style="background:#E8B84B"></div><div class="color-info"><div class="hex">#E8B84B</div><div class="label">Primary — Ble dore</div></div></div>
+      <div class="color-tile"><div class="color-fill" style="background:#C4704A"></div><div class="color-info"><div class="hex">#C4704A</div><div class="label">Accent — Terre cuite</div></div></div>
+      <div class="color-tile"><div class="color-fill" style="background:#7A9E5A"></div><div class="color-info"><div class="hex">#7A9E5A</div><div class="label">Success — Vert prairie</div></div></div>
+      <div class="color-tile"><div class="color-fill" style="background:#B5533A"></div><div class="color-info"><div class="hex">#B5533A</div><div class="label">Danger — Rouge argile</div></div></div>
+      <div class="color-tile"><div class="color-fill" style="background:#FDF8EE;border-bottom:1px solid #EBE3D3"></div><div class="color-info"><div class="hex">#FDF8EE</div><div class="label">Background</div></div></div>
+      <div class="color-tile"><div class="color-fill" style="background:#3D2E1F"></div><div class="color-info"><div class="hex">#3D2E1F</div><div class="label">Text — Brun</div></div></div>
+    </div>
+  </div>
+
+  <!-- TWO COLUMNS -->
+  <div class="two-col">
+    <!-- TYPOGRAPHY -->
+    <div class="col-card">
+      <div class="section-label">Typographie</div>
+      <div class="typo-display">Champs de ble</div>
+      <div class="typo-body">Agria vous accompagne dans la gestion quotidienne de vos parcelles agricoles. Suivez vos cultures et optimisez vos rendements.</div>
+      <div>
+        <div class="typo-w-label">Fraunces (serif) — Display &amp; Titres</div>
+        <div class="typo-weights">
+          <span style="font-weight:400">Ag</span>
+          <span style="font-weight:600">Ag</span>
+          <span style="font-weight:700">Ag</span>
+        </div>
+      </div>
+    </div>
+    <!-- PRINCIPLES -->
+    <div class="col-card">
+      <div class="section-label">Principes</div>
+      <div class="pr-grid">
+        <div class="pr-item"><div class="pr-num">1</div><div class="pr-text"><strong>Chaleur terrienne</strong><span>Palette terre, ble, lumiere du matin</span></div></div>
+        <div class="pr-item"><div class="pr-num">2</div><div class="pr-text"><strong>Lisibilite avant tout</strong><span>Contraste eleve, lisible en plein soleil</span></div></div>
+        <div class="pr-item"><div class="pr-num">3</div><div class="pr-text"><strong>Respiration generereuse</strong><span>Espacements amples, bordures douces</span></div></div>
+        <div class="pr-item"><div class="pr-num">4</div><div class="pr-text"><strong>Feedback tactile</strong><span>Scale-down, haptique, transitions fluides</span></div></div>
+        <div class="pr-item"><div class="pr-num">5</div><div class="pr-text"><strong>Motion discrete</strong><span>Rapide, naturelle, jamais decorative</span></div></div>
+        <div class="pr-item"><div class="pr-num">6</div><div class="pr-text"><strong>Iconographie coherente</strong><span>Ionicons outline, gold pour l'attention</span></div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- WORDMARKS -->
+  <div>
+    <div class="section-label">Wordmarks</div>
+    <div class="wm-row">
+      <div class="wm-tile">
+        <div class="wm-icon-sm">A</div>
+        <div class="wm-name-sm">Agria</div>
+      </div>
+      <div class="wm-tile">
+        <div class="wm-split-sm"><span class="w">Agr</span><span class="l">ia</span></div>
+      </div>
+      <div class="wm-tile dark">
+        <div class="wm-icon-sm">A</div>
+        <div class="wm-name-sm">Agria</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <div class="foot">
+    <span>design/brand-book-a4.html</span>
+    <span>Agria Brand Book · Mai 2026 · v1.0</span>
+  </div>
+
+</div>
+</body>
+</html>
