@@ -1,4 +1,5 @@
 import React, { useState, useCallback } from 'react'; import { View, Text, ScrollView, TouchableOpacity, Alert, LayoutAnimation, Platform, UIManager } from 'react-native'; import { router, useFocusEffect } from 'expo-router'; import { Ionicons } from '@expo/vector-icons'; import { useSafeAreaInsets } from 'react-native-safe-area-context'; import { colors, radius, fontFamily } from '../../src/theme'; import { Card } from '../../src/components/Card'; import { Badge } from '../../src/components/Badge'; import { Input } from '../../src/components/Input'; import { SectionTitle } from '../../src/components/Typography'; import { LoaderBar } from '../../src/components/LoaderBar'; import { useWeather, useCitySearch } from '../../src/hooks/useWeather'; import { useChamps } from '../../src/hooks/useChamps'; import { deleteChamp, Champ } from '../../src/services/champs';
+import { useMorningRiskAlert } from '../../src/hooks/useMorningRiskAlert';
 import { NotificationBell } from '../../src/components/NotificationBell';
 import { ScreenFade } from '../../src/components/ScreenFade';
 import * as Haptics from 'expo-haptics';
@@ -6,6 +7,7 @@ import * as Haptics from 'expo-haptics';
 export default function DashboardScreen() {
   const { meteo, previsions, loading: wl, city, setCity, refresh } = useWeather('Paris');
   const { champs, refresh: reloadChamps } = useChamps();
+  useMorningRiskAlert(champs);
   const { results, query, setQuery } = useCitySearch();
   const [showSearch, setShowSearch] = useState(false);
   const [showAlerts, setShowAlerts] = useState(true);
