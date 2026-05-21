@@ -36,11 +36,7 @@ export default function NotificationsScreen() {
           <Ionicons name="arrow-back" size={22} color={colors.text} />
         </TouchableOpacity>
         <Text style={{ fontSize: 20, fontWeight: '600', color: colors.primary, fontFamily: fontFamily.serif }}>Notifications</Text>
-        {notifs.length > 0 && (
-          <TouchableOpacity onPress={markAllRead} style={{ marginLeft: 'auto', paddingHorizontal: 12, paddingVertical: 6, borderRadius: radius.sm, backgroundColor: 'rgba(232,184,75,0.1)' }}>
-            <Text style={{ color: colors.primary, fontSize: 12, fontWeight: '600', fontFamily: fontFamily.sans }}>Tout lu</Text>
-          </TouchableOpacity>
-        )}
+        {/* Bouton "Tout lu" supprimé — interface simplifiée */}
       </View>
       <ScrollView contentContainerStyle={{ padding: 16 }}>
         {openedReport && (

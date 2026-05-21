@@ -803,14 +803,15 @@ textarea.input {
 
 /* ---------- PROFILE PAGE TWEAKS ---------- */
 /* Make inputs extend to the right edge of the card even when avatar overlaps */
-body[data-page="profil"] .profile-section:first-child .card {
-  /* keep room for rounded corners but reduce right padding so inputs appear to the edge */
-  padding: 20px 12px 20px 20px;
+body[data-page="profil"] .profile-section .card {
+  /* reduce right padding so inputs appear closer to the card edge */
+  padding: 18px 12px 18px 20px;
+  overflow: visible; /* allow avatar overlap */
 }
 
 body[data-page="profil"] .profile-avatar {
   z-index: 90; /* ensure avatar is above card */
-  right: 16px; /* keep consistent offset */
+  right: 14px; /* slightly closer to edge */
 }
 
 /* Ensure form content uses full width inside the card */
@@ -818,11 +819,14 @@ body[data-page="profil"] .profile-section .card > div {
   width: 100%;
 }
 
-/* Slightly reduce input horizontal padding so they visually reach closer to edge */
-body[data-page="profil"] .input {
-  padding-left: 14px;
-  padding-right: 14px;
+/* Inputs: tighten horizontal padding so they visually reach the right edge */
+body[data-page="profil"] .profile-section .card .input {
+  padding-left: 12px;
+  padding-right: 10px;
 }
+
+/* Remove extra bottom margin on form-groups in profile for tighter layout */
+body[data-page="profil"] .profile-section .card .form-group { margin-bottom: 12px; }
 
 /* Parcels (dashboard) */
 
