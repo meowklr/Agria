@@ -1,4 +1,13 @@
-import React, { useEffect, useState } from 'react'; import { View, Text, ScrollView, TouchableOpacity } from 'react-native'; import { Ionicons } from '@expo/vector-icons'; import { colors, radius, fontFamily } from '../../src/theme'; import { Card } from '../../src/components/Card'; import { Badge } from '../../src/components/Badge'; import { Button } from '../../src/components/Button'; import { Input } from '../../src/components/Input'; import { SectionTitle } from '../../src/components/Typography'; import { LoaderBar } from '../../src/components/LoaderBar'; import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import React, { useEffect, useState } from 'react'; import { View, Text, ScrollView, TouchableOpacity, Alert } from 'react-native'; import { Ionicons } from '@expo/vector-icons'; import { colors, radius, fontFamily } from '../../src/theme'; import { Card } from '../../src/components/Card';
+import * as Notifications from 'expo-notifications';
+
+Notifications.setNotificationHandler({
+  handleNotification: async () => ({
+    shouldShowAlert: true,
+    shouldPlaySound: true,
+    shouldSetBadge: false,
+  }),
+}); import { Badge } from '../../src/components/Badge'; import { Button } from '../../src/components/Button'; import { Input } from '../../src/components/Input'; import { SectionTitle } from '../../src/components/Typography'; import { LoaderBar } from '../../src/components/LoaderBar'; import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useDiagnostic } from '../../src/hooks/useDiagnostic';
 import * as Haptics from 'expo-haptics';
 
@@ -16,8 +25,49 @@ export default function DiagnosticScreen() {
   const [errCulture, setErrCulture] = useState(false);
   const [errSympts, setErrSympts] = useState(false);
   const insets = useSafeAreaInsets();
-  useEffect(() => { loadHistory(); }, []);
+  useEffect(() => { 
+    loadHistory(); 
+    const subscription = Notifications.addNotificationResponseReceivedListener(response => {
+      const data = response.notification.request.content.data;
+      if (data && data.reportText) {
+        Alert.alert("Rapport complet de l'IA", data.reportText);
+      }
+    });
+    return () => subscription.remove();
+  }, []);
   const ts = (s: string) => setSympts(p => p.includes(s) ? p.filter(x => x !== s) : [...p, s]);
+
+  const handleSendDetailedDiagnostic = async () => {
+    if (!result) return;
+    try {
+      // Remplacez cette URL par celle de votre webhook Make.com
+      const webhookUrl = 'REMOVED_MAKE_WEBHOOK_URL';
+      const payload = { culture, symptomes: sympts, ville, diagnostic: result.nom, gravite: result.gravite, explication: result.explication, recommandations: result.recommandations, meteo: result.meteo };
+      
+      const res = await fetch(webhookUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+
+      // Make.com doit absolument comporter un module "Webhook Response" finale retournant le texte !
+      const responseText = await res.text();
+
+      await Notifications.scheduleNotificationAsync({
+        content: {
+          title: "Analyse terminée 🌾",
+          body: "Votre diagnostic détaillé a été généré par l'IA. Appuyez pour le consulter.",
+          data: { reportText: responseText },
+        },
+        trigger: null,
+      });
+
+      Alert.alert('Envoyé', 'L\'analyse a été effectuée et envoyée avec succès.');
+    } catch (e) {
+      console.error(e);
+      Alert.alert('Erreur', 'Impossible de récupérer ou d\'envoyer le diagnostic.');
+    }
+  };
 
   return <ScrollView style={{ flex: 1, backgroundColor: colors.bg }} contentContainerStyle={{ padding: 16, paddingTop: (insets.top || 0) + 16, paddingBottom: 100 }}>
     <View style={{ paddingVertical: 8, marginBottom: 16 }}><Text style={{ fontSize: 22, fontWeight: '600', color: colors.primary, fontFamily: fontFamily.serif }}>Diagnostic</Text></View>
@@ -72,6 +122,7 @@ export default function DiagnosticScreen() {
         <SectionTitle title="Recommandations" />
         {result.recommandations.map((r, i) => <View key={i} style={{ flexDirection: 'row', alignItems: 'flex-start', gap: 12, paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: colors.border }}><Ionicons name="checkmark-circle" size={14} color={colors.success} style={{ marginTop: 3 }} /><Text style={{ flex: 1, fontSize: 14, color: colors.textSecondary, lineHeight: 20 }}>{r}</Text></View>)}
       </Card>
+      <Button title="Analyse détaillée par mail (IA)" onPress={async () => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium); await handleSendDetailedDiagnostic(); }} style={{ marginBottom: 12, backgroundColor: '#005b4f' }} />
       <Button title="Nouveau diagnostic" variant="secondary" onPress={() => { reset(); setStep(1); setCulture(''); setSympts([]); setVille(''); }} />
     </View>}
 
