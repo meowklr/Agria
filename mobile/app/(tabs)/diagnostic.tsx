@@ -145,7 +145,7 @@ export default function DiagnosticScreen() {
         <Input value={email} onChangeText={setEmail} placeholder="Votre adresse email (obligatoire)" keyboardType="email-address" autoCapitalize="none" />
         <Text style={{ fontSize: 12, color: colors.textMuted, marginTop: 6, marginLeft: 2 }}>Pour recevoir le rapport detaille de l'IA.</Text>
       </View>
-      <Button title="Analyse détaillée par mail (IA)" onPress={async () => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium); await handleSendDetailedDiagnostic(); }} style={{ marginBottom: 12, backgroundColor: '#005b4f' }} />
+      <Button title="Analyse detaillee par mail (IA)" onPress={async () => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium); await handleSendDetailedDiagnostic(); }} style={{ marginBottom: 12, backgroundColor: colors.accent }} />
       <Button title="Nouveau diagnostic" variant="secondary" onPress={() => { LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut); reset(); setStep(1); setCulture(''); setSympts([]); setVille(''); setEmail(''); }} />
     </View>}
 
@@ -157,14 +157,14 @@ export default function DiagnosticScreen() {
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}><Badge text={h.titre || h.nom} variant={h.gravite} /><Ionicons name={expanded === i ? 'chevron-up' : 'chevron-down'} size={14} color={colors.textMuted} /></View>
             <Text style={{ fontSize: 11, color: colors.textMuted }}>{h.date}</Text>
           </View>
-          <Text style={{ fontSize: 12, color: colors.textMuted }}>{h.culture} - {h.ville} - {h.symptomes.length} symptomes</Text>
+          <Text style={{ fontSize: 12, color: colors.textMuted }}>{h.culture} - {h.ville} - {Array.isArray(h.symptomes) ? h.symptomes.length : 0} symptomes</Text>
         </TouchableOpacity>
         {expanded === i && <View style={{ marginTop: 12, paddingTop: 12, borderTopWidth: 1, borderTopColor: colors.border }}>
           <Text style={{ fontSize: 13, fontWeight: '600', color: colors.text, marginBottom: 6 }}>Explication</Text>
           <Text style={{ fontSize: 13, color: colors.textSecondary, lineHeight: 20, marginBottom: 12 }}>{h.explication}</Text>
           <Text style={{ fontSize: 13, fontWeight: '600', color: colors.text, marginBottom: 6 }}>Recommandations</Text>
           {h.recommandations.map((r, ri) => <View key={ri} style={{ flexDirection: 'row', alignItems: 'flex-start', gap: 8, marginBottom: 6 }}><Ionicons name="checkmark-circle" size={12} color={colors.success} style={{ marginTop: 2 }} /><Text style={{ flex: 1, fontSize: 12, color: colors.textSecondary, lineHeight: 18 }}>{r}</Text></View>)}
-          <Text style={{ fontSize: 11, color: colors.textMuted, marginTop: 8 }}>Symptomes : {h.symptomes.join(', ')}</Text>
+          <Text style={{ fontSize: 11, color: colors.textMuted, marginTop: 8 }}>Symptomes : {Array.isArray(h.symptomes) ? h.symptomes.join(', ') : ''}</Text>
         </View>}
       </Card>)}
     </View>}

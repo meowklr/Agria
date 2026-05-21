@@ -36,8 +36,10 @@ const MAX_ALERTS = 3;
 
 function formatId(payload: AlertPayload): string {
   if (payload.id) return payload.id;
-  if (payload.alert?.label) return payload.alert.label.replace(/[^a-z0-9_-]+/gi, '_').slice(0, 40) + '-' + Math.random().toString(36).slice(2, 8);
-  return 'alert-' + Math.random().toString(36).slice(2, 10);
+  const date = (payload.date || '').slice(0, 10);
+  const city = (payload.city || 'unknown').replace(/[^a-z0-9_-]+/gi, '_').slice(0, 30);
+  const level = payload.alert?.level || 'info';
+  return `a_${date}_${city}_${level}`;
 }
 
 function normalizePayload(payload: AlertPayload): AlertItem {
@@ -74,6 +76,6 @@ export async function saveAlerts(alerts: AlertItem[]): Promise<void> {
   await Promise.all(trimmed.map(alert => dpSave(ALERT_KEY_PREFIX + alert.id, alert.payload)));
 }
 
-export async function clearAlerts(): Promise<void> {
-  // Not implemented because Firebase path removal is not available here.
+export async function dismissAlert(id: string): Promise<void> {
+  await dpRemove(ALERT_KEY_PREFIX + id);
 }

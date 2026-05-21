@@ -52,11 +52,15 @@ async function getEmailMap(): Promise<Record<string, string>> {
     try {
       const parsed = JSON.parse(e.value);
       if (parsed && typeof parsed === 'object' && parsed.userId && parsed.email) {
-        map[parsed.userId] = parsed.email;
+        map[parsed.userId] = parsed.email.trim().toLowerCase();
       } else {
-        map[e.value] = e.key;
+        const raw = unsafeEmail(e.key);
+        if (raw && raw.includes('@')) map[e.value] = raw;
       }
-    } catch { map[e.value] = e.key; }
+    } catch {
+      const raw = unsafeEmail(e.key);
+      if (raw && raw.includes('@')) map[e.value] = raw;
+    }
   }
   return map;
 }
@@ -66,11 +70,23 @@ async function findUserEmail(userId: string): Promise<string | null> {
   for (const e of entries) {
     try {
       const parsed = JSON.parse(e.value);
-      if (parsed && typeof parsed === 'object' && parsed.userId === userId) return parsed.email;
+      if (parsed && typeof parsed === 'object' && parsed.userId === userId) {
+        return parsed.email?.trim().toLowerCase() || null;
+      }
     } catch {}
-    if (e.value === userId) return e.key;
+    if (e.value === userId) {
+      const raw = unsafeEmail(e.key);
+      if (raw && raw.includes('@')) return raw;
+    }
   }
   return null;
+}
+
+function unsafeEmail(key: string): string {
+  return key.replace('agria_uid_', '')
+    .replace(/_com$/i, '.com').replace(/_fr$/i, '.fr')
+    .replace(/_net$/i, '.net').replace(/_org$/i, '.org')
+    .replace(/_io$/i, '.io').replace(/_dev$/i, '.dev');
 }
 
 export async function loadAllUsers(): Promise<AdminUser[]> {
@@ -78,22 +94,29 @@ export async function loadAllUsers(): Promise<AdminUser[]> {
   const users: AdminUser[] = [];
 
   for (const e of uidEntries) {
-    let userId: string;
-    let email: string;
+    let userId: string | null = null;
+    let email: string | null = null;
+
     try {
       const parsed = JSON.parse(e.value);
       if (parsed && typeof parsed === 'object' && parsed.userId && parsed.email) {
         userId = parsed.userId;
-        email = parsed.email;
+        email = parsed.email.trim().toLowerCase();
       } else {
-        userId = e.value;
-        email = e.key;
+        userId = parsed;
+        email = null;
       }
     } catch {
       userId = e.value;
-      email = e.key;
+      email = null;
     }
+
     if (!userId) continue;
+    if (!email) {
+      const raw = unsafeEmail(e.key);
+      if (raw && raw.includes('@')) email = raw;
+    }
+    if (!email) continue;
 
     const profile = await dpLoad<Profile | null>('agria_user_profile_' + userId, null);
     const champs = await dpLoad<Champ[]>('agria_champs_' + userId, []);
@@ -222,7 +245,9 @@ export async function deleteOwnAccount(userId: string): Promise<void> {
 export async function listOrphanData(): Promise<{ type: string; key: string; detail: string }[]> {
   const uidEntries = await dpListKeys('agria_uid_');
   const validUids: Set<string> = new Set();
-  for (const e of uidEntries) { if (e.value) validUids.add(e.value); }
+  for (const e of uidEntries) {
+    try { const p = JSON.parse(e.value); if (p && typeof p === 'object' && p.userId) validUids.add(p.userId); } catch { if (e.value) validUids.add(e.value); }
+  }
 
   const orphans: { type: string; key: string; detail: string }[] = [];
 
@@ -264,7 +289,9 @@ export async function listOrphanData(): Promise<{ type: string; key: string; det
 export async function cleanOrphanData(): Promise<{ removed: string[] }> {
   const uidEntries = await dpListKeys('agria_uid_');
   const validUids: Set<string> = new Set();
-  for (const e of uidEntries) { if (e.value) validUids.add(e.value); }
+  for (const e of uidEntries) {
+    try { const p = JSON.parse(e.value); if (p && typeof p === 'object' && p.userId) validUids.add(p.userId); } catch { if (e.value) validUids.add(e.value); }
+  }
 
   const removed: string[] = [];
 
@@ -280,6 +307,18 @@ export async function cleanOrphanData(): Promise<{ removed: string[] }> {
     if (!validUids.has(uid)) { await dpRemove(pk.key); removed.push('Profil de ' + uid.slice(0, 8) + '...'); }
   }
 
+  const prefsEntries = await dpListKeys('agria_prefs_');
+  for (const pk of prefsEntries) {
+    const uid = pk.key.replace('agria_prefs_', '');
+    if (!validUids.has(uid)) { await dpRemove(pk.key); removed.push('Preferences de ' + uid.slice(0, 8) + '...'); }
+  }
+
+  const diagEntries = await dpListKeys('agria_diagnostics_');
+  for (const dk of diagEntries) {
+    const uid = dk.key.replace('agria_diagnostics_', '');
+    if (!validUids.has(uid)) { await dpRemove(dk.key); removed.push('Diagnostics de ' + uid.slice(0, 8) + '...'); }
+  }
+
   if (removed.length > 0) await logAction('Nettoyage BDD', `${removed.length} donnees orphelines supprimees`, 'success');
   return { removed };
 }
@@ -290,9 +329,17 @@ export async function purgeInactiveUsers(): Promise<{ count: number }> {
   let count = 0;
 
   for (const e of uidEntries) {
-    const userId = e.value;
-    const email = e.key.replace('agria_uid_', '').replace(/_/g, (m, i) => i === 0 ? '.' : '');
+    let userId: string | null = null;
+    let email: string | null = null;
+
+    try {
+      const p = JSON.parse(e.value);
+      if (p && typeof p === 'object' && p.userId && p.email) { userId = p.userId; email = p.email; }
+    } catch { userId = e.value; }
+
     if (!userId) continue;
+    if (!email) { const raw = unsafeEmail(e.key); if (raw && raw.includes('@')) email = raw; }
+    if (!email) continue;
 
     const cred = await dpLoad<any>('agria_cred_' + email, null);
     const lastActivity = cred?.lastLogin || null;

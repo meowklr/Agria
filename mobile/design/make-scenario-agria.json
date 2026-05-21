@@ -1,0 +1,137 @@
+{
+    "name": "Agria - Alerte Meteo Agricole",
+    "flow": [
+        {
+            "id": 1,
+            "module": "gateway:CustomWebHook",
+            "version": 1,
+            "parameters": {
+                "hook": 3082563,
+                "maxResults": 1
+            },
+            "mapper": {},
+            "metadata": {
+                "designer": { "x": 0, "y": 0 },
+                "restore": {
+                    "parameters": {
+                        "hook": {
+                            "label": "Agria Alertes",
+                            "data": { "editable": "true" }
+                        }
+                    }
+                },
+                "parameters": [
+                    { "name": "hook", "type": "hook:gateway-webhook", "label": "Webhook", "required": true },
+                    { "name": "maxResults", "type": "number", "label": "Maximum number of results" }
+                ]
+            }
+        },
+        {
+            "id": 2,
+            "module": "ai-local-agent:RunLocalAIAgent",
+            "version": 0,
+            "parameters": {
+                "makeConnectionId": 6649341
+            },
+            "mapper": {
+                "defaultModel": "small",
+                "systemPrompt": "Tu es un agronome expert qui analyse les alertes meteo agricoles.\n\nRecois un JSON contenant :\n- city : ville\n- weather : { temp, humidity, description }\n- forecast : previsions 3 jours\n- fields : parcelles (nom, culture, surface, stade)\n- alert : { level, label, reason, message }\n- risk : { level, score, label, reason, computedFactors }\n\nTa tache :\n1. Analyse le niveau de risque (danger / warning / info)\n2. Genere un message court et clair en francais\n3. Donne une recommandation concrete et actionnable\n4. Si des cultures sont listees, personnalise le conseil\n5. Si le risque est GRAVE, insiste sur l'urgence\n\nReponds UNIQUEMENT en JSON valide :\n{\n  \"severity\": \"danger|warning|info\",\n  \"text\": \"Message court (2-3 phrases)\",\n  \"recommendation\": \"Action concrete recommandee\"\n}",
+                "message": "Analyse cette alerte agricole :\n\nVille : {{1.city}}\nTemperature : {{1.weather.temp}}°C\nDescription : {{1.weather.description}}\nHumidite : {{1.weather.humidity}}%\n\nNiveau de risque : {{1.risk.label}} (score {{1.risk.score}}/7)\nRaison : {{1.risk.reason}}\n\nParcelles concernees :\n{{#each 1.fields}}- {{nom}} : {{culture}}, {{surface}} ha, stade {{stade}}\n{{/each}}\n\nPrevisions 3 jours :\n{{#each 1.forecast}}- {{jour}} : {{tempMax}}°C / {{tempMin}}°C\n{{/each}}\n\nMessage existant : {{1.alert.message}}",
+                "files": [],
+                "threadId": "",
+                "modelConfig": {
+                    "recursionLimit": 300,
+                    "iterationsFromHistoryCount": "10"
+                },
+                "timeout": "",
+                "outputType": "text"
+            },
+            "metadata": {
+                "designer": { "x": 250, "y": 0 },
+                "restore": {
+                    "parameters": {
+                        "makeConnectionId": {
+                            "label": "My Make's AI Provider",
+                            "data": { "scoped": "true", "connection": "ai-provider" }
+                        }
+                    },
+                    "expect": {
+                        "defaultModel": { "mode": "chose", "label": "SmallModel: gpt-5-nano" },
+                        "files": { "mode": "chose" },
+                        "outputType": { "label": "Text" }
+                    }
+                },
+                "parameters": [
+                    { "name": "makeConnectionId", "type": "account:ai-provider,openai-gpt-3,anthropic-claude,gemini-ai-q9zyjp,ai-agent-foundry-openai,ai-agent-foundry-non-openai,mistral-ai,cohere,groq,ai-agent-xai,amazon-bedrock,ai-agent-openai-compatible", "label": "Connection", "required": true }
+                ],
+                "expect": [
+                    { "name": "defaultModel", "type": "select", "label": "Model", "required": true },
+                    { "name": "systemPrompt", "type": "text", "label": "Instructions" },
+                    { "name": "message", "type": "text", "label": "Input", "required": true },
+                    { "name": "files", "type": "array", "label": "Input files", "spec": [{ "name": "fileName", "type": "filename", "label": "File name" }, { "name": "data", "type": "buffer", "label": "Data" }] },
+                    { "name": "threadId", "type": "text", "label": "Conversation ID" },
+                    { "name": "modelConfig", "type": "collection", "label": "Model configuration", "spec": [{ "name": "tokenLimit", "type": "hidden" }, { "name": "recursionLimit", "type": "hidden" }, { "name": "iterationsFromHistoryCount", "type": "number", "label": "Maximum conversation history" }] },
+                    { "name": "timeout", "type": "number", "label": "Step timeout", "validate": { "min": 120, "max": 600 } },
+                    { "name": "outputType", "type": "select", "label": "Response format", "required": true, "validate": { "enum": ["text", "make-schema", "udt-schema"] } }
+                ]
+            }
+        },
+        {
+            "id": 3,
+            "module": "util:ParseJSON",
+            "version": 1,
+            "parameters": {},
+            "mapper": {
+                "json": "{{2.response}}"
+            },
+            "metadata": {
+                "designer": { "x": 500, "y": 0 },
+                "parameters": [
+                    { "name": "json", "type": "any", "label": "JSON", "required": true },
+                    { "name": "type", "type": "hidden" }
+                ]
+            }
+        },
+        {
+            "id": 4,
+            "module": "gateway:WebhookRespond",
+            "version": 1,
+            "parameters": {},
+            "mapper": {
+                "status": "200",
+                "body": "{\n  \"status\": \"ok\",\n  \"severity\": \"{{3.severity}}\",\n  \"text\": \"{{3.text}}\",\n  \"recommendation\": \"{{3.recommendation}}\"\n}",
+                "headers": [
+                    { "key": "Content-Type", "value": "application/json" }
+                ]
+            },
+            "metadata": {
+                "designer": { "x": 750, "y": 0 },
+                "restore": { "expect": { "headers": { "mode": "chose" } } },
+                "expect": [
+                    { "name": "status", "type": "uinteger", "label": "Status", "validate": { "min": 100 }, "required": true },
+                    { "name": "body", "type": "any", "label": "Body" },
+                    { "name": "headers", "type": "array", "label": "Custom headers", "validate": { "maxItems": 16 }, "spec": [{ "name": "key", "label": "Key", "type": "text", "required": true }, { "name": "value", "label": "Value", "type": "text", "required": true }] }
+                ]
+            }
+        }
+    ],
+    "metadata": {
+        "instant": true,
+        "version": 1,
+        "scenario": {
+            "roundtrips": 1,
+            "maxErrors": 3,
+            "autoCommit": true,
+            "autoCommitTriggerLast": true,
+            "sequential": false,
+            "slots": null,
+            "confidential": false,
+            "dataloss": false,
+            "dlq": false,
+            "freshVariables": false
+        },
+        "designer": { "orphans": [] },
+        "zone": "eu1.make.com",
+        "notes": []
+    }
+}

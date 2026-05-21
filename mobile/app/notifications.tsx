@@ -8,19 +8,13 @@ import { useNotifications } from '@/hooks/useNotifications';
 
 function NotifItem({ n, onPress }: { n: any; onPress: () => void }) {
   const scale = useRef(new Animated.Value(1)).current;
-  const fade = useRef(new Animated.Value(1)).current;
 
   const handlePressIn = () => { Animated.spring(scale, { toValue: 0.97, useNativeDriver: true, tension: 200, friction: 12 }).start(); };
   const handlePressOut = () => { Animated.spring(scale, { toValue: 1, useNativeDriver: true, tension: 200, friction: 12 }).start(); };
-  const handlePress = () => {
-    Animated.timing(fade, { toValue: 0, duration: 150, useNativeDriver: true }).start(() => {
-      onPress();
-    });
-  };
 
   return (
-    <Animated.View style={{ transform: [{ scale }], opacity: fade }}>
-      <TouchableOpacity onPress={handlePress} onPressIn={handlePressIn} onPressOut={handlePressOut} activeOpacity={1} style={{ backgroundColor: n.read ? colors.surface : '#FEF3F0', padding: 16, borderRadius: radius.md, borderWidth: 1, borderColor: n.read ? colors.border : 'rgba(217, 83, 79, 0.2)', gap: 6 }}>
+    <Animated.View style={{ transform: [{ scale }] }}>
+      <TouchableOpacity onPress={onPress} onPressIn={handlePressIn} onPressOut={handlePressOut} activeOpacity={1} style={{ backgroundColor: n.read ? colors.surface : '#FEF3F0', padding: 16, borderRadius: radius.md, borderWidth: 1, borderColor: n.read ? colors.border : 'rgba(217, 83, 79, 0.2)', gap: 6 }}>
         <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
           <Text style={{ fontSize: 15, fontWeight: '600', color: colors.text, flex: 1, fontFamily: fontFamily.sans }}>{n.title}</Text>
           {!n.read && <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: colors.danger }} />}

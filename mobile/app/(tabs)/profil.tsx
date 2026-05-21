@@ -10,6 +10,8 @@ export default function ProfilScreen() {
   const [expl, setExpl] = useState(''); const [siret, setSiret] = useState(''); const [typeAgri, setTypeAgri] = useState('');
   const [notifs, setNotifs] = useState(false); const [uniteHa, setUniteHa] = useState(true);
   const [legalModal, setLegalModal] = useState<{ title: string; body: string } | null>(null);
+  const [savedOk, setSavedOk] = useState(false);
+  const showSaved = () => { setSavedOk(true); setTimeout(() => setSavedOk(false), 1800); };
   const [newEmail, setNewEmail] = useState('');
   const [oldPwd, setOldPwd] = useState(''); const [newPwd, setNewPwd] = useState('');
   const [section, setSection] = useState<string | null>(null);
@@ -32,13 +34,13 @@ export default function ProfilScreen() {
           {lbl('Prenom')}<Input value={prenom} onChangeText={setPrenom} placeholder="Prenom" />
           {lbl('Nom')}<Input value={nom} onChangeText={setNom} placeholder="Nom" />
           {lbl('Telephone')}<Input value={tel} onChangeText={setTel} placeholder="Optionnel" keyboardType="phone-pad" />
-          <Button title="Sauvegarder" onPress={async () => { await saveProfile({prenom,nom,telephone:tel}); Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success); }} />
+          <Button title="Sauvegarder" onPress={async () => { await saveProfile({prenom,nom,telephone:tel}); Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success); showSaved(); }} />
         </View> },
         { key: 'exploitation', icon: 'home-outline' as const, label: 'Exploitation', content: () => <View style={{gap:10}}>
           {lbl('Nom exploitation')}<Input value={expl} onChangeText={setExpl} placeholder="Nom exploitation" />
           {lbl('SIRET')}<Input value={siret} onChangeText={setSiret} placeholder="14 chiffres" keyboardType="numeric" />
           {lbl('Type agriculture')}<Input value={typeAgri} onChangeText={setTypeAgri} placeholder="Ex: polyculture" />
-          <Button title="Sauvegarder" onPress={async () => { await saveProfile({...profile,prenom,nom,telephone:tel,exploitation:expl,siret,typeAgriculture:typeAgri}); Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success); }} />
+          <Button title="Sauvegarder" onPress={async () => { await saveProfile({...profile,prenom,nom,telephone:tel,exploitation:expl,siret,typeAgriculture:typeAgri}); Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success); showSaved(); }} />
         </View> },
         { key: 'parametres', icon: 'settings-outline' as const, label: 'Parametres', content: () => <View style={{gap:10}}>
           {lbl('Changer email')}<Input value={newEmail} onChangeText={setNewEmail} placeholder={profile.email || 'Nouvel email'} keyboardType="email-address" autoCapitalize="none" />
@@ -63,6 +65,11 @@ export default function ProfilScreen() {
       ))}
     </View>
 
+    {savedOk && <View style={{ marginBottom: 16, backgroundColor: '#EAF3E0', borderRadius: 12, padding: 10, flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+      <Ionicons name="checkmark-circle" size={15} color={colors.success} />
+      <Text style={{ flex: 1, fontSize: 12, color: colors.success, fontWeight: '500', fontFamily: fontFamily.sans }}>Informations sauvegardees.</Text>
+    </View>}
+
     <Card><SectionTitle title="Statistiques" />
       <View style={{flexDirection:'row',justifyContent:'space-between',paddingVertical:14,borderBottomWidth:1,borderBottomColor:colors.border}}><Text style={{fontSize:12,color:colors.textMuted}}>Champs</Text><Text style={{fontSize:18,fontWeight:'700',color:colors.text,fontFamily:fontFamily.serif}}>{stats.nbChamps}</Text></View>
       <View style={{flexDirection:'row',justifyContent:'space-between',paddingVertical:14,borderBottomWidth:1,borderBottomColor:colors.border}}><Text style={{fontSize:12,color:colors.textMuted}}>Surface totale</Text><Text style={{fontSize:18,fontWeight:'700',color:colors.text,fontFamily:fontFamily.serif}}>{stats.surface} ha</Text></View>
@@ -71,8 +78,8 @@ export default function ProfilScreen() {
     <View style={{height:24}} />
 
     <Card><SectionTitle title="Preferences" />
-      <View style={{flexDirection:'row',justifyContent:'space-between',alignItems:'center',paddingVertical:12,borderBottomWidth:1,borderBottomColor:colors.border}}><Text style={{fontSize:14,fontWeight:'500',color:colors.text}}>Notifications</Text><Switch value={notifs} onValueChange={v => { setNotifs(v); savePrefs({...prefs,notifications:v}); }} trackColor={{true:colors.success}} /></View>
-      <View style={{flexDirection:'row',justifyContent:'space-between',alignItems:'center',paddingVertical:12}}><Text style={{fontSize:14,fontWeight:'500',color:colors.text}}>Unite hectares</Text><Switch value={uniteHa} onValueChange={v => { setUniteHa(v); savePrefs({...prefs,uniteHa:v}); }} trackColor={{true:colors.success}} /></View>
+      <View style={{flexDirection:'row',justifyContent:'space-between',alignItems:'center',paddingVertical:12,borderBottomWidth:1,borderBottomColor:colors.border}}><Text style={{fontSize:14,fontWeight:'500',color:colors.text}}>Notifications</Text><Switch value={notifs} onValueChange={v => { setNotifs(v); savePrefs({...prefs,notifications:v}); }} trackColor={{false:colors.border,true:colors.primary}} thumbColor={colors.surface} /></View>
+      <View style={{flexDirection:'row',justifyContent:'space-between',alignItems:'center',paddingVertical:12}}><Text style={{fontSize:14,fontWeight:'500',color:colors.text}}>Unite hectares</Text><Switch value={uniteHa} onValueChange={v => { setUniteHa(v); savePrefs({...prefs,uniteHa:v}); }} trackColor={{false:colors.border,true:colors.primary}} thumbColor={colors.surface} /></View>
     </Card>
     <View style={{height:24}} />
 

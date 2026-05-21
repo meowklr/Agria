@@ -1,6 +1,6 @@
 import React, { useState, useCallback } from 'react'; import { View, Text, ScrollView, TouchableOpacity, Alert, LayoutAnimation, Platform, UIManager } from 'react-native'; import { router, useFocusEffect } from 'expo-router'; import { Ionicons } from '@expo/vector-icons'; import { useSafeAreaInsets } from 'react-native-safe-area-context'; import { colors, radius, fontFamily } from '../../src/theme'; import { Card } from '../../src/components/Card'; import { Badge } from '../../src/components/Badge'; import { Input } from '../../src/components/Input'; import { SectionTitle } from '../../src/components/Typography'; import { LoaderBar } from '../../src/components/LoaderBar'; import { useWeather, useCitySearch } from '../../src/hooks/useWeather'; import { useChamps } from '../../src/hooks/useChamps'; import { deleteChamp, Champ } from '../../src/services/champs';
 import { useAlerts } from '../../src/hooks/useAlerts';
-import { addAlert } from '../../src/services/alerts';
+import { addAlert, dismissAlert } from '../../src/services/alerts';
 import { sendMorningRiskAlert } from '../../src/services/riskAlert';
 import { NotificationBell } from '../../src/components/NotificationBell';
 import { ScreenFade } from '../../src/components/ScreenFade';
@@ -108,22 +108,29 @@ export default function DashboardScreen() {
       </ScrollView>
     </View>
 
-    <TouchableOpacity style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: showAlerts ? 16 : 24 }} onPress={() => { LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut); setShowAlerts(!showAlerts); }}>
-      <Text style={{ fontSize: 18, fontWeight: '600', color: colors.text, letterSpacing: -0.2, fontFamily: fontFamily.serif }}>Alertes</Text>
-      <Ionicons name={showAlerts ? 'chevron-up' : 'chevron-down'} size={14} color={colors.textMuted} />
+    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: showAlerts ? 16 : 24 }}>
+      <TouchableOpacity style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }} onPress={() => { LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut); setShowAlerts(!showAlerts); }} activeOpacity={1}>
+        <Text style={{ fontSize: 18, fontWeight: '600', color: colors.text, letterSpacing: -0.2, fontFamily: fontFamily.serif }}>Alertes</Text>
+        <Ionicons name={showAlerts ? 'chevron-up' : 'chevron-down'} size={14} color={colors.textMuted} />
+      </TouchableOpacity>
       {showAlerts && (
         <TouchableOpacity onPress={handleRefreshRisk} disabled={refreshingRisk} style={{ marginLeft: 'auto', padding: 4, opacity: refreshingRisk ? 0.5 : 1 }}>
           <Ionicons name="refresh-outline" size={16} color={colors.primary} />
         </TouchableOpacity>
       )}
-    </TouchableOpacity>
+    </View>
     {showAlerts && <View style={{ marginBottom: 24, gap: 10 }}>
       {alertsLoading ? <Card><LoaderBar /></Card> : alerts.length === 0 ? <Card><Text style={{ fontSize: 14, color: colors.textMuted, textAlign: 'center' }}>Aucune alerte récente. Les alertes météo reçues via Make apparaîtront ici.</Text></Card> : alerts.slice(0, 4).map((alert) => {
         const levelStyle = alert.level === 'danger' ? { backgroundColor: '#FEF3F0', title: colors.danger, body: '#8B4A3A' }
           : alert.level === 'warning' ? { backgroundColor: '#FDF4E8', title: colors.accent, body: '#8B5E3A' }
           : { backgroundColor: '#EEF5FA', title: '#5a8aa8', body: '#4A6A7A' };
         return <View key={alert.id} style={{ backgroundColor: levelStyle.backgroundColor, borderRadius: radius.lg, padding: 16 }}>
-          <Text style={{ fontSize: 13, fontWeight: '600', color: levelStyle.title, marginBottom: 3, fontFamily: fontFamily.sans }}>{alert.title}</Text>
+          <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+            <Text style={{ fontSize: 13, fontWeight: '600', color: levelStyle.title, marginBottom: 3, fontFamily: fontFamily.sans, flex: 1 }}>{alert.title}</Text>
+            <TouchableOpacity onPress={async () => { await dismissAlert(alert.id); refreshAlerts(); }} style={{ padding: 2, marginLeft: 8 }} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
+              <Ionicons name="close" size={14} color={levelStyle.title} style={{ opacity: 0.4 }} />
+            </TouchableOpacity>
+          </View>
           <Text style={{ fontSize: 13, color: levelStyle.body, lineHeight: 18, fontFamily: fontFamily.sans }}>{alert.body}</Text>
           <Text style={{ fontSize: 11, color: colors.textMuted, marginTop: 8, fontFamily: fontFamily.sans }}>{new Date(alert.date).toLocaleString()}</Text>
         </View>;

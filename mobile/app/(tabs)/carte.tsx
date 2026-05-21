@@ -26,7 +26,7 @@ const STADES = [
   { label: 'Floraison', value: 'floraison' }, { label: 'Maturation', value: 'maturation' }, { label: 'Recolte', value: 'recolte' },
 ];
 
-const HTML = `<!DOCTYPE html><html><head><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"><link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"><style>*{margin:0;padding:0}html,body,#map{width:100%;height:100%}.pt{background:rgba(61,46,31,.82)!important;border:1px solid rgba(255,253,246,.25)!important;box-shadow:none!important;font-weight:600;font-size:10px;color:#FFFDF6;padding:3px 9px!important;border-radius:12px!important;text-shadow:none!important;white-space:nowrap}.pt::before{display:none!important}</style></head><body><div id="map"></div><script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script><script>
+const HTML = `<!DOCTYPE html><html><head><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"><link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"><style>*{margin:0;padding:0}html,body,#map{width:100%;height:100%;touch-action:none}.pt{background:rgba(61,46,31,.82)!important;border:1px solid rgba(255,253,246,.25)!important;box-shadow:none!important;font-weight:600;font-size:10px;color:#FFFDF6;padding:3px 9px!important;border-radius:12px!important;text-shadow:none!important;white-space:nowrap}.pt::before{display:none!important}</style></head><body><div id="map"></div><script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script><script>
 var map=L.map('map',{zoomControl:!1,attributionControl:!1}).setView([46.5,2.3],6);L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',{maxZoom:19}).addTo(map);
 var drawing=!1,dp=[],dl=null,dm=[],pl={},sl=null,fm=null;
 function nt(t,d){window.ReactNativeWebView.postMessage(JSON.stringify({type:t,data:d}))}
@@ -180,6 +180,7 @@ function ParcelPanel({ sel, panelAnim, panHandlers, onClose, onSaved, onDeleted,
   const [notes, setNotes] = useState(sel.notes || '');
   const [saving, setSaving] = useState(false);
   const [dateError, setDateError] = useState(false);
+  const [fieldError, setFieldError] = useState('');
   const [savedOk, setSavedOk] = useState(false);
   const enterAnim = useRef(new Animated.Value(600)).current;
   useEffect(() => { setNom(sel.nom || ''); setCulture(sel.culture || ''); setTypeSol(sel.typeSol || ''); setStade(sel.stade || ''); setDateSemis(sel.dateSemis || ''); setNotes(sel.notes || ''); Animated.spring(enterAnim, { toValue: 0, useNativeDriver: true, tension: 120, friction: 14 }).start(); }, [sel.id]);
@@ -191,6 +192,9 @@ function ParcelPanel({ sel, panelAnim, panHandlers, onClose, onSaved, onDeleted,
         if (d > new Date()) { setDateError(true); return; }
       }
     }
+    if (!culture) { setFieldError('Veuillez selectionner une culture.'); return; }
+    if (!typeSol) { setFieldError('Veuillez selectionner un type de sol.'); return; }
+    setFieldError('');
     setSaving(true);
     await updateChamp(sel.id, { ...sel, nom, culture, typeSol, stade, dateSemis, notes });
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
@@ -208,8 +212,8 @@ function ParcelPanel({ sel, panelAnim, panHandlers, onClose, onSaved, onDeleted,
     <ScrollView contentContainerStyle={{ paddingHorizontal: 24, paddingBottom: 40 }} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false} bounces={false}>
       <TextInput style={{ fontSize: 20, fontWeight: '600', color: colors.text, fontFamily: fontFamily.serif, marginBottom: 2 }} value={nom} onChangeText={setNom} placeholder="Nom de la parcelle" placeholderTextColor={colors.textMuted} />
       <Text style={{ fontSize: 13, color: colors.textMuted, marginBottom: 16 }}>{sel.surface || '?'} ha</Text>
-      <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: colors.border }}><Text style={{ fontSize: 14, color: colors.textSecondary }}>Culture</Text><DropDown value={culture} options={CULTURES} onChange={setCulture} placeholder="Choisir" /></View>
-      <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: colors.border }}><Text style={{ fontSize: 14, color: colors.textSecondary }}>Type de sol</Text><DropDown value={typeSol} options={SOLS} onChange={setTypeSol} placeholder="Choisir" /></View>
+      <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: colors.border }}><Text style={{ fontSize: 14, color: colors.textSecondary }}>Culture</Text><DropDown value={culture} options={CULTURES} onChange={(v) => { setCulture(v); setFieldError(''); }} placeholder="Choisir" /></View>
+      <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: colors.border }}><Text style={{ fontSize: 14, color: colors.textSecondary }}>Type de sol</Text><DropDown value={typeSol} options={SOLS} onChange={(v) => { setTypeSol(v); setFieldError(''); }} placeholder="Choisir" /></View>
       <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: colors.border }}><Text style={{ fontSize: 14, color: colors.textSecondary }}>Stade</Text><DropDown value={stade} options={STADES} onChange={setStade} placeholder="Choisir" /></View>
       <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: colors.border }}>
         <Text style={{ fontSize: 14, color: colors.textSecondary }}>Date semis</Text>
@@ -228,6 +232,11 @@ function ParcelPanel({ sel, panelAnim, panHandlers, onClose, onSaved, onDeleted,
         <Ionicons name="checkmark-circle" size={15} color={colors.success} style={{ marginTop: 1 }} />
         <Text style={{ flex: 1, fontSize: 12, color: colors.success, fontWeight: '500', fontFamily: fontFamily.sans }}>Parcelle sauvegardee.</Text>
       </View>}
+      {fieldError ? <View style={{ marginTop: 12, backgroundColor: '#FEF3F0', borderRadius: radius.sm, padding: 10, flexDirection: 'row', alignItems: 'flex-start', gap: 8 }}>
+        <Ionicons name="alert-circle" size={15} color={colors.danger} style={{ marginTop: 1 }} />
+        <Text style={{ flex: 1, fontSize: 12, color: colors.danger, fontWeight: '500', fontFamily: fontFamily.sans }}>{fieldError}</Text>
+        <TouchableOpacity onPress={() => setFieldError('')}><Ionicons name="close" size={14} color={colors.danger} /></TouchableOpacity>
+      </View> : null}
       <View style={{ flexDirection: 'row', gap: 10, marginTop: 20 }}>
         <TouchableOpacity onPress={save} disabled={saving} style={{ flex: 1, backgroundColor: colors.primary, borderRadius: radius.md, paddingVertical: 12, alignItems: 'center' }}><Text style={{ fontSize: 15, fontWeight: '600', color: colors.text, fontFamily: fontFamily.sans }}>{saving ? '...' : 'Sauvegarder'}</Text></TouchableOpacity>
         <TouchableOpacity onPress={onDeleted} style={{ backgroundColor: 'transparent', borderWidth: 1.5, borderColor: colors.danger, borderRadius: radius.md, paddingVertical: 12, paddingHorizontal: 16, alignItems: 'center' }}><Ionicons name="trash-outline" size={18} color={colors.danger} /></TouchableOpacity>
