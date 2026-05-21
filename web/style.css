@@ -130,6 +130,9 @@ body::before {
   z-index: 1;
 }
 
+/* On profile page, allow content to overlap header so avatar isn't clipped */
+body[data-page="profil"] .page-wrap { z-index: 60; }
+
 /* ---------- HEADER ---------- */
 
 .page-header {
@@ -782,6 +785,13 @@ textarea.input {
   font-size: 22px;
   font-weight: 600;
   color: var(--primary);
+}
+
+/* Prevent large numbers from wrapping and allow dynamic shrink-to-fit */
+.stat-value {
+  white-space: nowrap;
+  display: inline-block;
+  transition: font-size 0.08s var(--ease-out);
 }
 
 .stat-label {
@@ -1646,6 +1656,10 @@ textarea.input {
   flex-shrink: 0;
   box-shadow: 0 4px 16px rgba(232,184,75,0.25);
 }
+
+/* allow avatar to overflow the card without being clipped */
+.profile-section > .card { overflow: visible; }
+.profile-avatar { z-index: 999; }
 
 .profile-stat {
   padding: 14px 16px;

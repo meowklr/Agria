@@ -3,23 +3,40 @@ import { ScreenFade } from '../../src/components/ScreenFade';
 
 export default function ProfilScreen() {
   const { profile, prefs, stats, saveProfile, savePrefs } = useProfile();
-  const [prenom, setPrenom] = useState(''); const [nom, setNom] = useState(''); const [tel, setTel] = useState('');
+  const [prenom, setPrenom] = useState(''); const [nom, setNom] = useState(''); const [tel, setTel] = useState(''); const [email, setEmail] = useState('');
   const [expl, setExpl] = useState(''); const [siret, setSiret] = useState(''); const [typeAgri, setTypeAgri] = useState('');
   const [notifs, setNotifs] = useState(false); const [uniteHa, setUniteHa] = useState(true);
   const [legalModal, setLegalModal] = useState<{ title: string; body: string } | null>(null);
   const insets = useSafeAreaInsets();
 
-  useEffect(() => { setPrenom(profile.prenom||''); setNom(profile.nom||''); setTel(profile.telephone||''); setExpl(profile.exploitation||''); setSiret(profile.siret||''); setTypeAgri(profile.typeAgriculture||''); setNotifs(prefs.notifications||false); setUniteHa(prefs.uniteHa!==false); }, [profile, prefs]);
+  useEffect(() => { setPrenom(profile.prenom||''); setNom(profile.nom||''); setTel(profile.telephone||''); setEmail(profile.email||''); setExpl(profile.exploitation||''); setSiret(profile.siret||''); setTypeAgri(profile.typeAgriculture||''); setNotifs(prefs.notifications||false); setUniteHa(prefs.uniteHa!==false); }, [profile, prefs]);
 
   const initials = ((prenom||'A')[0]+(nom||'A')[0]).toUpperCase();
   const lbl = (t: string) => <Text style={{fontSize:13,fontWeight:'500',color:colors.textSecondary,marginBottom:6,textTransform:'uppercase',letterSpacing:0.4}}>{t}</Text>;
 
-  return <ScreenFade><ScrollView style={{flex:1,backgroundColor:colors.bg}} contentContainerStyle={{padding:16, paddingTop: (insets.top || 0) + 16}}>
+  return <ScreenFade><ScrollView style={{flex:1,backgroundColor:colors.bg, overflow: 'visible'}} contentContainerStyle={{padding:16, paddingTop: (insets.top || 0) + 16, overflow: 'visible'}}>
     <View style={{paddingVertical:8,marginBottom:16}}><Text style={{fontSize:22,fontWeight:'600',color:colors.primary,fontFamily:fontFamily.serif}}>Mon profil</Text></View>
 
-    <Card style={{flexDirection:'row',alignItems:'flex-start',gap:20}}>
-      <View style={{width:72,height:72,borderRadius:36,backgroundColor:colors.primary,justifyContent:'center',alignItems:'center'}}><Text style={{fontSize:26,fontWeight:'600',color:colors.text}}>{initials}</Text></View>
-      <View style={{flex:1}}><SectionTitle title="Identite" />{lbl('Prenom')}<Input value={prenom} onChangeText={setPrenom} placeholder="Prenom" /><View style={{height:12}} />{lbl('Nom')}<Input value={nom} onChangeText={setNom} placeholder="Nom" /><View style={{height:12}} />{lbl('Telephone')}<Input value={tel} onChangeText={setTel} placeholder="Optionnel" keyboardType="phone-pad" /><View style={{height:16}} /><Button title="Sauvegarder" onPress={async () => { await saveProfile({prenom,nom,telephone:tel}); Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success); }} /></View>
+    <Card style={{ position: 'relative', paddingTop: 28, paddingBottom: 18, overflow: 'visible' }}>
+      <TouchableOpacity activeOpacity={0.9} style={{ position: 'absolute', top: -28, right: 16, width: 84, height: 84, borderRadius: 42, backgroundColor: colors.primary, justifyContent: 'center', alignItems: 'center', elevation: 6, zIndex: 60, shadowColor: '#000', shadowOffset: { width: 0, height: 6 }, shadowOpacity: 0.12, shadowRadius: 12, borderWidth: 4, borderColor: colors.surface }} onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); /* TODO: ouvrir le picker d'image */ }}>
+        <Text style={{ fontSize: 26, fontWeight: '700', color: colors.text }}>{initials}</Text>
+      </TouchableOpacity>
+      <View style={{ marginRight: 112, paddingLeft: 8 }}>
+        <SectionTitle title="Identite" />
+        {lbl('Prenom')}
+        <Input value={prenom} onChangeText={setPrenom} placeholder="Votre prenom" />
+        <View style={{ height: 8 }} />
+        {lbl('Nom')}
+        <Input value={nom} onChangeText={setNom} placeholder="Votre nom" />
+        <View style={{ height: 8 }} />
+        {lbl('Email')}
+        <Input value={email} onChangeText={setEmail} placeholder="Adresse email" keyboardType="email-address" autoCapitalize="none" />
+        <View style={{ height: 8 }} />
+        {lbl('Telephone')}
+        <Input value={tel} onChangeText={setTel} placeholder="Optionnel" keyboardType="phone-pad" />
+        <View style={{ height: 14 }} />
+        <Button title="Sauvegarder" onPress={async () => { await saveProfile({prenom,nom,telephone:tel,email,exploitation:expl,siret,typeAgriculture:typeAgri}); Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success); }} style={{ alignSelf: 'stretch' }} />
+      </View>
     </Card>
     <View style={{height:24}} />
 
