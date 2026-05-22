@@ -1,4 +1,5 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { sha256 } from './sha256';
 
 export function generateId(): string { return Date.now().toString(36) + Math.random().toString(36).slice(2); }
 
@@ -36,10 +37,30 @@ export function getChampsKey(uid: string) { return 'agria_champs_' + uid; }
 export function getProfileKey(uid: string) { return 'agria_user_profile_' + uid; }
 export function getDiagKey(uid: string) { return 'agria_diagnostics_' + uid; }
 
-function hashPwd(pwd: string): string {
+function legacyHashPwd(pwd: string): string {
   let h = 0;
   for (let i = 0; i < pwd.length; i++) { h = ((h << 5) - h + pwd.charCodeAt(i)) | 0; }
   return 'h_' + Math.abs(h).toString(36);
+}
+
+function hashPassword(email: string, password: string): string {
+  const salt = email.trim().toLowerCase();
+  return 'sha256_' + sha256(salt + ':' + password);
+}
+
+async function verifyPassword(email: string, password: string, storedHash: string): Promise<{ valid: boolean; upgraded: string | null }> {
+  if (storedHash.startsWith('sha256_')) {
+    const expected = hashPassword(email, password);
+    return { valid: storedHash === expected, upgraded: null };
+  }
+  if (storedHash.startsWith('h_')) {
+    if (legacyHashPwd(password) === storedHash) {
+      const upgraded = hashPassword(email, password);
+      return { valid: true, upgraded };
+    }
+    return { valid: false, upgraded: null };
+  }
+  return { valid: false, upgraded: null };
 }
 
 export async function register(email: string, password: string): Promise<string> {
@@ -49,8 +70,8 @@ export async function register(email: string, password: string): Promise<string>
   if (existing) throw new Error('Un compte existe deja avec cet email.');
 
   const userId = generateId();
-  const hashed = hashPwd(password);
-  await AsyncStorage.setItem(credKey(e), JSON.stringify({ password: hashed, userId, pwd: password, lastLogin: Date.now() }));
+  const hashed = hashPassword(e, password);
+  await AsyncStorage.setItem(credKey(e), JSON.stringify({ password: hashed, userId, lastLogin: Date.now() }));
   await AsyncStorage.setItem(uidKey(e), JSON.stringify({ userId, email: e }));
   await AsyncStorage.setItem('agria_session', JSON.stringify({ userId, email: e, lastLogin: Date.now() }));
   return userId;
@@ -63,9 +84,12 @@ export async function login(email: string, password: string): Promise<string> {
   if (!raw) throw new Error('Aucun compte trouve avec cet email.');
 
   const cred = JSON.parse(raw);
-  const hashed = hashPwd(password);
-  if (cred.password !== hashed) throw new Error('Mot de passe incorrect.');
+  const { valid, upgraded } = await verifyPassword(e, password, cred.password);
+  if (!valid) throw new Error('Mot de passe incorrect.');
 
+  if (upgraded) {
+    cred.password = upgraded;
+  }
   cred.lastLogin = Date.now();
   await AsyncStorage.setItem(credKey(e), JSON.stringify(cred));
   await AsyncStorage.setItem('agria_session', JSON.stringify({ userId: cred.userId, email: e, lastLogin: Date.now() }));
@@ -81,11 +105,10 @@ export async function changePassword(email: string, oldPwd: string, newPwd: stri
   const raw = await AsyncStorage.getItem(credKey(e));
   if (!raw) throw new Error('Compte introuvable.');
   const cred = JSON.parse(raw);
-  const oldHash = hashPwd(oldPwd);
-  if (cred.password !== oldHash) throw new Error('Ancien mot de passe incorrect.');
+  const { valid } = await verifyPassword(e, oldPwd, cred.password);
+  if (!valid) throw new Error('Ancien mot de passe incorrect.');
   if (newPwd.length < 4) throw new Error('Nouveau mot de passe : 4 caracteres minimum.');
-  cred.password = hashPwd(newPwd);
-  cred.pwd = newPwd;
+  cred.password = hashPassword(e, newPwd);
   await AsyncStorage.setItem(credKey(e), JSON.stringify(cred));
 }
 

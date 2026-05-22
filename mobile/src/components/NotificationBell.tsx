@@ -8,12 +8,10 @@ import { useNotifications } from '../hooks/useNotifications';
 export function NotificationBell() {
   const { unreadCount, reload } = useNotifications();
 
-  // Reload interval every few seconds in case it was updated in bg, 
-  // or rely on useFocusEffect in the parent screen. Let's do a fast setInterval for demo
   useEffect(() => {
-    const id = setInterval(reload, 2000);
+    const id = setInterval(reload, 5000);
     return () => clearInterval(id);
-  }, []);
+  }, [reload]);
 
   return (
     <TouchableOpacity onPress={() => router.push('/notifications')} style={{ position: 'relative', padding: 4 }}>

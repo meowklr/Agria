@@ -2,6 +2,15 @@ import React, { useEffect } from 'react';
 import { Stack, router } from 'expo-router'; import { StatusBar } from 'expo-status-bar'; import { View, ActivityIndicator } from 'react-native'; import { SafeAreaProvider } from 'react-native-safe-area-context'; import { GestureHandlerRootView } from 'react-native-gesture-handler'; import { useFonts } from 'expo-font'; import { Fraunces_400Regular, Fraunces_600SemiBold, Fraunces_700Bold } from '@expo-google-fonts/fraunces'; import { Outfit_300Light, Outfit_400Regular, Outfit_500Medium, Outfit_600SemiBold, Outfit_700Bold } from '@expo-google-fonts/outfit'; import { colors } from '../src/theme';
 import * as Notifications from 'expo-notifications';
 
+Notifications.setNotificationHandler({
+  handleNotification: async () => ({
+    shouldPlaySound: true,
+    shouldSetBadge: false,
+    shouldShowBanner: true,
+    shouldShowList: true,
+  }),
+});
+
 function NotificationRouter() {
   useEffect(() => {
     Notifications.getLastNotificationResponseAsync().then(response => {

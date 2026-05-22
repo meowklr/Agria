@@ -1,9 +1,10 @@
 export const CONFIG = {
-  OPENWEATHER_API_KEY: "REMOVED_OPENWEATHER_KEY",
+  OPENWEATHER_API_KEY: process.env.EXPO_PUBLIC_OPENWEATHER_API_KEY || '',
   OPENWEATHER_BASE_URL: "https://api.openweathermap.org/data/2.5",
   OPENMETEO_BASE_URL: "https://api.open-meteo.com/v1",
   NOMINATIM_SEARCH_URL: "https://nominatim.openstreetmap.org/search",
-  MAKE_WEBHOOK_URL: "REMOVED_MAKE_WEBHOOK_URL",
+  MAKE_WEBHOOK_URL: process.env.EXPO_PUBLIC_MAKE_WEBHOOK_URL || '',
+  MAKE_DIAGNOSTIC_WEBHOOK_URL: process.env.EXPO_PUBLIC_MAKE_DIAGNOSTIC_WEBHOOK_URL || '',
 };
 export const METEO_FALLBACK = {
   ville: "Paris", temp: 17, humidity: 65, description: "Partiellement nuageux", icone: "cloud-sun",

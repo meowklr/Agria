@@ -3,13 +3,13 @@ import { getDatabase, ref, get, set, remove, Database } from 'firebase/database'
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const FB = {
-  apiKey: "REMOVED_FIREBASE_API_KEY",
-  authDomain: "projet-etude-2026-256f3.firebaseapp.com",
-  databaseURL: "https://projet-etude-2026-256f3-default-rtdb.europe-west1.firebasedatabase.app",
-  projectId: "projet-etude-2026-256f3",
-  storageBucket: "projet-etude-2026-256f3.firebasestorage.app",
-  messagingSenderId: "733207661064",
-  appId: "1:733207661064:web:d9256d9310d0b15e469fbd"
+  apiKey: process.env.EXPO_PUBLIC_FIREBASE_API_KEY || '',
+  authDomain: process.env.EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN || '',
+  databaseURL: process.env.EXPO_PUBLIC_FIREBASE_DATABASE_URL || '',
+  projectId: process.env.EXPO_PUBLIC_FIREBASE_PROJECT_ID || '',
+  storageBucket: process.env.EXPO_PUBLIC_FIREBASE_STORAGE_BUCKET || '',
+  messagingSenderId: process.env.EXPO_PUBLIC_FIREBASE_MESSAGING_SENDER_ID || '',
+  appId: process.env.EXPO_PUBLIC_FIREBASE_APP_ID || '',
 };
 
 let app: FirebaseApp | null = null;
@@ -17,6 +17,7 @@ let db: Database | null = null;
 
 function getApp(): FirebaseApp | null {
   if (app) return app;
+  if (!FB.apiKey || !FB.databaseURL) return null;
   try { app = getApps().length === 0 ? initializeApp(FB) : getApps()[0]; return app; }
   catch { return null; }
 }
@@ -26,6 +27,17 @@ function getDb(): Database | null {
   db = getDatabase(a); return db;
 }
 function safeKey(key: string): string { return key.replace(/[.#$\/\[\]]/g, '_'); }
+
+export async function checkFirebaseConnection(): Promise<boolean> {
+  const database = getDb();
+  if (!database) return false;
+  try {
+    const connectedSnap = await get(ref(database, '.info/connected'));
+    return connectedSnap.val() === true;
+  } catch {
+    return false;
+  }
+}
 
 export async function dpLoad<T>(key: string, fallback: T): Promise<T> {
   try { const local = await AsyncStorage.getItem(key); if (local) return JSON.parse(local); } catch {}

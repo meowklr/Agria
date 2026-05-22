@@ -71,11 +71,19 @@ export async function sendMorningRiskAlert(city: string, champs: Champ[]) {
     },
   };
 
-  await fetch(CONFIG.MAKE_WEBHOOK_URL, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(payload),
-  });
+  try {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 10000);
+    await fetch(CONFIG.MAKE_WEBHOOK_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+      signal: controller.signal,
+    });
+    clearTimeout(timeoutId);
+  } catch {
+    // Webhook delivery is non-critical — the user still gets local alert
+  }
 
   return {
     title: `Alerte météo du jour — ${risk.label}`,

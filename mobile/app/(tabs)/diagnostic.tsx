@@ -1,19 +1,11 @@
 import React, { useEffect, useState, useRef } from 'react'; import { View, Text, ScrollView, TouchableOpacity, LayoutAnimation, Platform, UIManager, Animated } from 'react-native'; import { Ionicons } from '@expo/vector-icons'; import { Swipeable } from 'react-native-gesture-handler'; import { colors, radius, fontFamily } from '../../src/theme'; import { Card } from '../../src/components/Card';
-import * as Notifications from 'expo-notifications';
-
-Notifications.setNotificationHandler({
-  handleNotification: async () => ({
-    shouldShowAlert: true,
-    shouldPlaySound: true,
-    shouldSetBadge: false,
-    shouldShowBanner: true,
-    shouldShowList: true,
-  }),
-}); import { Badge } from '../../src/components/Badge'; import { Button } from '../../src/components/Button'; import { Input } from '../../src/components/Input'; import { SectionTitle } from '../../src/components/Typography'; import { LoaderBar } from '../../src/components/LoaderBar'; import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ScreenFade } from '../../src/components/ScreenFade';
+import * as Notifications from 'expo-notifications';
+import { Badge } from '../../src/components/Badge'; import { Button } from '../../src/components/Button'; import { Input } from '../../src/components/Input'; import { SectionTitle } from '../../src/components/Typography'; import { LoaderBar } from '../../src/components/LoaderBar'; import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useDiagnostic } from '../../src/hooks/useDiagnostic';
 import { useNotifications } from '../../src/hooks/useNotifications';
 import { searchCities } from '../../src/services/weather';
+import { CONFIG } from '../../src/data/config';
 import * as Haptics from 'expo-haptics';
 
 const CULTURES = ['ble','mais','tournesol','colza','vigne'];
@@ -87,7 +79,7 @@ export default function DiagnosticScreen() {
     if (!isValidEmail(email)) { setErrEmail('Adresse email invalide.'); emailErrOpacity.setValue(0); Animated.timing(emailErrOpacity, { toValue: 1, duration: 220, useNativeDriver: true }).start(); return; }
     setSendingDetailed(true);
     try {
-      const webhookUrl = 'REMOVED_MAKE_WEBHOOK_URL';
+      const webhookUrl = CONFIG.MAKE_DIAGNOSTIC_WEBHOOK_URL;
       const payload = { culture, symptomes: sympts, ville, email: email.trim(), diagnostic: result.nom, gravite: result.gravite, explication: result.explication, recommandations: result.recommandations, meteo: result.meteo };
       
       const res = await fetch(webhookUrl, {
