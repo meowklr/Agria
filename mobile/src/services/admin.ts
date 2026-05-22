@@ -345,9 +345,6 @@ export async function purgeInactiveUsers(): Promise<{ count: number }> {
     const lastActivity = cred?.lastLogin || null;
 
     if (!lastActivity) {
-      const profile = await dpLoad<any>('agria_user_profile_' + userId, null);
-      if (!profile) continue;
-      if (Date.now() - sixMonths > 0) { await deleteUserData(userId); count++; }
       continue;
     }
 

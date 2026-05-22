@@ -26,7 +26,7 @@ export function useNotifications() {
   const add = async (title: string, text: string) => {
     const fresh = await AsyncStorage.getItem(KEY);
     const parsed = fresh ? JSON.parse(fresh) : [];
-    const n = { id: Math.random().toString(), title, text, read: false, date: Date.now() };
+    const n = { id: Date.now().toString(36) + Math.random().toString(36).slice(2), title, text, read: false, date: Date.now() };
     const updated = [n, ...parsed];
     setNotifs(updated);
     await AsyncStorage.setItem(KEY, JSON.stringify(updated));

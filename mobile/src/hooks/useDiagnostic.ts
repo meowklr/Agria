@@ -6,7 +6,7 @@ import { getDiagKey, getUserId } from '../services/auth';
 export interface DiagHistoryEntry { nom: string; titre: string; gravite: string; explication: string; recommandations: string[]; culture: string; symptomes: string[]; ville: string; date: string; createdAt: number; }
 
 function labelCulture(culture: string) {
-  var map: Record<string, string> = { ble: 'Blé', mais: 'Maïs', tournesol: 'Tournesol', colza: 'Colza', vigne: 'Vigne' };
+  const map: Record<string, string> = { ble: 'Blé', mais: 'Maïs', tournesol: 'Tournesol', colza: 'Colza', vigne: 'Vigne' };
   return map[culture] || culture || 'Culture';
 }
 

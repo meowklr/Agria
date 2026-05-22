@@ -2,6 +2,12 @@ import { CONFIG, METEO_FALLBACK } from '../data/config';
 export interface MeteoData { ville: string; temp: number; humidity: number; description: string; icone: string; }
 export interface Prevision { jour: string; tempMax: number; tempMin: number; icone: string; }
 
+function fetchWithTimeout(url: string, options: RequestInit = {}, timeoutMs = 10000): Promise<Response> {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+  return fetch(url, { ...options, signal: controller.signal }).finally(() => clearTimeout(timeoutId));
+}
+
 function iconMap(iconCode: string): string {
   const m: Record<string, string> = { '01d':'sun','01n':'moon','02d':'cloud-sun','02n':'cloud-moon','03d':'cloud','03n':'cloud','04d':'cloud','04n':'cloud','09d':'cloud-drizzle','10d':'cloud-rain','11d':'cloud-bolt','13d':'snowflake','50d':'smog' };
   return m[iconCode] || 'cloud-sun';
@@ -10,7 +16,7 @@ function joursFrancais(): string[] { return ['Dim','Lun','Mar','Mer','Jeu','Ven'
 
 export async function fetchMeteoActuelle(ville: string): Promise<MeteoData> {
   try {
-    const r = await fetch(`${CONFIG.OPENWEATHER_BASE_URL}/weather?q=${encodeURIComponent(ville)}&appid=${CONFIG.OPENWEATHER_API_KEY}&units=metric&lang=fr`);
+    const r = await fetchWithTimeout(`${CONFIG.OPENWEATHER_BASE_URL}/weather?q=${encodeURIComponent(ville)}&appid=${CONFIG.OPENWEATHER_API_KEY}&units=metric&lang=fr`);
     if (!r.ok) throw new Error('API error');
     const d = await r.json();
     return { ville: d.name, temp: Math.round(d.main.temp), humidity: d.main.humidity, description: d.weather[0].description, icone: iconMap(d.weather[0].icon) };
@@ -19,7 +25,7 @@ export async function fetchMeteoActuelle(ville: string): Promise<MeteoData> {
 
 export async function fetchPrevisions(ville: string): Promise<Prevision[]> {
   try {
-    const r = await fetch(`${CONFIG.OPENWEATHER_BASE_URL}/forecast?q=${encodeURIComponent(ville)}&appid=${CONFIG.OPENWEATHER_API_KEY}&units=metric&lang=fr`);
+    const r = await fetchWithTimeout(`${CONFIG.OPENWEATHER_BASE_URL}/forecast?q=${encodeURIComponent(ville)}&appid=${CONFIG.OPENWEATHER_API_KEY}&units=metric&lang=fr`);
     if (!r.ok) throw new Error('API error');
     const d = await r.json(); const jours = joursFrancais();
     const jm: Record<string, { jour: string; tempMax: number; tempMin: number; icone: string; count: number }> = {};
@@ -38,7 +44,7 @@ export async function fetchPrevisions(ville: string): Promise<Prevision[]> {
 
 export async function searchCities(query: string): Promise<string[]> {
   try {
-    const r = await fetch(`${CONFIG.NOMINATIM_SEARCH_URL}?q=${encodeURIComponent(query)},France&format=json&limit=5`, { headers: { 'User-Agent': 'Agria/2.0' } });
+    const r = await fetchWithTimeout(`${CONFIG.NOMINATIM_SEARCH_URL}?q=${encodeURIComponent(query)},France&format=json&limit=5`, { headers: { 'User-Agent': 'Agria/2.0' } });
     const d = await r.json(); if (!Array.isArray(d)) return [];
     return d.map((item: any) => item.display_name.split(',')[0]);
   } catch { return []; }
@@ -46,7 +52,7 @@ export async function searchCities(query: string): Promise<string[]> {
 
 export async function fetchCoordonnees(ville: string): Promise<{ lat: number; lon: number }> {
   try {
-    const r = await fetch(`${CONFIG.NOMINATIM_SEARCH_URL}?q=${encodeURIComponent(ville)},France&format=json&limit=1`, { headers: { 'User-Agent': 'Agria/2.0' } });
+    const r = await fetchWithTimeout(`${CONFIG.NOMINATIM_SEARCH_URL}?q=${encodeURIComponent(ville)},France&format=json&limit=1`, { headers: { 'User-Agent': 'Agria/2.0' } });
     const d = await r.json(); if (!d.length) throw new Error('Not found');
     return { lat: parseFloat(d[0].lat), lon: parseFloat(d[0].lon) };
   } catch { return { lat: 48.8566, lon: 2.3522 }; }
