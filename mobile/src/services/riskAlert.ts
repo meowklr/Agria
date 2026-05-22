@@ -8,17 +8,6 @@ function hasSensitiveCulture(champs: Champ[]) {
   return champs.some(c => ['vigne', 'colza', 'ble', 'mais', 'tournesol'].includes(c.culture?.toLowerCase()));
 }
 
-function buildFieldSummary(champs: Champ[]) {
-  if (champs.length === 0) return 'Aucune parcelle enregistrée.';
-  const counts: Record<string, number> = {};
-  champs.forEach(c => {
-    const culture = c.culture?.toLowerCase() || 'inconnue';
-    counts[culture] = (counts[culture] || 0) + 1;
-  });
-  const entries = Object.entries(counts).map(([cul, count]) => `${count}x ${cul}`);
-  return `Parcelles: ${champs.length}. Cultures: ${entries.join(', ')}.`;
-}
-
 function computeRiskLevel(meteo: MeteoData, champs: Champ[]): { level: RiskLevel; label: string; reason: string; score: number; factors: Record<string, boolean | number> } {
   const desc = meteo.description.toLowerCase();
   let score = 0;
@@ -39,15 +28,17 @@ function computeRiskLevel(meteo: MeteoData, champs: Champ[]): { level: RiskLevel
   if (desc.includes('pluie') || desc.includes('averse') || desc.includes('orage')) { score += 2; factors.rainOrStorm = true; }
   if (desc.includes('neige') || desc.includes('verglas') || desc.includes('gel')) { score += 2; factors.freezeRisk = true; }
 
-  if (score >= 5) return { level: 'danger', label: 'GRAVE', reason: 'Conditions froides et humides, fortement défavorables aux cultures sensibles.', score, factors };
-  if (score >= 3) return { level: 'warning', label: 'ATTENTION', reason: 'Conditions à risque modéré : suivez de près vos parcelles.', score, factors };
-  return { level: 'info', label: 'INFO', reason: 'Conditions stables. Restez vigilant selon l’évolution météo.', score, factors };
+  if (score >= 5) return { level: 'danger', label: 'Risque élevé', reason: 'Conditions froides et humides, défavorables pour vos cultures.', score, factors };
+  if (score >= 3) return { level: 'warning', label: 'Vigilance', reason: 'Conditions à risque modéré, surveillez vos parcelles.', score, factors };
+  return { level: 'info', label: 'Info', reason: 'Conditions normales pour la saison. Pas de risque particulier.', score, factors };
 }
 
 function buildMessage(city: string, meteo: MeteoData, champs: Champ[], riskLevel: RiskLevel) {
-  const summary = buildFieldSummary(champs);
-  const riskText = riskLevel === 'danger' ? 'niveau de risque élevé' : riskLevel === 'warning' ? 'niveau de risque modéré' : 'niveau de risque faible';
-  return `Aujourd’hui à ${city} : ${meteo.temp}°C, ${meteo.description}, humidité ${meteo.humidity}%. ${summary} ${riskText}.`;
+  const temp = `${meteo.temp}°C avec ${meteo.description}`;
+  if (champs.length === 0) return `Aujourd'hui à ${city} : ${temp}, humidité ${meteo.humidity}%. Aucune parcelle enregistrée.`;
+  const culturesList = champs.map(c => c.culture || 'culture inconnue').filter((v, i, a) => a.indexOf(v) === i).join(', ');
+  const riskText = riskLevel === 'danger' ? 'Risque élevé' : riskLevel === 'warning' ? 'Vigilance recommandée' : 'Conditions stables';
+  return `Aujourd'hui à ${city} : ${temp}, humidité ${meteo.humidity}%. ${champs.length} parcelle(s) en ${culturesList}. ${riskText}.`;
 }
 
 function selectForecasts(previsions: Prevision[]) {

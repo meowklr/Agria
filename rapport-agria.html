@@ -1,0 +1,832 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Agria &mdash; Rapport de projet</title>
+<style>
+  @page {
+    size: A4;
+    margin: 2.5cm 2cm 2.5cm 2cm;
+    @bottom-center {
+      content: counter(page);
+      font-family: 'Outfit', sans-serif;
+      font-size: 10pt;
+      color: #A89880;
+    }
+  }
+  :root {
+    --bg: #FDF8EE; --surface: #FFFDF6; --primary: #E8B84B;
+    --text: #3D2E1F; --text-secondary: #6B5D4F; --text-muted: #A89880;
+    --border: #EBE3D3; --accent: #C4704A;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: 'Outfit', -apple-system, sans-serif;
+    font-size: 11pt; line-height: 1.7; color: var(--text);
+    background: white;
+    max-width: 210mm; margin: 0 auto; padding: 0;
+  }
+
+  .page { padding: 2.5cm 2cm; page-break-after: always; }
+  .page:last-child { page-break-after: avoid; }
+
+  .cover {
+    display: flex; flex-direction: column; justify-content: center;
+    align-items: center; text-align: center; min-height: 100vh;
+    background: linear-gradient(180deg, #FFFDF6 0%, #FDF8EE 40%, #F3EFE6 100%);
+  }
+  .cover .logo { width: 120px; height: 120px; background: var(--primary); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-bottom: 2rem; }
+  .cover .logo span { font-family: 'Fraunces', Georgia, serif; font-size: 48pt; color: white; }
+  .cover h1 { font-family: 'Fraunces', Georgia, serif; font-size: 32pt; color: var(--text); margin-bottom: 0.5rem; }
+  .cover .subtitle { font-size: 14pt; color: var(--text-secondary); margin-bottom: 3rem; }
+  .cover .meta { font-size: 11pt; color: var(--text-muted); }
+  .cover .meta p { margin-bottom: 0.25rem; }
+
+  h1 { font-family: 'Fraunces', Georgia, serif; font-size: 20pt; color: var(--text); margin-bottom: 0.8rem; }
+  h2 { font-family: 'Fraunces', Georgia, serif; font-size: 15pt; color: var(--text); margin-top: 2rem; margin-bottom: 0.6rem; padding-bottom: 0.3rem; border-bottom: 2px solid var(--primary); }
+  h3 { font-family: 'Fraunces', Georgia, serif; font-size: 12pt; color: var(--text); margin-top: 1.4rem; margin-bottom: 0.4rem; }
+  p  { margin-bottom: 0.8rem; text-align: justify; }
+  ul, ol { margin-bottom: 0.8rem; padding-left: 1.5rem; }
+  li { margin-bottom: 0.3rem; }
+
+  blockquote {
+    margin: 1rem 0; padding: 0.8rem 1rem;
+    background: var(--surface); border-left: 4px solid var(--primary);
+    font-style: italic; color: var(--text-secondary);
+  }
+
+  table { width: 100%; border-collapse: collapse; margin: 1rem 0; font-size: 10pt; }
+  table th { background: var(--primary); color: white; padding: 8px 12px; text-align: left; font-family: 'Fraunces', Georgia, serif; font-size: 10pt; }
+  table td { padding: 8px 12px; border-bottom: 1px solid var(--border); }
+  table tr:nth-child(even) td { background: var(--surface); }
+
+  .highlight { background: var(--primary); color: white; padding: 2px 6px; border-radius: 3px; font-weight: 600; font-size: 10pt; }
+  .tag { display: inline-block; background: #F3EFE6; color: var(--accent); padding: 2px 8px; border-radius: 10px; font-size: 9pt; margin-right: 4px; }
+
+  .toc { margin: 1.5rem 0; }
+  .toc a { color: var(--text-secondary); text-decoration: none; }
+  .toc a:hover { color: var(--accent); }
+  .toc ul { list-style: none; padding-left: 0; }
+  .toc ul ul { padding-left: 1.5rem; }
+  .toc li { margin-bottom: 0.3rem; }
+
+  .img-placeholder {
+    width: 100%; aspect-ratio: 16/9; background: #F3EFE6;
+    border: 2px dashed var(--border); border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    color: var(--text-muted); font-size: 10pt; margin: 1rem 0;
+  }
+
+  .figure-caption { text-align: center; font-size: 9pt; color: var(--text-muted); margin-top: 0.3rem; }
+
+  .page-break { page-break-before: always; }
+
+  .chapter-intro {
+    font-size: 12pt; color: var(--text-secondary);
+    margin-bottom: 1.5rem; padding: 0.8rem 1rem;
+    background: var(--surface); border-radius: 12px;
+    border: 1px solid var(--border);
+  }
+
+  .stack-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin: 1rem 0; }
+  .stack-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 12px; padding: 1rem;
+  }
+  .stack-card h4 { font-family: 'Fraunces', Georgia, serif; font-size: 11pt; margin-bottom: 0.4rem; }
+  .stack-card p { font-size: 10pt; color: var(--text-secondary); margin: 0; }
+
+  @media print {
+    body { background: white; }
+    .cover { height: 100vh; }
+    .page { padding: 2.5cm 2cm; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ==================== PAGE DE COUVERTURE ==================== -->
+<div class="cover">
+  <div class="logo"><span>A</span></div>
+  <h1>Agria</h1>
+  <p class="subtitle">Assistant agricole intelligent pour la gestion<br>de parcelles et le diagnostic de cultures</p>
+  <div class="meta">
+    <p>Rapport de projet &mdash; Mai 2026</p>
+    <p>Application mobile &amp; web pour coop&eacute;ratives agricoles</p>
+  </div>
+</div>
+
+<!-- ==================== SOMMAIRE ==================== -->
+<div class="page">
+  <h1>Sommaire</h1>
+  <div class="toc">
+    <ul>
+      <li><strong>1.</strong> <a href="#s1">Remerciements</a></li>
+      <li><strong>2.</strong> <a href="#s2">R&eacute;sum&eacute; / Abstract</a></li>
+      <li><strong>3.</strong> <a href="#s3">Introduction</a></li>
+      <li><strong>4.</strong> <a href="#s4">Veille technologique</a>
+        <ul>
+          <li>4.1 Panorama des solutions agritech</li>
+          <li>4.2 Technologies mobiles &mdash; React Native vs alternatives</li>
+          <li>4.3 Cartographie &mdash; Leaflet et OpenStreetMap</li>
+          <li>4.4 Backend &mdash; Firebase vs Supabase</li>
+        </ul>
+      </li>
+      <li><strong>5.</strong> <a href="#s5">Analyse des besoins</a>
+        <ul>
+          <li>5.1 Besoin identifi&eacute;</li>
+          <li>5.2 Personas utilisateurs</li>
+          <li>5.3 Cas d&rsquo;usage</li>
+        </ul>
+      </li>
+      <li><strong>6.</strong> <a href="#s6">Conception</a>
+        <ul>
+          <li>6.1 Architecture globale</li>
+          <li>6.2 Design system Golden Hour</li>
+          <li>6.3 Parcours utilisateur</li>
+        </ul>
+      </li>
+      <li><strong>7.</strong> <a href="#s7">R&eacute;alisation</a>
+        <ul>
+          <li>7.1 Stack technique</li>
+          <li>7.2 Application mobile (Expo React Native)</li>
+          <li>7.3 Application web (vanilla)</li>
+          <li>7.4 Fonctionnalit&eacute;s d&eacute;taill&eacute;es</li>
+        </ul>
+      </li>
+      <li><strong>8.</strong> <a href="#s8">Probl&egrave;mes rencontr&eacute;s et solutions</a></li>
+      <li><strong>9.</strong> <a href="#s9">Conclusion &amp; perspectives</a></li>
+      <li><strong>10.</strong> <a href="#s10">Annexes</a></li>
+    </ul>
+  </div>
+</div>
+
+<!-- ==================== 1. REMERCIEMENTS ==================== -->
+<div class="page" id="s1">
+  <h1>1. Remerciements</h1>
+  <p>
+    Ce projet a &eacute;t&eacute; r&eacute;alis&eacute; dans le cadre d&rsquo;un travail d&rsquo;&eacute;tude et de conception
+    d&rsquo;application mobile. Nous tenons &agrave; remercier l&rsquo;ensemble des contributeurs
+    qui ont particip&eacute; &agrave; l&rsquo;&eacute;laboration de cette solution, ainsi que les
+    agriculteurs et membres de coop&eacute;ratives dont les retours ont permis
+    d&rsquo;orienter les choix fonctionnels et ergonomiques.
+  </p>
+  <p>
+    Nous remercions &eacute;galement la communaut&eacute; open-source pour les
+    biblioth&egrave;ques et outils mis &agrave; disposition &mdash; React Native, Expo,
+    Leaflet, Firebase, OpenWeatherMap, Open-Meteo et Nominatim &mdash; sans
+    lesquels ce projet n&rsquo;aurait pu voir le jour.
+  </p>
+</div>
+
+<!-- ==================== 2. RESUME ==================== -->
+<div class="page" id="s2">
+  <h1>2. R&eacute;sum&eacute; / Abstract</h1>
+
+  <h3>R&eacute;sum&eacute;</h3>
+  <p>
+    <strong>Agria</strong> est une application mobile et web destin&eacute;e aux
+    agriculteurs en coop&eacute;rative. Elle propose une carte satellite interactive
+    permettant de tracer et g&eacute;rer des parcelles agricoles, un module de
+    diagnostic de maladies des cultures en trois &eacute;tapes, un suivi m&eacute;t&eacute;orologique
+    en temps r&eacute;el avec pr&eacute;visions sur cinq jours, et des pr&eacute;dictions
+    agronomiques (estimation de r&eacute;colte, besoins en eau, fertilisation).
+  </p>
+  <p>
+    Le projet repose sur une architecture double : une version web historique
+    en HTML/CSS/JavaScript vanilla, et une version mobile d&eacute;velopp&eacute;e
+    avec le framework <strong>Expo React Native</strong> (SDK 54, TypeScript,
+    expo-router). Les donn&eacute;es sont synchronis&eacute;es via
+    <strong>Firebase Realtime Database</strong> avec un fallback en stockage local
+    (AsyncStorage / localStorage). Le design suit le th&egrave;me &laquo;&nbsp;Golden
+    Hour&nbsp;&raquo; inspir&eacute; des champs de bl&eacute; au coucher de soleil.
+  </p>
+
+  <h3>Abstract</h3>
+  <p>
+    <em>
+      Agria is a mobile and web application designed for cooperative farmers.
+      It features an interactive satellite map for parcel management, a three-step
+      crop disease diagnostic tool, real-time weather monitoring with five-day
+      forecasts, and agronomic predictions. Built with Expo React Native and
+      Firebase Realtime Database, it offers offline-capable data persistence
+      and a warm &ldquo;Golden Hour&rdquo; design system.
+    </em>
+  </p>
+</div>
+
+<!-- ==================== 3. INTRODUCTION ==================== -->
+<div class="page" id="s3">
+  <h1>3. Introduction</h1>
+
+  <h3>3.1 Contexte</h3>
+  <p>
+    L&rsquo;agriculture fran&ccedil;aise fait face &agrave; des d&eacute;fis majeurs : changement climatique,
+    pression sur les rendements, n&eacute;cessit&eacute; de r&eacute;duire les intrants, et
+    vieillissement de la population agricole. Dans ce contexte, la
+    <strong>digitalisation des exploitations</strong> n&rsquo;est plus un luxe mais une
+    n&eacute;cessit&eacute;. Pourtant, les solutions existantes restent souvent co&ucirc;teuses,
+    complexes, ou mal adapt&eacute;es aux petites et moyennes exploitations.
+  </p>
+  <p>
+    Les coop&eacute;ratives agricoles, qui regroupent des centaines d&rsquo;exploitants,
+    ont besoin d&rsquo;outils simples et accessibles pour aider leurs membres &agrave;
+    mieux g&eacute;rer leurs parcelles, identifier rapidement les maladies, et
+    anticiper les conditions m&eacute;t&eacute;orologiques.
+  </p>
+
+  <h3>3.2 Probl&eacute;matique</h3>
+  <p>
+    Comment fournir aux agriculteurs d&rsquo;une coop&eacute;rative un outil
+    <strong>mobile, intuitif et gratuit</strong> leur permettant de :
+  </p>
+  <ul>
+    <li>Cartographier et g&eacute;rer leurs parcelles sur fond satellite</li>
+    <li>Diagnostiquer les maladies de leurs cultures en quelques clics</li>
+    <li>Consulter la m&eacute;t&eacute;o et les pr&eacute;visions localis&eacute;es</li>
+    <li>Stocker leurs donn&eacute;es de mani&egrave;re s&eacute;curis&eacute;e et accessible partout</li>
+  </ul>
+
+  <h3>3.3 Objectifs</h3>
+  <ul>
+    <li>D&eacute;velopper une <strong>application mobile</strong> iOS/Android avec React Native</li>
+    <li>Maintenir une <strong>version web</strong> de r&eacute;f&eacute;rence en vanilla JavaScript</li>
+    <li>Int&eacute;grer une <strong>carte satellite interactive</strong> avec outils de dessin</li>
+    <li>Proposer un <strong>diagnostic de cultures</strong> en trois &eacute;tapes (culture, sympt&ocirc;mes, localisation)</li>
+    <li>Assurer la <strong>synchronisation cloud</strong> des donn&eacute;es avec persistance locale</li>
+    <li>Appliquer un <strong>design system coh&eacute;rent</strong> et chaleureux adapt&eacute; au monde agricole</li>
+  </ul>
+</div>
+
+<!-- ==================== 4. VEILLE TECHNOLOGIQUE ==================== -->
+<div class="page" id="s4">
+  <h1>4. Veille technologique</h1>
+
+  <h3>4.1 Panorama des solutions agritech existantes</h3>
+  <p>
+    Le march&eacute; des outils num&eacute;riques agricoles est en pleine expansion. Plusieurs
+    solutions commerciales existent, mais pr&eacute;sentent des limitations pour notre
+    public cible :
+  </p>
+  <table>
+    <tr><th>Solution</th><th>Forces</th><th>Limitations</th></tr>
+    <tr>
+      <td><strong>FarmLogs</strong></td>
+      <td>Cartographie avanc&eacute;e, analyse de rendement</td>
+      <td>Payant, centr&eacute; grandes cultures US</td>
+    </tr>
+    <tr>
+      <td><strong>AgriWebb</strong></td>
+      <td>Gestion de troupeaux, tra&ccedil;abilit&eacute;</td>
+      <td>&Eacute;levage uniquement, abonnement &eacute;lev&eacute;</td>
+    </tr>
+    <tr>
+      <td><strong>Geofolia</strong></td>
+      <td>R&eacute;glementaire PAC, conforme France</td>
+      <td>Interface lourde, desktop uniquement</td>
+    </tr>
+    <tr>
+      <td><strong>MesParcelles</strong></td>
+      <td>Simple, fran&ccedil;ais, planification</td>
+      <td>Pas de diagnostic maladies, pas de mobile natif</td>
+    </tr>
+    <tr>
+      <td><strong>Agria (notre projet)</strong></td>
+      <td>Mobile-first, gratuit, diagnostic int&eacute;gr&eacute;, carte satellite</td>
+      <td>Prototype, couverture maladies limit&eacute;e &agrave; 5 cultures</td>
+    </tr>
+  </table>
+
+  <p>
+    On constate qu&rsquo;aucune solution gratuite et mobile ne combine &agrave; la fois
+    cartographie, diagnostic, m&eacute;t&eacute;o et gestion multi-utilisateurs. C&rsquo;est
+    pr&eacute;cis&eacute;ment le positionnement d&rsquo;Agria.
+  </p>
+
+  <h3>4.2 Technologies mobiles &mdash; React Native vs alternatives</h3>
+  <table>
+    <tr><th>Crit&egrave;re</th><th>React Native (Expo)</th><th>Flutter</th><th>PWA</th></tr>
+    <tr>
+      <td>Performance</td><td>Bonne (bridge JS &rarr; natif)</td><td>Excellente (compile natif)</td><td>Limit&eacute;e</td>
+    </tr>
+    <tr>
+      <td>Ecosyst&egrave;me</td><td>Tr&egrave;s large, npm</td><td>Large, pub.dev</td><td>Web standard</td>
+    </tr>
+    <tr>
+      <td>Courbe d&rsquo;apprentissage</td><td>Faible (React existant)</td><td>Moyenne (Dart)</td><td>Tr&egrave;s faible</td>
+    </tr>
+    <tr>
+      <td>WebView carto</td><td>Excellent (react-native-webview)</td><td>Bon (webview_flutter)</td><td>Natif (Leaflet)</td>
+    </tr>
+    <tr>
+      <td>Notifications push</td><td>expo-notifications</td><td>firebase_messaging</td><td>Service Worker</td>
+    </tr>
+    <tr>
+      <td>Mode hors-ligne</td><td>AsyncStorage + sync</td><td>sqflite/hive</td><td>IndexedDB</td>
+    </tr>
+  </table>
+
+  <p>
+    Le choix de <strong>React Native via Expo</strong> a &eacute;t&eacute; motiv&eacute; par la
+    productivit&eacute; (hot reload, expo-router pour le routing fichier), l&rsquo;acc&egrave;s
+    aux APIs natives (haptiques, notifications, safe areas) sans configuration
+    complexe, et la r&eacute;utilisation des comp&eacute;tences JavaScript existantes du
+    projet web.
+  </p>
+
+  <h3>4.3 Cartographie &mdash; Leaflet et OpenStreetMap</h3>
+  <p>
+    Le choix de <strong>Leaflet.js</strong> coupl&eacute; aux tuiles satellite
+    <strong>ArcGIS/Esri</strong> s&rsquo;est impos&eacute; face &agrave; Google Maps (payant au-del&agrave;
+    d&rsquo;un quota) et Mapbox (co&ucirc;t &eacute;lev&eacute;). Leaflet est l&eacute;ger (~40 Ko),
+    open-source, et offre des fonctionnalit&eacute;s avanc&eacute;es comme le dessin de
+    polygones, le snapping (aimantation), et le g&eacute;ocodage via
+    <strong>Nominatim</strong> (OpenStreetMap).
+  </p>
+  <p>
+    Sur mobile, Leaflet est int&eacute;gr&eacute; dans une <strong>WebView</strong>
+    (react-native-webview), ce qui permet de r&eacute;utiliser le m&ecirc;me code cartographique
+    entre les deux plateformes tout en b&eacute;n&eacute;ficiant du rendu natif pour le reste
+    de l&rsquo;interface.
+  </p>
+
+  <h3>4.4 Backend &mdash; Firebase vs Supabase</h3>
+  <p>
+    Le projet a d&eacute;marr&eacute; avec <strong>Supabase</strong> (PostgreSQL), mais a migr&eacute; vers
+    <strong>Firebase Realtime Database</strong> pour plusieurs raisons : gratuit&eacute;
+    plus g&eacute;n&eacute;reuse au niveau starter, synchronisation temps r&eacute;el native, SDK
+    JavaScript compatible React Native sans configuration suppl&eacute;mentaire, et
+    simplicit&eacute; du mod&egrave;le cl&eacute;-valeur (pas de sch&eacute;ma SQL &agrave; maintenir).
+  </p>
+  <p>
+    Un syst&egrave;me de <strong>persistence hybride</strong> a &eacute;t&eacute; con&ccedil;u : chaque
+    &eacute;criture est stock&eacute;e dans AsyncStorage (mobile) / localStorage (web)
+    <em>et</em> dans Firebase. &Agrave; la lecture, le stockage local est interrog&eacute;
+    en priorit&eacute; (r&eacute;ponse instantan&eacute;e), puis Firebase est v&eacute;rifi&eacute; en arri&egrave;re-plan.
+  </p>
+</div>
+
+<!-- ==================== 5. ANALYSE DES BESOINS ==================== -->
+<div class="page" id="s5">
+  <h1>5. Analyse des besoins</h1>
+
+  <h3>5.1 Besoin identifi&eacute;</h3>
+  <p>
+    Lors de nos &eacute;changes avec des membres de coop&eacute;ratives agricoles, plusieurs
+    constats ont &eacute;merg&eacute; :
+  </p>
+  <ul>
+    <li><strong>Manque d&rsquo;outils simples</strong> : les logiciels existants (Geofolia, MesParcelles) sont per&ccedil;us comme complexes et chronophages.</li>
+    <li><strong>Besoin de mobilit&eacute;</strong> : les agriculteurs sont sur le terrain, pas devant un bureau. Le t&eacute;l&eacute;phone est l&rsquo;outil le plus accessible.</li>
+    <li><strong>Diagnostic rapide</strong> : identifier une maladie t&ocirc;t peut sauver une r&eacute;colte. Un outil d&rsquo;aide au diagnostic, m&ecirc;me simple, a une vraie valeur.</li>
+    <li><strong>Partage encadr&eacute;</strong> : dans une coop&eacute;rative, voir les parcelles des autres est utile, mais les donn&eacute;es personnelles doivent rester prot&eacute;g&eacute;es.</li>
+    <li><strong>Pr&eacute;visions fiables</strong> : la m&eacute;t&eacute;o est le facteur n&deg;1 de d&eacute;cision au quotidien.</li>
+  </ul>
+
+  <h3>5.2 Personas utilisateurs</h3>
+  <table>
+    <tr><th>Persona</th><th>Profil</th><th>Besoin principal</th></tr>
+    <tr>
+      <td><strong>Julien, 45 ans</strong></td>
+      <td>C&eacute;r&eacute;alier, 120 ha, coop&eacute;rateur</td>
+      <td>Suivre ses parcelles de bl&eacute; et ma&iuml;s, diagnostiquer rapidement les maladies fongiques</td>
+    </tr>
+    <tr>
+      <td><strong>Marie, 38 ans</strong></td>
+      <td>Viticultrice, 30 ha, conversion bio</td>
+      <td>Anticiper mildiou et o&iuml;dium, consulter la m&eacute;t&eacute;o locale avant traitement</td>
+    </tr>
+    <tr>
+      <td><strong>Paul, 52 ans</strong></td>
+      <td>Administrateur coop&eacute;rative</td>
+      <td>Superviser les parcelles des adh&eacute;rents, g&eacute;rer les comptes utilisateurs, suivre les diagnostics</td>
+    </tr>
+  </table>
+
+  <h3>5.3 Cas d&rsquo;usage</h3>
+  <ol>
+    <li><strong>Cartographie des parcelles</strong> &mdash; L&rsquo;agriculteur trace sa parcelle sur la carte satellite, lui attribue un nom, une culture, une date de semis.</li>
+    <li><strong>Consultation m&eacute;t&eacute;o</strong> &mdash; Depuis le tableau de bord, il v&eacute;rifie la temp&eacute;rature, l&rsquo;humidit&eacute; et les pr&eacute;visions &agrave; 5 jours pour sa commune.</li>
+    <li><strong>Diagnostic d&rsquo;une maladie</strong> &mdash; En trois &eacute;tapes (choix de la culture, s&eacute;lection des sympt&ocirc;mes, localisation), l&rsquo;application identifie la maladie probable et propose des recommandations.</li>
+    <li><strong>Pr&eacute;dictions agronomiques</strong> &mdash; Estimation de r&eacute;colte, besoins en eau et fertilisation calcul&eacute;s selon la culture et les conditions locales.</li>
+    <li><strong>Administration</strong> &mdash; L&rsquo;administrateur acc&egrave;de &agrave; un back-office pour g&eacute;rer les utilisateurs, consulter les parcelles et les logs.</li>
+  </ol>
+</div>
+
+<!-- ==================== 6. CONCEPTION ==================== -->
+<div class="page" id="s6">
+  <h1>6. Conception</h1>
+
+  <h3>6.1 Architecture globale</h3>
+  <p>
+    Le projet suit une architecture <strong>double stack</strong> o&ugrave; la version
+    web vanilla sert de r&eacute;f&eacute;rence fonctionnelle, et la version mobile
+    React Native en est le miroir moderne :
+  </p>
+  <div class="stack-grid">
+    <div class="stack-card">
+      <h4>Application mobile</h4>
+      <p><span class="tag">Expo SDK 54</span><span class="tag">TypeScript</span><span class="tag">expo-router</span></p>
+      <p>File-based routing, bottom tabs (Dashboard, Carte, Diagnostic, Profil), admin panel prot&eacute;g&eacute;</p>
+    </div>
+    <div class="stack-card">
+      <h4>Application web</h4>
+      <p><span class="tag">HTML5</span><span class="tag">CSS3</span><span class="tag">Vanilla JS</span></p>
+      <p>5 pages statiques servies par Node.js, design mobile-first (max-width 420px centr&eacute;)</p>
+    </div>
+    <div class="stack-card">
+      <h4>Services</h4>
+      <p><span class="tag">Firebase RTDB</span><span class="tag">OpenWeatherMap</span><span class="tag">Open-Meteo</span></p>
+      <p>10 modules de service : auth, champs, diagnostic, weather, predictions, alerts, admin, etc.</p>
+    </div>
+    <div class="stack-card">
+      <h4>Composants UI</h4>
+      <p><span class="tag">Badge</span><span class="tag">Button</span><span class="tag">Card</span><span class="tag">Input</span></p>
+      <p>10 composants r&eacute;utilisables : Typography, Badge, Button, Card, Input, DropDown, etc.</p>
+    </div>
+  </div>
+  <div class="figure-caption">Figure 1 &mdash; Vue d&rsquo;ensemble de l&rsquo;architecture Agria</div>
+
+  <h3>6.2 Design system Golden Hour</h3>
+  <p>
+    Le design system &laquo;&nbsp;Golden Hour&nbsp;&raquo; s&rsquo;inspire de la lumi&egrave;re chaude
+    des champs de bl&eacute; au coucher de soleil. Il repose sur trois piliers :
+  </p>
+  <ul>
+    <li><strong>Palette cr&egrave;me/chaud</strong> : fond <span class="highlight">#FDF8EE</span>, accent bl&eacute; <span class="highlight">#E8B84B</span>, texte brun <span class="highlight">#3D2E1F</span></li>
+    <li><strong>Typographie duale</strong> : <em>Fraunces</em> (serif chaud) pour les titres, <em>Outfit</em> (g&eacute;om&eacute;trique) pour le corps et l&rsquo;UI</li>
+    <li><strong>Ombres chaudes</strong> : box-shadow avec une teinte brune plut&ocirc;t que noire, pour une profondeur naturelle</li>
+    <li><strong>Animations fluides</strong> : bas&eacute;es sur <em>react-native-reanimated</em>, easing curves naturelles, transitions de 200-300ms</li>
+  </ul>
+  <p>
+    Ce th&egrave;me est verrouill&eacute; en mode clair uniquement (<code>color-scheme: light</code>), choix assum&eacute; pour
+    renforcer l&rsquo;identit&eacute; visuelle chaleureuse et la lisibilit&eacute; en ext&eacute;rieur.
+  </p>
+
+  <h3>6.3 Parcours utilisateur</h3>
+  <ol>
+    <li><strong>Connexion</strong> &mdash; &Eacute;cran de login obligatoire &agrave; la premi&egrave;re ouverture (sauf admin).</li>
+    <li><strong>Dashboard</strong> &mdash; Vue d&rsquo;ensemble : m&eacute;t&eacute;o actuelle, pr&eacute;visions, alertes, liste des parcelles.</li>
+    <li><strong>Carte</strong> &mdash; Carte satellite Leaflet en WebView avec outils de dessin, badges de parcelles, recherche de commune.</li>
+    <li><strong>Diagnostic</strong> &mdash; Workflow 3 &eacute;tapes : s&eacute;lection culture &rarr; sympt&ocirc;mes &rarr; localisation &rarr; r&eacute;sultat avec recommandations.</li>
+    <li><strong>Profil</strong> &mdash; Informations utilisateur, pr&eacute;f&eacute;rences, historique des diagnostics.</li>
+    <li><strong>Admin (back-office)</strong> &mdash; Gestion des utilisateurs, consultation des parcelles, logs syst&egrave;me.</li>
+  </ol>
+</div>
+
+<!-- ==================== 7. REALISATION ==================== -->
+<div class="page" id="s7">
+  <h1>7. R&eacute;alisation</h1>
+
+  <h3>7.1 Stack technique</h3>
+  <table>
+    <tr><th>Couche</th><th>Technologie</th><th>Version</th></tr>
+    <tr><td>Framework mobile</td><td>Expo React Native</td><td>SDK 54, React 19.1, RN 0.81</td></tr>
+    <tr><td>Routing</td><td>expo-router</td><td>6.0</td></tr>
+    <tr><td>Base de donn&eacute;es</td><td>Firebase Realtime Database</td><td>10.14</td></tr>
+    <tr><td>Stockage local</td><td>AsyncStorage</td><td>2.2</td></tr>
+    <tr><td>Cartographie</td><td>Leaflet.js (via WebView)</td><td>1.9</td></tr>
+    <tr><td>M&eacute;t&eacute;o</td><td>OpenWeatherMap API + Open-Meteo</td><td>&mdash;</td></tr>
+    <tr><td>G&eacute;ocodage</td><td>Nominatim (OpenStreetMap)</td><td>&mdash;</td></tr>
+    <tr><td>Animations</td><td>react-native-reanimated</td><td>4.1</td></tr>
+    <tr><td>Gestes</td><td>react-native-gesture-handler</td><td>2.28</td></tr>
+    <tr><td>Notifications</td><td>expo-notifications</td><td>0.32</td></tr>
+    <tr><td>Haptiques</td><td>expo-haptics</td><td>15.0</td></tr>
+    <tr><td>Polices</td><td>Fraunces + Outfit (Google Fonts)</td><td>&mdash;</td></tr>
+    <tr><td>Langage</td><td>TypeScript</td><td>5.9</td></tr>
+  </table>
+
+  <h3>7.2 Application mobile (Expo React Native)</h3>
+  <p>
+    L&rsquo;application mobile est structur&eacute;e autour du file-based routing
+    d&rsquo;expo-router :
+  </p>
+  <table>
+    <tr><th>Route</th><th>Fichier</th><th>R&ocirc;le</th></tr>
+    <tr><td><code>/login</code></td><td>login.tsx</td><td>Connexion utilisateur</td></tr>
+    <tr><td><code>/(tabs)/</code></td><td>index.tsx</td><td>Dashboard (m&eacute;t&eacute;o, alertes, parcelles)</td></tr>
+    <tr><td><code>/(tabs)/carte</code></td><td>carte.tsx</td><td>Carte satellite + dessin de parcelles</td></tr>
+    <tr><td><code>/(tabs)/diagnostic</code></td><td>diagnostic.tsx</td><td>Diagnostic 3 &eacute;tapes</td></tr>
+    <tr><td><code>/(tabs)/profil</code></td><td>profil.tsx</td><td>Profil utilisateur</td></tr>
+    <tr><td><code>/notifications</code></td><td>notifications.tsx</td><td>Centre de notifications</td></tr>
+    <tr><td><code>/(admin)/</code></td><td>index.tsx</td><td>Back-office administrateur</td></tr>
+  </table>
+
+  <h3>7.3 Application web (vanilla)</h3>
+  <p>
+    La version web, ant&eacute;rieure, est conserv&eacute;e comme r&eacute;f&eacute;rence. Elle est
+    compos&eacute;e de 6 pages HTML statiques, un fichier CSS unique (<code>style.css</code>),
+    un fichier JavaScript applicatif (<code>script.js</code>), et un serveur
+    Node.js l&eacute;ger pour le d&eacute;ploiement. Le design mobile-first limite
+    la largeur maximale &agrave; 420 pixels pour simuler un &eacute;cran de t&eacute;l&eacute;phone
+    sur desktop.
+  </p>
+
+  <h3>7.4 Fonctionnalit&eacute;s d&eacute;taill&eacute;es</h3>
+
+  <h4>Carte satellite interactive</h4>
+  <ul>
+    <li>Affichage Leaflet avec tuiles satellite Esri/ArcGIS</li>
+    <li>Dessin de polygones avec fermeture automatique et snapping (aimantation aux parcelles existantes)</li>
+    <li>Badges nominatifs li&eacute;s aux parcelles, visibles &agrave; tous les niveaux de zoom</li>
+    <li>Parcelles personnelles avec bordures pleines, parcelles des autres avec pointill&eacute;s</li>
+    <li>Panneau lat&eacute;ral de configuration (nom, culture, type de sol, date de semis, notes)</li>
+    <li>Undo / suppression de polygone</li>
+    <li>Recherche de commune via Nominatim</li>
+  </ul>
+
+  <h4>Diagnostic de cultures</h4>
+  <ul>
+    <li>5 cultures support&eacute;es : <strong>bl&eacute;, ma&iuml;s, tournesol, colza, vigne</strong></li>
+    <li>3 &eacute;tapes : choix culture &rarr; s&eacute;lection sympt&ocirc;mes (taches, jaunissement, fl&eacute;trissement, insectes, pourriture, croissance anormale) &rarr; localisation</li>
+    <li>Moteur de matching pond&eacute;r&eacute; : compare les sympt&ocirc;mes saisis &agrave; une base de 15 maladies</li>
+    <li>R&eacute;sultat affichant : nom de la maladie, gravit&eacute; (danger/warning/info), explication, recommandations de traitement</li>
+    <li>Donn&eacute;es m&eacute;t&eacute;o contextuelles (pluviom&eacute;trie, temp&eacute;ratures sur 7 jours) via Open-Meteo</li>
+    <li>Historique des diagnostics sauvegard&eacute;s, consultable depuis le profil</li>
+  </ul>
+
+  <h4>M&eacute;t&eacute;o et pr&eacute;visions</h4>
+  <ul>
+    <li>Temp&eacute;rature, humidit&eacute;, description via OpenWeatherMap (API Current Weather)</li>
+    <li>Pr&eacute;visions sur 5 jours (temp&eacute;rature min/max, ic&ocirc;ne m&eacute;t&eacute;o)</li>
+    <li>Ic&ocirc;nes mapp&eacute;es vers des pictogrammes lisibles</li>
+    <li>Fallback configur&eacute; en cas d&rsquo;indisponibilit&eacute; API</li>
+  </ul>
+
+  <h4>Synchronisation et persistance</h4>
+  <ul>
+    <li>Mod&egrave;le <strong>local-first</strong> : lecture instantan&eacute;e depuis AsyncStorage, &eacute;criture dans AsyncStorage + Firebase</li>
+    <li>Fonctions g&eacute;n&eacute;riques <code>dpLoad</code>, <code>dpSave</code>, <code>dpRemove</code>, <code>dpLoadAll</code></li>
+    <li>Cl&eacute;s assainies automatiquement (caract&egrave;res Firebase interdits remplac&eacute;s)</li>
+  </ul>
+
+  <h4>Back-office administrateur</h4>
+  <ul>
+    <li>Vue des utilisateurs, parcelles, logs syst&egrave;me</li>
+    <li>Accessible uniquement aux comptes administrateurs</li>
+    <li>Rafra&icirc;chissement manuel des donn&eacute;es admin</li>
+  </ul>
+</div>
+
+<!-- ==================== 8. PROBLEMES RENCONTRES ==================== -->
+<div class="page" id="s8">
+  <h1>8. Probl&egrave;mes rencontr&eacute;s et solutions</h1>
+
+  <div class="chapter-intro">
+    Cette section d&eacute;taille les principaux obstacles techniques et fonctionnels
+    rencontr&eacute;s au cours du d&eacute;veloppement, ainsi que les solutions mises en
+    &oelig;uvre pour les r&eacute;soudre.
+  </div>
+
+  <h3>8.1 Migration Supabase &rarr; Firebase</h3>
+  <p>
+    <strong>Probl&egrave;me :</strong> Le projet initial utilisait Supabase (PostgreSQL) comme backend.
+    La configuration des tables, des politiques RLS (Row Level Security), et la
+    gestion des tokens JWT se sont av&eacute;r&eacute;es trop complexes pour un projet de
+    cette taille. De plus, le SDK Supabase pour React Native pr&eacute;sentait des
+    probl&egrave;mes d&rsquo;initialisation.
+  </p>
+  <p>
+    <strong>Solution :</strong> Migration compl&egrave;te vers <strong>Firebase Realtime Database</strong>.
+    Le mod&egrave;le cl&eacute;-valeur (JSON tree) &eacute;limine le besoin de sch&eacute;ma SQL et de
+    migrations. Le SDK Firebase est natif React Native. La base &laquo;&nbsp;projet-etude-2026&nbsp;&raquo;
+    h&eacute;berg&eacute;e en Europe (europe-west1) garantit la conformit&eacute; RGPD.
+  </p>
+
+  <h3>8.2 Carte Leaflet dans une WebView React Native</h3>
+  <p>
+    <strong>Probl&egrave;me :</strong> Leaflet.js est une biblioth&egrave;que DOM. L&rsquo;int&eacute;grer
+    directement dans React Native est impossible sans WebView. La communication
+    entre le code React Native (TypeScript) et le code Leaflet (JavaScript dans
+    la WebView) n&eacute;cessite un pont de messages.
+  </p>
+  <p>
+    <strong>Solution :</strong> Utilisation de <code>react-native-webview</code> avec
+    un syst&egrave;me de messages <code>postMessage</code> / <code>onMessage</code>.
+    Le HTML Leaflet est inject&eacute; dans la WebView, et les &eacute;v&eacute;nements
+    (clic sur parcelle, fin de dessin, etc.) sont relay&eacute;s au code React Native
+    pour mise &agrave; jour de l&rsquo;&eacute;tat et persistance.
+  </p>
+
+  <h3>8.3 Dessin de polygones sur mobile</h3>
+  <p>
+    <strong>Probl&egrave;me :</strong> La fonction de dessin de parcelles &eacute;tait
+    difficile &agrave; utiliser sur mobile : le point de d&eacute;part &eacute;tait trop petit pour
+    &ecirc;tre cliqu&eacute; avec le doigt, la fermeture manuelle du polygone &eacute;chouait souvent.
+  </p>
+  <p>
+    <strong>Solution :</strong>
+  </p>
+  <ul>
+    <li>&Eacute;largissement de la zone de clic du premier point (hitbox augment&eacute;e)</li>
+    <li>Fermeture automatique du polygone lorsque l&rsquo;utilisateur approche du point d&rsquo;origine</li>
+    <li>Syst&egrave;me de <strong>snapping</strong> (aimantation) aux parcelles adjacentes pour &eacute;viter les chevauchements</li>
+  </ul>
+
+  <h3>8.4 Safe areas et bordures iPhone</h3>
+  <p>
+    <strong>Probl&egrave;me :</strong> Sur iPhone (notch, Dynamic Island), certains
+    &eacute;l&eacute;ments de l&rsquo;interface passaient sous la cam&eacute;ra frontale. En bas,
+    les &eacute;l&eacute;ments disparaissaient derri&egrave;re la barre de contr&ocirc;le
+    (Home Indicator).
+  </p>
+  <p>
+    <strong>Solution :</strong> Int&eacute;gration de <code>react-native-safe-area-context</code>
+    et application de padding top/bottom calcul&eacute;s dynamiquement via
+    <code>useSafeAreaInsets()</code>. Application du hook sur tous les &eacute;crans
+    (layout racine, bottom sheet de la carte, panneau de configuration).
+  </p>
+
+  <h3>8.5 Badges de parcelles instables</h3>
+  <p>
+    <strong>Probl&egrave;me :</strong> Les badges affichant le nom des parcelles sur
+    la carte ne suivaient pas correctement leur parcelle lors du zoom/d&eacute;zoom.
+    Ils &eacute;taient parfois d&eacute;cal&eacute;s ou disparaissaient.
+  </p>
+  <p>
+    <strong>Solution :</strong> Ancrage des badges au barycentre (centre de masse)
+    de chaque polygone plut&ocirc;t qu&rsquo;au premier point. Recalcul de la position
+    &agrave; chaque &eacute;v&eacute;nement de zoom (<code>zoomend</code>) et de d&eacute;placement
+    (<code>moveend</code>). Visibilit&eacute; masqu&eacute;e automatiquement lorsque le badge
+    sort de la zone visible de la carte.
+  </p>
+
+  <h3>8.6 Authentification et flux de connexion</h3>
+  <p>
+    <strong>Probl&egrave;me :</strong> La page de login ne s&rsquo;affichait pas
+    syst&eacute;matiquement &agrave; l&rsquo;ouverture de l&rsquo;application mobile. Certains
+    utilisateurs acc&eacute;daient directement au dashboard sans &ecirc;tre identifi&eacute;s,
+    causant des incoh&eacute;rences de donn&eacute;es.
+  </p>
+  <p>
+    <strong>Solution :</strong> Mise en place d&rsquo;un <strong>guard d&rsquo;authentification</strong>
+    dans le layout racine (<code>_layout.tsx</code>) qui v&eacute;rifie la pr&eacute;sence
+    d&rsquo;un identifiant utilisateur valide. Si absent, redirection forc&eacute;e vers
+    <code>/login</code>. Exception pour l&rsquo;acc&egrave;s admin qui utilise son propre
+    m&eacute;canisme de v&eacute;rification. Le login force &eacute;galement la cr&eacute;ation
+    d&rsquo;une entr&eacute;e utilisateur dans Firebase pour garantir la persistance.
+  </p>
+
+  <h3>8.7 Synchronisation localStorage &harr; cloud</h3>
+  <p>
+    <strong>Probl&egrave;me :</strong> Sans connexion internet, l&rsquo;application devait
+    continuer &agrave; fonctionner. Mais &agrave; la reconnexion, les donn&eacute;es locales
+    pouvaient entrer en conflit avec les donn&eacute;es distantes.
+  </p>
+  <p>
+    <strong>Solution :</strong> Strat&eacute;gie <strong>local-first avec &eacute;criture traversante</strong> :
+    chaque sauvegarde &eacute;crit d&rsquo;abord en local, puis tente l&rsquo;&eacute;criture cloud.
+    Si le cloud est indisponible, l&rsquo;&eacute;criture locale est conserv&eacute;e sans erreur.
+    &Agrave; la prochaine connexion r&eacute;ussie, la donn&eacute;e est pouss&eacute;e. Pas de
+    r&eacute;solution de conflits complexes : la derni&egrave;re &eacute;criture gagne
+    (<em>last-write-wins</em>).
+  </p>
+
+  <h3>8.8 Clavier et scroll dans les formulaires</h3>
+  <p>
+    <strong>Probl&egrave;me :</strong> Dans le panneau de configuration des parcelles,
+    le clavier masquait les champs de saisie (notes, date de semis). Le scroll
+    ne remontait pas automatiquement.
+  </p>
+  <p>
+    <strong>Solution :</strong> Impl&eacute;mentation d&rsquo;un <code>KeyboardAvoidingView</code>
+    avec comportement <code>padding</code>. Ajout d&rsquo;un <code>DateWheelPicker</code>
+    personnalis&eacute; pour &eacute;viter le clavier natif sur la date de semis. Bouton
+    de fermeture explicite du clavier sur le champ notes.
+  </p>
+</div>
+
+<!-- ==================== 9. CONCLUSION ==================== -->
+<div class="page" id="s9">
+  <h1>9. Conclusion &amp; perspectives</h1>
+
+  <h3>9.1 Bilan</h3>
+  <p>
+    Le projet Agria a abouti &agrave; une application fonctionnelle couvrant
+    l&rsquo;ensemble des cas d&rsquo;usage identifi&eacute;s :
+  </p>
+  <ul>
+    <li>Version mobile React Native avec 7 &eacute;crans, bottom tab navigation, back-office admin</li>
+    <li>Version web vanilla de r&eacute;f&eacute;rence avec 5 pages</li>
+    <li>Carte satellite interactive avec dessin et badges de parcelles</li>
+    <li>Diagnostic de 15 maladies sur 5 cultures avec recommandations</li>
+    <li>M&eacute;t&eacute;o temps r&eacute;el et pr&eacute;visions 5 jours</li>
+    <li>Persistance hybride locale + cloud (Firebase)</li>
+    <li>Design system coh&eacute;rent Golden Hour sur les deux plateformes</li>
+  </ul>
+  <p>
+    Le projet a suivi <strong>62 commits</strong> d&rsquo;&eacute;volution, partant d&rsquo;un
+    simple prototype web pour aboutir &agrave; une application mobile compl&egrave;te
+    avec authentification, synchronisation cloud, et administration.
+  </p>
+
+  <h3>9.2 Acquis techniques</h3>
+  <ul>
+    <li>Ma&icirc;trise d&rsquo;Expo React Native et expo-router</li>
+    <li>Int&eacute;gration de Leaflet.js dans une WebView React Native</li>
+    <li>Conception d&rsquo;un syst&egrave;me de persistance local-first avec Firebase RTDB</li>
+    <li>Mise en place d&rsquo;un design system complet (palette, typographie, composants, animations)</li>
+    <li>Gestion des sp&eacute;cificit&eacute;s mobiles : safe areas, haptiques, notifications push, gestes</li>
+  </ul>
+
+  <h3>9.3 Perspectives</h3>
+  <p>Plusieurs axes d&rsquo;am&eacute;lioration sont envisag&eacute;s pour les versions futures :</p>
+  <ul>
+    <li><strong>Analyse de sol</strong> : int&eacute;gration de donn&eacute;es p&eacute;dologiques (type de sol, pH, mati&egrave;re organique) via API g&eacute;ospatiales (INRAE, GISSol) pour enrichir les recommandations.</li>
+    <li><strong>Recommandations IA</strong> : remplacer le moteur de matching pond&eacute;r&eacute; par un mod&egrave;le de classification plus avanc&eacute;, voire un LLM sp&eacute;cialis&eacute; en agronomie.</li>
+    <li><strong>Mode hors-ligne complet</strong> : mise en cache des tuiles cartographiques pour un usage sans connexion dans les zones blanches.</li>
+    <li><strong>PWA</strong> : transformation de la version web en Progressive Web App pour une exp&eacute;rience unifi&eacute;e.</li>
+    <li><strong>Int&eacute;gration Agrichat</strong> : conseils contextualis&eacute;s sur les intrants et solutions de traitement.</li>
+    <li><strong>Couverture de cultures &eacute;largie</strong> : ajout de l&rsquo;orge, du pois, de la betterave, et des cultures mara&icirc;ch&egrave;res.</li>
+    <li><strong>Cartographie avanc&eacute;e</strong> : calcul automatique de surface (hectares) &agrave; partir du polygone dessin&eacute;.</li>
+  </ul>
+
+  <blockquote>
+    Agria d&eacute;montre qu&rsquo;il est possible de concevoir un outil agricole
+    moderne, mobile, gratuit et accessible, en s&rsquo;appuyant exclusivement sur
+    des technologies open-source et des APIs publiques. Le projet pose les
+    fondations d&rsquo;une plateforme plus ambitieuse au service des coop&eacute;ratives.
+  </blockquote>
+</div>
+
+<!-- ==================== 10. ANNEXES ==================== -->
+<div class="page" id="s10">
+  <h1>10. Annexes</h1>
+
+  <h3>10.1 Glossaire</h3>
+  <table>
+    <tr><th>Terme</th><th>D&eacute;finition</th></tr>
+    <tr><td><strong>AsyncStorage</strong></td><td>API de stockage cl&eacute;-valeur asynchrone pour React Native, persistante sur l&rsquo;appareil.</td></tr>
+    <tr><td><strong>Expo</strong></td><td>Plateforme de d&eacute;veloppement React Native g&eacute;rant la compilation, la publication, et l&rsquo;acc&egrave;s aux APIs natives.</td></tr>
+    <tr><td><strong>expo-router</strong></td><td>Syst&egrave;me de routing bas&eacute; sur l&rsquo;arborescence des fichiers, inspir&eacute; de Next.js.</td></tr>
+    <tr><td><strong>Firebase RTDB</strong></td><td>Base de donn&eacute;es NoSQL temps r&eacute;el de Google, synchronis&eacute;e automatiquement entre clients.</td></tr>
+    <tr><td><strong>Leaflet.js</strong></td><td>Biblioth&egrave;que JavaScript open-source de cartographie interactive (~40 Ko).</td></tr>
+    <tr><td><strong>Nominatim</strong></td><td>Service de g&eacute;ocodage d&rsquo;OpenStreetMap (adresse &harr; coordonn&eacute;es GPS).</td></tr>
+    <tr><td><strong>Open-Meteo</strong></td><td>API m&eacute;t&eacute;orologique gratuite et open-source, sans cl&eacute; requise.</td></tr>
+    <tr><td><strong>OpenWeatherMap</strong></td><td>Service m&eacute;t&eacute;o avec API gratuite (limit&eacute;e &agrave; 60 appels/min).</td></tr>
+    <tr><td><strong>React Native</strong></td><td>Framework de Meta permettant le d&eacute;veloppement d&rsquo;apps mobiles en JavaScript/React.</td></tr>
+    <tr><td><strong>WebView</strong></td><td>Composant affichant du contenu web (HTML/CSS/JS) dans une application native.</td></tr>
+  </table>
+
+  <h3>10.2 APIs et services externes</h3>
+  <table>
+    <tr><th>Service</th><th>Usage</th><th>Gratuit&eacute;</th></tr>
+    <tr><td>OpenWeatherMap Current</td><td>M&eacute;t&eacute;o actuelle par ville</td><td>60 appels/min gratuits</td></tr>
+    <tr><td>OpenWeatherMap Forecast</td><td>Pr&eacute;visions 5 jours / 3h</td><td>Inclus dans le plan gratuit</td></tr>
+    <tr><td>Open-Meteo</td><td>Donn&eacute;es m&eacute;t&eacute;o historiques (7j) pour diagnostic</td><td>Enti&egrave;rement gratuit, pas de cl&eacute;</td></tr>
+    <tr><td>Nominatim</td><td>G&eacute;ocodage (ville &rarr; coordonn&eacute;es)</td><td>Gratuit, 1 req/s max</td></tr>
+    <tr><td>ArcGIS/Esri tiles</td><td>Tuiles satellite pour Leaflet</td><td>Gratuit, usage raisonnable</td></tr>
+    <tr><td>Firebase RTDB</td><td>Synchronisation des donn&eacute;es</td><td>1 Go stockage + 10 Go transfert gratuits</td></tr>
+  </table>
+
+  <h3>10.3 Structure du projet</h3>
+  <pre style="font-size:9pt;color:var(--text-secondary);background:var(--surface);padding:1rem;border-radius:12px;line-height:1.5;">
+agria/
+├── web/                         # Version vanilla (r&eacute;f&eacute;rence)
+│   ├── index.html               # Dashboard
+│   ├── login.html               # Authentification
+│   ├── carte.html               # Carte satellite + dessin
+│   ├── diagnostic.html          # Diagnostic 3 &eacute;tapes
+│   ├── profil.html              # Profil utilisateur
+│   ├── style.css                # Design system Golden Hour
+│   ├── script.js                # Logique applicative
+│   └── server.js                # Serveur Node.js
+├── mobile/                      # Version Expo React Native
+│   ├── app/                     # Routes expo-router
+│   │   ├── _layout.tsx          # Layout racine (auth guard)
+│   │   ├── login.tsx            # Connexion
+│   │   ├── (tabs)/              # Navigation bottom tabs
+│   │   │   ├── index.tsx        # Dashboard
+│   │   │   ├── carte.tsx        # Carte (WebView)
+│   │   │   ├── diagnostic.tsx   # Diagnostic
+│   │   │   └── profil.tsx       # Profil
+│   │   └── (admin)/             # Back-office
+│   │       ├── index.tsx        # Panel admin
+│   │       ├── utilisateurs.tsx # Gestion utilisateurs
+│   │       └── parcelles.tsx    # Vue parcelles
+│   └── src/
+│       ├── components/          # 10 composants UI
+│       ├── services/            # 10 modules (auth, firebase, etc.)
+│       ├── hooks/               # Hooks personnalis&eacute;s
+│       ├── data/                # Config, constantes, fallbacks
+│       └── theme/               # Colors, fonts, spacing
+├── docs/                        # Documentation, specs
+├── design/                      # Brand book, design system
+└── presentation-agria.html      # Pr&eacute;sentation du projet</pre>
+  <div class="figure-caption">Figure 2 &mdash; Structure compl&egrave;te du d&eacute;p&ocirc;t Agria</div>
+
+  <h3>10.4 R&eacute;f&eacute;rences</h3>
+  <ol>
+    <li>Documentation Expo &mdash; <em>docs.expo.dev</em></li>
+    <li>Documentation React Native &mdash; <em>reactnative.dev</em></li>
+    <li>Documentation Firebase &mdash; <em>firebase.google.com/docs</em></li>
+    <li>Documentation Leaflet.js &mdash; <em>leafletjs.com/reference.html</em></li>
+    <li>API OpenWeatherMap &mdash; <em>openweathermap.org/api</em></li>
+    <li>API Open-Meteo &mdash; <em>open-meteo.com/en/docs</em></li>
+    <li>API Nominatim &mdash; <em>nominatim.org/release-docs/latest/api</em></li>
+  </ol>
+</div>
+
+</body>
+</html>

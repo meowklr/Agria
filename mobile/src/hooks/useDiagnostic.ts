@@ -27,5 +27,12 @@ export function useDiagnostic() {
     setResult(diag); setHistory(hist); setLoading(false);
   };
   const reset = () => setResult(null);
-  return { result, history, loading, analyse, reset, loadHistory };
+  const removeFromHistory = async (createdAt: number) => {
+    const uid = await getUserId();
+    let hist = await dpLoad<DiagHistoryEntry[]>(getDiagKey(uid), []);
+    hist = hist.filter(h => h.createdAt !== createdAt);
+    await dpSave(getDiagKey(uid), hist);
+    setHistory(hist);
+  };
+  return { result, history, loading, analyse, reset, removeFromHistory, loadHistory };
 }

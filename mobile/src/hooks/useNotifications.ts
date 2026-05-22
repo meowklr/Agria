@@ -46,5 +46,13 @@ export function useNotifications() {
     await AsyncStorage.setItem(KEY, JSON.stringify(updated));
   };
 
-  return { notifs, unreadCount: notifs.filter(n => !n.read).length, add, markRead, markAllRead, reload: load };
+  const removeNotif = async (id: string) => {
+    const fresh = await AsyncStorage.getItem(KEY);
+    const parsed: AppNotif[] = fresh ? JSON.parse(fresh) : [];
+    const updated = parsed.filter(n => n.id !== id);
+    setNotifs(updated);
+    await AsyncStorage.setItem(KEY, JSON.stringify(updated));
+  };
+
+  return { notifs, unreadCount: notifs.filter(n => !n.read).length, add, markRead, markAllRead, removeNotif, reload: load };
 }
