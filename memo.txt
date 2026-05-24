@@ -1,0 +1,2 @@
+alertes communautaires, pq pas reliées a make. demander des impletation qui pourraient etre cool et pertinentes pour notre app.
+heberger sur un cloud pour etre accessible a tout moment.

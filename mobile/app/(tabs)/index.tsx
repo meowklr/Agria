@@ -120,6 +120,24 @@ export default function DashboardScreen() {
       )}
     </View>
     {showAlerts && <View style={{ marginBottom: 24, gap: 10 }}>
+      {/* TODO: remove after screenshot — example alerts */}
+      {(() => {
+        const EXAMPLE_ALERTS = [
+          { id: 'example-danger', title: 'Gel tardif — Risque élevé', body: 'Des températures inférieures à -2°C sont prévues cette nuit sur vos parcelles de colza. Protégez vos cultures sensibles.', date: new Date().toISOString(), level: 'danger' },
+          { id: 'example-warning', title: 'Vent fort — Vigilance orange', body: 'Rafales attendues jusqu\'à 80 km/h en fin de journée. Risque de verse sur les céréales hautes. Évitez les traitements phytosanitaires.', date: new Date().toISOString(), level: 'warning' },
+        ];
+        return EXAMPLE_ALERTS.map((a) => {
+          const ls = a.level === 'danger' ? { backgroundColor: '#FEF3F0', title: colors.danger, body: '#8B4A3A' } : { backgroundColor: '#FDF4E8', title: colors.accent, body: '#8B5E3A' };
+          return <View key={a.id} style={{ backgroundColor: ls.backgroundColor, borderRadius: radius.lg, padding: 16 }}>
+            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+              <Text style={{ fontSize: 13, fontWeight: '600', color: ls.title, marginBottom: 3, fontFamily: fontFamily.sans, flex: 1 }}>{a.title}</Text>
+              <Ionicons name="close" size={14} color={ls.title} style={{ opacity: 0.4, padding: 2, marginLeft: 8 }} />
+            </View>
+            <Text style={{ fontSize: 13, color: ls.body, lineHeight: 18, fontFamily: fontFamily.sans }}>{a.body}</Text>
+            <Text style={{ fontSize: 11, color: colors.textMuted, marginTop: 8, fontFamily: fontFamily.sans }}>{new Date(a.date).toLocaleString()}</Text>
+          </View>;
+        });
+      })()}
       {alertsLoading ? <Card><LoaderBar /></Card> : alerts.length === 0 ? <Card><Text style={{ fontSize: 14, color: colors.textMuted, textAlign: 'center' }}>Aucune alerte récente. Les alertes météo reçues via Make apparaîtront ici.</Text></Card> : alerts.slice(0, 4).map((alert) => {
         const levelStyle = alert.level === 'danger' ? { backgroundColor: '#FEF3F0', title: colors.danger, body: '#8B4A3A' }
           : alert.level === 'warning' ? { backgroundColor: '#FDF4E8', title: colors.accent, body: '#8B5E3A' }
