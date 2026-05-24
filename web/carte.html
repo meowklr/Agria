@@ -245,12 +245,16 @@ function updateSurfaceFloating(latlng) {
 
 function calculateAreaLL(latlngs) {
   var area = 0;
+  var meanLat = 0;
   for (var i = 0; i < latlngs.length; i++) {
     var j = (i+1)%latlngs.length;
     area += latlngs[i].lng * latlngs[j].lat;
     area -= latlngs[j].lng * latlngs[i].lat;
+    meanLat += latlngs[i].lat;
   }
-  return Math.abs(area) * 6371000 * 6371000 * Math.PI / 360 / 10000;
+  meanLat /= latlngs.length;
+  var cosLat = Math.cos(meanLat * Math.PI / 180);
+  return Math.abs(area) * 6371000 * 6371000 * Math.PI / 360 / 10000 * Math.PI / 180 * cosLat;
 }
 
 function finalizeDraw() {

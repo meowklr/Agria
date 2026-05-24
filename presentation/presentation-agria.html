@@ -13,37 +13,33 @@
        THEME AGRIA — Couleurs applicatives réelles
        =========================================== */
     :root {
-      --bg-light:    #FDF8EE;
-      --bg:          #FDF8EE;    /* alias */
-      --bg-warm:     #EBDFCC;
-      --bg-tan:      #D4C0A0;
-      --bg-brown:    #A08464;
-      --bg-deep:     #6B5A44;
+      --bg:          #FDF8EE;
       --surface:     #FFFDF6;
+      --bg-outer:    #F3EFE6;
       --gold:        #E8B84B;
-      --gold-deep:   #D4A853;
+      --gold-hover:  #D4A853;
       --gold-light:  #FDF3DC;
-      --gold-mid:    #EBE3D3;
+      --border:      #EBE3D3;
       --ink:         #3D2E1F;
       --ink-mid:     #6B5D4F;
       --ink-muted:   #A89880;
+      --accent:      #C4704A;
       --danger:      #B5533A;
-      --warning:     #C4704A;
       --success:     #7A9E5A;
       --info:        #B8D4E8;
-      --espresso:    #1E1608;
+      --espresso:    #1a1510;
       --radius-lg:   16px;
       --radius-md:   12px;
       --radius-sm:   8px;
+      --ease-out:    cubic-bezier(0.23,1,0.32,1);
+      --ease-in-out: cubic-bezier(0.77,0,0.175,1);
     }
 
     *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
     html { scroll-behavior: smooth; font-size: 16px; scroll-snap-type: y mandatory; }
     body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--ink); overflow-x: hidden; }
 
-    ::-webkit-scrollbar { width: 4px; }
-    ::-webkit-scrollbar-track { background: var(--bg); }
-    ::-webkit-scrollbar-thumb { background: var(--gold); border-radius: 2px; }
+    ::-webkit-scrollbar { width: 0; height: 0; }
 
     /* ===========================================
        NAV
@@ -53,18 +49,31 @@
       padding: 24px 60px;
       display: flex; align-items: center; justify-content: space-between;
       background: transparent;
-      transition: padding .4s, background .4s, box-shadow .4s;
+      transition: padding .3s var(--ease-out), background .3s var(--ease-out), box-shadow .3s var(--ease-out);
     }
+    #mainNav .nav-logo { transition: color .5s ease; }
+    #mainNav .nav-center a { transition: color .2s ease, color .5s ease; }
     #mainNav.solid {
       background: rgba(253,248,238,.72); backdrop-filter: blur(18px);
       -webkit-backdrop-filter: blur(18px);
       padding: 14px 60px; box-shadow: 0 1px 0 rgba(232,184,75,.15);
     }
-    .nav-logo { font-family: 'Fraunces', serif; font-size: 26px; font-weight: 700; color: var(--ink); letter-spacing: .02em; text-decoration: none; }
+    body[data-theme="dark"] #mainNav.solid {
+      background: rgba(26,21,16,.72); box-shadow: 0 1px 0 rgba(232,184,75,.08);
+    }
+    body[data-theme="dark"] #mainNav .nav-logo { color: rgba(255,255,255,.85); }
+    body[data-theme="dark"] #mainNav .nav-center a { color: rgba(255,255,255,.38); }
+    body[data-theme="dark"] #mainNav .nav-center a:hover { color: rgba(255,255,255,.75); }
+    body[data-theme="light"] #mainNav .nav-logo { color: var(--ink); }
+    body[data-theme="light"] #mainNav .nav-center a { color: var(--ink-mid); }
+    body[data-theme="light"] #mainNav .nav-center a:hover { color: var(--ink); }
+    .nav-logo { font-family: 'Fraunces', serif; font-size: 26px; font-weight: 700; letter-spacing: .02em; text-decoration: none; }
     .nav-logo em { font-style: italic; color: var(--gold); }
     .nav-center { display: flex; gap: 36px; }
-    .nav-center a { font-size: 12px; font-weight: 600; letter-spacing: .1em; color: var(--ink-mid); text-decoration: none; text-transform: uppercase; transition: color .2s; }
-    .nav-center a:hover { color: var(--ink); }
+    .nav-center a { font-size: 12px; font-weight: 600; letter-spacing: .1em; text-decoration: none; text-transform: uppercase; }
+
+    .splash-fade { position: fixed; inset: 0; z-index: 9000; background: var(--espresso); display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; transition: opacity .5s ease, visibility .5s ease; opacity: 1; visibility: visible; }
+    .splash-fade.hidden { opacity: 0; visibility: hidden; pointer-events: none; }
 
     /* ===========================================
        HERO
@@ -83,21 +92,21 @@
     }
     .hero-overlay {
       position: absolute; inset: 0;
-      background: radial-gradient(ellipse 80% 60% at 50% 65%, rgba(201,162,39,.12) 0%, var(--espresso) 70%);
+      background: radial-gradient(ellipse 80% 60% at 50% 65%, rgba(232,184,75,.12) 0%, var(--espresso) 70%);
     }
-    .hero-ring { position: absolute; border-radius: 50%; pointer-events: none; border: 1px solid rgba(201,162,39,.12); top: 50%; left: 50%; transform: translate(-50%, -50%); animation: ringPulse 8s ease-in-out infinite; }
+    .hero-ring { position: absolute; border-radius: 50%; pointer-events: none; border: 1px solid rgba(232,184,75,.12); top: 50%; left: 50%; transform: translate(-50%, -50%); animation: ringPulse 8s ease-in-out infinite; }
     .hero-ring:nth-child(3) { width: 500px; height: 500px; }
-    .hero-ring:nth-child(4) { width: 780px; height: 780px; animation-delay: 1.5s; border-color: rgba(201,162,39,.07); }
-    .hero-ring:nth-child(5) { width: 1060px; height: 1060px; animation-delay: 3s; border-color: rgba(201,162,39,.04); }
+    .hero-ring:nth-child(4) { width: 780px; height: 780px; animation-delay: 1.5s; border-color: rgba(232,184,75,.07); }
+    .hero-ring:nth-child(5) { width: 1060px; height: 1060px; animation-delay: 3s; border-color: rgba(232,184,75,.04); }
     @keyframes ringPulse { 0%,100%{opacity:.5} 50%{opacity:1} }
 
     .hero-content { position: relative; z-index: 2; max-width: 900px; }
     .hero-eyebrow {
       display: inline-flex; align-items: center; gap: 10px;
-      background: rgba(201,162,39,.12); border: 1px solid rgba(201,162,39,.28);
+      background: rgba(232,184,75,.12); border: 1px solid rgba(232,184,75,.28);
       border-radius: 100px; padding: 8px 20px;
       font-size: 11px; font-weight: 600; letter-spacing: .14em;
-      color: rgba(201,162,39,.9); text-transform: uppercase; margin-bottom: 36px;
+      color: rgba(232,184,75,.9); text-transform: uppercase; margin-bottom: 36px;
     }
     .hero-eyebrow-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--gold); animation: dotBlink 2s ease-in-out infinite; }
     @keyframes dotBlink { 0%,100%{opacity:.4} 50%{opacity:1} }
@@ -105,30 +114,60 @@
     .hero-title em { font-style: italic; color: var(--gold); }
     .hero-tagline { font-size: clamp(16px, 2vw, 20px); font-weight: 300; color: rgba(255,255,255,.5); max-width: 520px; margin: 0 auto 56px; line-height: 1.8; }
     .hero-actions { display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; }
-    .btn-hero { background: var(--gold); color: var(--ink); font-family: 'Outfit', sans-serif; font-size: 13px; font-weight: 700; letter-spacing: .08em; padding: 15px 38px; border-radius: 100px; text-decoration: none; text-transform: uppercase; transition: all .3s; }
-    .btn-hero:hover { background: #d4ad32; transform: translateY(-3px); box-shadow: 0 12px 30px rgba(201,162,39,.35); }
-    .btn-hero-ghost { background: transparent; color: rgba(255,255,255,.6); font-size: 13px; font-weight: 500; letter-spacing: .06em; padding: 15px 38px; border-radius: 100px; text-decoration: none; text-transform: uppercase; border: 1px solid rgba(255,255,255,.15); transition: all .3s; }
+    .btn-hero { background: var(--gold); color: var(--ink); font-family: 'Outfit', sans-serif; font-size: 13px; font-weight: 700; letter-spacing: .08em; padding: 15px 38px; border-radius: 100px; text-decoration: none; text-transform: uppercase; transition: transform .2s var(--ease-out), box-shadow .2s var(--ease-out), background .25s ease; will-change: transform; }
+    .btn-hero:hover { background: var(--gold-hover); transform: translateY(-3px); box-shadow: 0 12px 30px rgba(232,184,75,.35); }
+    .btn-hero:active { transform: scale(.97) translateY(-1px); }
+    .btn-hero-ghost { background: transparent; color: rgba(255,255,255,.6); font-size: 13px; font-weight: 500; letter-spacing: .06em; padding: 15px 38px; border-radius: 100px; text-decoration: none; text-transform: uppercase; border: 1px solid rgba(255,255,255,.15); transition: border-color .2s var(--ease-out), color .2s ease, transform .2s var(--ease-out); will-change: transform; }
     .btn-hero-ghost:hover { border-color: rgba(255,255,255,.45); color: #fff; }
+    .btn-hero-ghost:active { transform: scale(.97); }
     .hero-scroll-hint { position: absolute; bottom: 48px; left: 50%; transform: translateX(-50%); display: flex; flex-direction: column; align-items: center; gap: 10px; color: rgba(255,255,255,.2); font-size: 10px; letter-spacing: .16em; text-transform: uppercase; }
-    .scroll-line { width: 1px; height: 44px; background: rgba(201,162,39,.3); animation: scrollFade 2.2s ease-in-out infinite; }
+    .scroll-line { width: 1px; height: 44px; background: rgba(232,184,75,.3); animation: scrollFade 2.2s ease-in-out infinite; }
     @keyframes scrollFade { 0%,100%{opacity:.15} 50%{opacity:.9} }
 
     /* ===========================================
        STATS (inside hero)
        =========================================== */
-    .hero-stats { display: grid; grid-template-columns: repeat(4, 1fr); border-top: 1px solid rgba(201,162,39,.12); margin-top: 60px; position: relative; z-index: 2; max-width: 820px; width: 100%; }
-    .hero-stats .stat-item { padding: 32px 20px; text-align: center; border-right: 1px solid rgba(201,162,39,.1); transition: background .3s; }
-    .hero-stats .stat-item:hover { background: rgba(201,162,39,.05); }
+    .hero-stats { display: grid; grid-template-columns: repeat(3, 1fr); border-top: 1px solid rgba(232,184,75,.12); margin-top: 60px; position: relative; z-index: 2; max-width: 820px; width: 100%; }
+    .hero-stats .stat-item { padding: 32px 20px; text-align: center; border-right: 1px solid rgba(232,184,75,.1); transition: background .3s; }
+    .hero-stats .stat-item:hover { background: rgba(232,184,75,.05); }
     .hero-stats .stat-item:last-child { border-right: none; }
     .stat-value { font-family: 'Fraunces', serif; font-size: clamp(36px, 5vw, 52px); font-weight: 700; color: var(--gold); line-height: 1; margin-bottom: 8px; }
     .stat-value sup { font-size: clamp(18px, 2.5vw, 24px); vertical-align: super; }
     .stat-label { font-size: 10px; font-weight: 600; letter-spacing: .12em; color: rgba(255,255,255,.3); text-transform: uppercase; }
 
     /* ===========================================
+       FONDS D'AMBIANCE — photos & motifs
+       =========================================== */
+    .bg-field {
+      position: absolute; inset: 0; z-index: 0; pointer-events: none;
+      background-size: cover; background-position: center;
+    }
+    .bg-field::after {
+      content: ''; position: absolute; inset: 0;
+      background: radial-gradient(ellipse 40% 30% at 50% 50%, rgba(26,21,16,0) 0%, rgba(26,21,16,var(--vig, 0.6)) 100%);
+    }
+
+    .bg-grid {
+      position: absolute; inset: 0; z-index: 0; pointer-events: none; opacity: .25;
+      background-image:
+        linear-gradient(rgba(232,184,75,.15) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(232,184,75,.15) 1px, transparent 1px);
+      background-size: 64px 64px;
+      mask-image: radial-gradient(ellipse 70% 50% at 50% 50%, black 20%, transparent 80%);
+      -webkit-mask-image: radial-gradient(ellipse 70% 50% at 50% 50%, black 20%, transparent 80%);
+    }
+
+    .bg-diag-deco {
+      position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); z-index: 0; pointer-events: none;
+      width: 700px; height: 500px; opacity: .08;
+      background: radial-gradient(ellipse at center, var(--gold) 0%, transparent 70%);
+      border-radius: 50%;
+      filter: blur(60px);
+    }
+
+    /* ===========================================
        SECTIONS
        =========================================== */
-    section { position: relative; overflow: visible; }
-    #hero { overflow: hidden; }
     .container { max-width: 1180px; margin: 0 auto; }
     .section-label { font-size: 10px; font-weight: 700; letter-spacing: .18em; text-transform: uppercase; color: var(--gold); margin-bottom: 14px; }
     .section-title { font-family: 'Fraunces', serif; font-size: clamp(34px, 4.6vw, 54px); font-weight: 700; line-height: 1.06; margin-bottom: 16px; letter-spacing: -.02em; }
@@ -139,24 +178,24 @@
        PHONE FRAMES — Screenshot + Mini
        =========================================== */
     .phone-wrap { position: relative; display: flex; justify-content: center; align-items: center; }
-    .phone-glow { position: absolute; width: 280px; height: 480px; border-radius: 50%; background: radial-gradient(ellipse, rgba(201,162,39,.25) 0%, transparent 70%); filter: blur(40px); z-index: 0; }
-    .phone { position: relative; z-index: 1; width: 260px; height: 530px; background: var(--espresso); border-radius: 48px; border: 6px solid rgba(201,162,39,.3); box-shadow: 0 40px 80px rgba(0,0,0,.5), inset 0 1px 0 rgba(255,255,255,.08); overflow: hidden; display: flex; flex-direction: column; }
+    .phone-glow { position: absolute; width: 280px; height: 480px; border-radius: 50%; background: radial-gradient(ellipse, rgba(232,184,75,.25) 0%, transparent 70%); filter: blur(40px); z-index: 0; }
+    .phone { position: relative; z-index: 1; width: 260px; height: 530px; background: var(--espresso); border-radius: 48px; border: 6px solid rgba(232,184,75,.3); box-shadow: 0 15px 40px rgba(0,0,0,.3), inset 0 1px 0 rgba(255,255,255,.08); overflow: hidden; display: flex; flex-direction: column; }
     .phone-notch { position: absolute; top: 0; left: 50%; transform: translateX(-50%); width: 100px; height: 24px; background: var(--espresso); border-radius: 0 0 18px 18px; z-index: 10; display: flex; align-items: center; justify-content: center; }
     .notch-pill { width: 60px; height: 5px; background: rgba(255,255,255,.12); border-radius: 3px; }
     .phone-status { display: flex; justify-content: space-between; padding: 28px 16px 6px; font-size: 9px; font-weight: 600; color: rgba(255,255,255,.6); flex-shrink: 0; }
 
-    .screenshot-phone { width: 270px; height: 560px; background: #fff; border-radius: 50px; border: 6px solid rgba(201,162,39,.35); box-shadow: 0 50px 100px rgba(0,0,0,.5), 0 0 0 1px rgba(201,162,39,.1); overflow: hidden; position: relative; flex-shrink: 0; }
+    .screenshot-phone { width: 270px; height: 560px; background: #fff; border-radius: 50px; border: 6px solid rgba(232,184,75,.35); box-shadow: 0 20px 50px rgba(0,0,0,.22), 0 0 0 1px rgba(232,184,75,.1); overflow: hidden; position: relative; flex-shrink: 0; }
     .screenshot-phone::before { content: ''; position: absolute; top: 0; left: 50%; transform: translateX(-50%); width: 100px; height: 22px; background: #fff; border-radius: 0 0 16px 16px; z-index: 5; }
     .screenshot-phone img { width: 100%; height: 100%; object-fit: cover; object-position: top; display: block; }
     .screenshot-wrap { position: relative; display: flex; justify-content: center; align-items: center; }
-    .screenshot-glow { position: absolute; width: 300px; height: 500px; background: radial-gradient(ellipse, rgba(201,162,39,.2) 0%, transparent 70%); filter: blur(50px); }
+    .screenshot-glow { position: absolute; width: 300px; height: 500px; background: radial-gradient(ellipse, rgba(232,184,75,.2) 0%, transparent 70%); filter: blur(50px); }
 
     /* Dual phones */
     .phones-row { display: flex; gap: 24px; align-items: center; justify-content: center; }
     .phones-row .screenshot-phone { width: 220px; height: 460px; border-radius: 40px; }
     .phones-row .screenshot-phone::before { width: 80px; height: 18px; }
 
-    .mini-phone { width: 235px; height: 480px; background: var(--ink); border-radius: 38px; border: 4px solid rgba(201,162,39,.3); box-shadow: 0 30px 60px rgba(45,36,22,.25); overflow: hidden; position: relative; }
+    .mini-phone { width: 235px; height: 480px; background: var(--ink); border-radius: 38px; border: 4px solid rgba(232,184,75,.3); box-shadow: 0 12px 30px rgba(45,36,22,.15); overflow: hidden; position: relative; }
     .mini-phone::before { content: ''; position: absolute; top: 0; left: 50%; transform: translateX(-50%); width: 92px; height: 20px; background: var(--ink); border-radius: 0 0 14px 14px; z-index: 5; }
     .mini-phone img { width: 100%; height: 100%; object-fit: cover; object-position: top; display: block; }
 
@@ -165,13 +204,13 @@
        =========================================== */
     .intro-grid, .dark-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 100px; align-items: center; }
     .pills-row { display: flex; flex-wrap: wrap; gap: 10px; }
-    .pill { display: inline-flex; align-items: center; gap: 8px; background: var(--surface); border: 1px solid var(--gold-mid); border-radius: 100px; padding: 8px 18px; font-size: 13px; font-weight: 500; color: var(--ink-mid); transition: all .3s; }
-    .pill:hover { border-color: var(--gold); color: var(--ink); }
+    .pill { display: inline-flex; align-items: center; gap: 8px; background: var(--surface); border: 1px solid var(--border); border-radius: 100px; padding: 8px 18px; font-size: 13px; font-weight: 500; color: var(--ink-mid); transition: border-color .2s var(--ease-out), color .2s ease, transform .2s var(--ease-out); }
+    .pill:hover { border-color: var(--gold); color: var(--ink); transform: translateY(-1px); }
     .pill i { color: var(--gold); }
 
     .feature-list { list-style: none; display: flex; flex-direction: column; gap: 20px; }
     .feature-item { display: flex; align-items: flex-start; gap: 18px; }
-    .feature-item-icon { width: 44px; height: 44px; border-radius: 12px; background: rgba(201,162,39,.1); border: 1px solid rgba(201,162,39,.2); display: flex; align-items: center; justify-content: center; color: var(--gold); font-size: 16px; flex-shrink: 0; }
+    .feature-item-icon { width: 44px; height: 44px; border-radius: 12px; background: rgba(232,184,75,.1); border: 1px solid rgba(232,184,75,.2); display: flex; align-items: center; justify-content: center; color: var(--gold); font-size: 16px; flex-shrink: 0; }
     .feature-item-text h4 { font-size: 15px; font-weight: 600; color: var(--ink); margin-bottom: 4px; }
     .feature-item-text p { font-size: 13px; color: var(--ink-mid); line-height: 1.7; }
 
@@ -179,19 +218,40 @@
        SCORE CARDS — Alertes
        =========================================== */
     .score-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-top: 16px; }
-    .score-card { background: var(--surface); border: 1px solid var(--gold-mid); border-radius: var(--radius-md); padding: 20px 16px; text-align: center; transition: all .3s; }
+    .score-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 20px 16px; text-align: center; transition: border-color .2s var(--ease-out), box-shadow .2s var(--ease-out), transform .2s var(--ease-out); }
     .score-card:hover { border-color: var(--gold); box-shadow: 0 4px 16px rgba(61,46,31,.06); }
     .score-card .sc-val { font-family: 'Fraunces', serif; font-size: 32px; font-weight: 700; }
     .score-card .sc-desc { font-size: 12px; color: var(--ink-muted); margin-top: 6px; line-height: 1.5; }
     .sc-danger .sc-val { color: var(--danger); }
-    .sc-warning .sc-val { color: var(--warning); }
+    .sc-warning .sc-val { color: var(--accent); }
     .sc-info .sc-val { color: var(--gold); }
+
+    /* ===========================================
+       PROFIL — Showcase
+       =========================================== */
+    .profile-header { text-align: center; margin-bottom: 10px; margin-top: 24px; }
+    .profile-showcase { display: flex; align-items: center; justify-content: center; gap: 16px; max-width: 780px; margin: 0 auto; }
+    .profile-card { display: flex; flex-direction: column; align-items: center; gap: 14px; flex: 1; max-width: 320px; padding: 28px 24px 22px; transition: transform .25s var(--ease-out); }
+    .profile-card:hover { transform: translateY(-4px); }
+    .profile-card-label { display: inline-flex; align-items: center; gap: 10px; font-family: 'Fraunces', serif; font-size: 17px; font-weight: 600; color: var(--ink); letter-spacing: .01em; }
+    .profile-card-label.accent { color: var(--accent); }
+    .profile-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--gold); flex-shrink: 0; }
+    .profile-dot.accent { background: var(--accent); }
+    .profile-card-phone { display: flex; justify-content: center; }
+    .profile-card-tags { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; }
+    .profile-card-tags span { font-size: 10px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--ink-muted); background: var(--bg); border: 1px solid var(--border); border-radius: 100px; padding: 4px 10px; }
+    .profile-card-legend { font-size: 11px; color: var(--ink-muted); text-align: center; line-height: 1.6; max-width: 220px; }
+    .profile-arrow { flex-shrink: 0; width: 40px; height: 40px; border-radius: 50%; background: rgba(232,184,75,.12); border: 1px solid rgba(232,184,75,.25); display: flex; align-items: center; justify-content: center; color: var(--gold); font-size: 13px; animation: arrowPulse 2.4s ease-in-out infinite; }
+    @keyframes arrowPulse { 0%,100%{transform:translateX(0);opacity:.6} 50%{transform:translateX(4px);opacity:1} }
+    @media (max-width: 768px) {
+      .profile-showcase { flex-direction: column; }
+      .profile-arrow { transform: rotate(90deg); animation-name: arrowPulseMobile; }
+    }
+    @keyframes arrowPulseMobile { 0%,100%{transform:rotate(90deg) translateX(0);opacity:.6} 50%{transform:rotate(90deg) translateX(4px);opacity:1} }
 
     /* ===========================================
        ADMIN FEATURES
        =========================================== */
-    .profile-header { text-align: center; margin-bottom: 10px; }
-    .phone-prof-card { display: flex; flex-direction: column; align-items: center; }
     .admin-feature { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 12px; }
     .admin-feature i { color: var(--gold); font-size: 14px; margin-top: 3px; flex-shrink: 0; }
     .admin-feature div { font-size: 13px; color: var(--ink-muted); line-height: 1.6; }
@@ -200,13 +260,23 @@
     /* ===========================================
        DIAGNOSTIC
        =========================================== */
-    .diag-header { text-align: center; margin-bottom: 32px; }
-    .diag-header .section-title { font-size: clamp(28px, 4vw, 42px); margin-bottom: 10px; }
-    .diag-header .section-body { font-size: 14px; margin-bottom: 0; }
-    .diag-screens { display: grid; grid-template-columns: repeat(3, 1fr); gap: 28px; align-items: start; margin-top: 32px; }
-    .diag-screen-item { display: flex; flex-direction: column; align-items: center; gap: 16px; }
-    .diag-screen-label { font-size: 12px; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; color: var(--gold); text-align: center; }
-    .diag-screen-desc { font-size: 13px; color: var(--ink-muted); text-align: center; line-height: 1.6; max-width: 200px; }
+    .diag-header { text-align: center; margin-bottom: 4px; }
+    .diag-header .section-title { font-size: clamp(24px, 3.4vw, 38px); margin-bottom: 2px; }
+    .diag-header .section-body { font-size: 12px; max-width: 520px; margin: 0 auto; line-height: 1.6; }
+    .diag-flow { display: flex; align-items: center; justify-content: center; gap: 0; margin-top: 0; position: relative; max-width: 820px; margin-left: auto; margin-right: auto; }
+    .diag-step { display: flex; flex-direction: column; align-items: center; gap: 10px; flex: 1; max-width: 250px; position: relative; z-index: 1; }
+    .diag-step-badge { width: 40px; height: 40px; border-radius: 50%; background: var(--gold); color: var(--ink); font-family: 'Fraunces', serif; font-size: 18px; font-weight: 700; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 16px rgba(232,184,75,.3); position: relative; z-index: 2; flex-shrink: 0; }
+    .diag-step-phone-wrap { position: relative; display: flex; justify-content: center; align-items: center; }
+    .diag-step-glow { position: absolute; width: 140px; height: 80px; background: radial-gradient(ellipse, rgba(232,184,75,.12) 0%, transparent 70%); filter: blur(35px); }
+    .diag-step-label { font-size: 12px; font-weight: 700; color: var(--ink); text-align: center; letter-spacing: .02em; }
+    .diag-step-desc { font-size: 10px; color: var(--ink-muted); text-align: center; line-height: 1.5; max-width: 170px; margin-top: 1px; }
+    .diag-connector { position: relative; width: 36px; height: 2px; background: var(--gold); opacity: .35; align-self: flex-start; flex-shrink: 0; border-radius: 1px; margin-top: 20px; }
+    .diag-connector::after { content: ''; position: absolute; right: -5px; top: 50%; transform: translateY(-50%); width: 6px; height: 6px; border-radius: 50%; background: var(--gold); opacity: .5; }
+    @media (max-width: 768px) {
+      .diag-flow { flex-direction: column; align-items: center; gap: 16px; }
+      .diag-connector { width: 2px; height: 20px; margin-top: 0; align-self: center; }
+      .diag-connector::after { right: 50%; top: auto; bottom: -5px; transform: translateX(50%); }
+    }
 
     /* ===========================================
        CARTE
@@ -215,10 +285,8 @@
     .carte-header .section-title { font-size: clamp(26px, 3.5vw, 40px); margin-bottom: 10px; }
     .carte-header .section-body { font-size: 13px; margin-bottom: 0; max-width: 600px; margin: 0 auto; }
     .parcelle-steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0; position: relative; margin-bottom: 28px; }
-    .parcelle-steps::before { content: ''; position: absolute; top: 104px; left: 16.5%; right: 16.5%; height: 2px; background: linear-gradient(to right, var(--gold), var(--gold)); opacity: .3; z-index: 0; }
-    .parcelle-step { display: flex; flex-direction: column; align-items: center; gap: 20px; position: relative; z-index: 1; }
-    .parcelle-step-num { width: 38px; height: 38px; border-radius: 50%; background: var(--gold); color: var(--ink); font-size: 15px; font-weight: 700; display: flex; align-items: center; justify-content: center; box-shadow: 0 6px 20px rgba(201,162,39,.4); flex-shrink: 0; }
-    .parcelle-step-screen { width: 190px; height: 385px; background: var(--ink); border-radius: 34px; border: 4px solid rgba(201,162,39,.3); box-shadow: 0 30px 60px rgba(0,0,0,.5); overflow: hidden; position: relative; transition: transform .4s; }
+    .parcelle-step { display: flex; flex-direction: column; align-items: center; gap: 16px; position: relative; z-index: 1; }
+    .parcelle-step-screen { width: 190px; height: 385px; background: var(--ink); border-radius: 34px; border: 4px solid rgba(232,184,75,.3); box-shadow: 0 12px 30px rgba(0,0,0,.3); overflow: hidden; position: relative; transition: transform .3s var(--ease-out), box-shadow .3s var(--ease-out); will-change: transform; }
     .parcelle-step-screen:hover { transform: translateY(-8px) scale(1.02); box-shadow: 0 40px 80px rgba(0,0,0,.6); }
     .parcelle-step-screen::before { content: ''; position: absolute; top: 0; left: 50%; transform: translateX(-50%); width: 82px; height: 20px; background: var(--ink); border-radius: 0 0 14px 14px; z-index: 5; }
     .parcelle-step-screen img { width: 100%; height: 100%; object-fit: cover; object-position: top; display: block; }
@@ -226,7 +294,7 @@
     .parcelle-step-info h4 { font-size: 13px; font-weight: 600; color: var(--ink); margin-bottom: 4px; }
     .parcelle-step-info p { font-size: 11px; color: var(--ink-muted); line-height: 1.5; }
     .carte-features { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
-    .carte-feat-card { background: var(--surface); border-radius: var(--radius-md); padding: 20px 18px; border: 1px solid var(--gold-mid); transition: all .4s; }
+    .carte-feat-card { background: var(--surface); border-radius: var(--radius-md); padding: 20px 18px; border: 1px solid var(--border); transition: border-color .25s var(--ease-out), box-shadow .25s var(--ease-out), transform .25s var(--ease-out); }
     .carte-feat-card:hover { border-color: var(--gold); box-shadow: 0 4px 16px rgba(61,46,31,.06); transform: translateY(-4px); }
     .carte-feat-card i { font-size: 20px; color: var(--gold); margin-bottom: 12px; display: block; }
     .carte-feat-card h4 { font-size: 13px; font-weight: 600; color: var(--ink); margin-bottom: 5px; }
@@ -237,11 +305,11 @@
        =========================================== */
     .tech-header { text-align: center; margin-bottom: 40px; }
     .tech-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; max-width: 960px; margin: 0 auto; }
-    .tech-card { background: var(--surface); border-radius: var(--radius-md); padding: 22px 20px; border: 1px solid var(--gold-mid); transition: all .4s; }
-    .tech-card:hover { border-color: var(--gold); box-shadow: 0 4px 16px rgba(61,46,31,.06); transform: translateY(-4px); }
-    .tech-emoji { font-size: 26px; margin-bottom: 12px; }
-    .tech-card h4 { font-size: 14px; font-weight: 600; color: var(--ink); margin-bottom: 7px; }
-    .tech-card p { font-size: 12px; color: var(--ink-muted); line-height: 1.65; }
+    .tech-card { background: rgba(255,255,255,.1); border-radius: var(--radius-md); padding: 22px 20px; border: 1px solid rgba(232,184,75,.16); transition: border-color .25s var(--ease-out), box-shadow .25s var(--ease-out), transform .25s var(--ease-out), background .25s ease; }
+    .tech-card:hover { border-color: rgba(232,184,75,.4); box-shadow: 0 4px 20px rgba(0,0,0,.2); transform: translateY(-4px); background: rgba(255,255,255,.15); }
+    .tech-emoji { font-size: 22px; margin-bottom: 12px; color: var(--gold); }
+    .tech-card h4 { font-size: 14px; font-weight: 600; color: rgba(255,255,255,.9); margin-bottom: 7px; }
+    .tech-card p { font-size: 12px; color: rgba(255,255,255,.55); line-height: 1.65; }
 
     /* ===========================================
        CTA + MERCI
@@ -254,24 +322,26 @@
     .cta-sub { font-size: 18px; color: rgba(45,36,22,.65); margin-bottom: 0; font-weight: 300; }
 
     #merci { background: var(--espresso); padding: 130px 60px; text-align: center; position: relative; overflow: hidden; }
-    #merci::before { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse 70% 60% at 50% 50%, rgba(201,162,39,.13) 0%, transparent 70%); pointer-events: none; }
-    .merci-ring { position: absolute; border-radius: 50%; border: 1px solid rgba(201,162,39,.1); top: 50%; left: 50%; transform: translate(-50%, -50%); pointer-events: none; }
-    .merci-ring:nth-child(2) { width: 400px; height: 400px; }
-    .merci-ring:nth-child(3) { width: 680px; height: 680px; border-color: rgba(201,162,39,.06); }
-    .merci-ring:nth-child(4) { width: 960px; height: 960px; border-color: rgba(201,162,39,.04); }
+    .merci-photo { position: absolute; inset: 0; background-image: url('https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=1600&q=80'); background-size: cover; background-position: center; opacity: .1; z-index: 0; }
+    .merci-overlay { position: absolute; inset: 0; background: radial-gradient(ellipse 80% 50% at 50% 50%, rgba(232,184,75,.08) 0%, var(--espresso) 70%); z-index: 0; }
+    #merci::before { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse 70% 60% at 50% 50%, rgba(232,184,75,.13) 0%, transparent 70%); pointer-events: none; z-index: 1; }
+    .merci-ring { position: absolute; border-radius: 50%; border: 1px solid rgba(232,184,75,.1); top: 50%; left: 50%; transform: translate(-50%, -50%); pointer-events: none; animation: ringPulse 8s ease-in-out infinite; z-index: 1; }
+    .merci-ring:nth-child(3) { width: 400px; height: 400px; }
+    .merci-ring:nth-child(4) { width: 680px; height: 680px; border-color: rgba(232,184,75,.06); animation-delay: 1.5s; }
+    .merci-ring:nth-child(5) { width: 960px; height: 960px; border-color: rgba(232,184,75,.04); animation-delay: 3s; }
     .merci-content { position: relative; z-index: 2; max-width: 820px; margin: 0 auto; }
-    .merci-badge { display: inline-flex; align-items: center; gap: 10px; background: rgba(201,162,39,.12); border: 1px solid rgba(201,162,39,.28); border-radius: 100px; padding: 8px 22px; font-size: 11px; font-weight: 600; letter-spacing: .14em; color: rgba(201,162,39,.9); text-transform: uppercase; margin-bottom: 42px; }
+    .merci-badge { display: inline-flex; align-items: center; gap: 10px; background: rgba(232,184,75,.12); border: 1px solid rgba(232,184,75,.28); border-radius: 100px; padding: 8px 22px; font-size: 11px; font-weight: 600; letter-spacing: .14em; color: rgba(232,184,75,.9); text-transform: uppercase; margin-bottom: 42px; }
     .merci-badge-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--gold); animation: dotBlink 2s ease-in-out infinite; }
     .merci-title { font-family: 'Fraunces', serif; font-size: clamp(64px, 11vw, 120px); font-weight: 700; line-height: .9; color: #fff; letter-spacing: -.02em; margin-bottom: 32px; }
     .merci-title em { font-style: italic; color: var(--gold); }
     .merci-sub { font-size: clamp(16px, 2vw, 20px); font-weight: 300; color: rgba(255,255,255,.42); line-height: 1.8; max-width: 560px; margin: 0 auto 52px; }
     .merci-team { display: flex; align-items: center; justify-content: center; gap: 20px; flex-wrap: wrap; }
-    .merci-member { display: flex; align-items: center; gap: 10px; background: rgba(201,162,39,.07); border: 1px solid rgba(201,162,39,.16); border-radius: 100px; padding: 10px 20px; font-size: 14px; font-weight: 500; color: rgba(255,255,255,.7); transition: all .3s; }
-    .merci-member:hover { background: rgba(201,162,39,.15); border-color: rgba(201,162,39,.35); color: #fff; }
+    .merci-member { display: flex; align-items: center; gap: 10px; background: rgba(232,184,75,.07); border: 1px solid rgba(232,184,75,.16); border-radius: 100px; padding: 10px 20px; font-size: 14px; font-weight: 500; color: rgba(255,255,255,.7); transition: background .25s var(--ease-out), border-color .25s var(--ease-out), color .25s ease; }
+    .merci-member:hover { background: rgba(232,184,75,.15); border-color: rgba(232,184,75,.35); color: #fff; }
     .merci-member-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--gold); flex-shrink: 0; }
     .merci-agria { margin-top: 60px; font-family: 'Fraunces', serif; font-size: 18px; font-weight: 600; color: rgba(255,255,255,.2); letter-spacing: .06em; }
     .merci-agria span { color: var(--gold); }
-    footer { background: var(--espresso); padding: 40px 60px; display: flex; align-items: center; justify-content: space-between; border-top: 1px solid rgba(201,162,39,.1); }
+    footer { background: var(--espresso); padding: 40px 60px; display: flex; align-items: center; justify-content: space-between; border-top: 1px solid rgba(232,184,75,.1); }
     .footer-logo { font-family: 'Fraunces', serif; font-size: 22px; font-weight: 700; color: var(--gold); letter-spacing: .03em; }
     .footer-copy { font-size: 12px; color: rgba(255,255,255,.2); }
     .footer-right { font-size: 11px; color: rgba(255,255,255,.25); }
@@ -286,21 +356,21 @@
     .veille-title em { font-style: italic; color: var(--gold); }
     .veille-subtitle { font-size: 14px; font-weight: 300; line-height: 1.7; color: var(--ink-mid); }
     .veille-method { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-bottom: 0; }
-    .veille-method-card { background: var(--surface); border: 1px solid var(--gold-mid); border-radius: var(--radius-lg); padding: 24px 26px; }
-    .veille-method-card.dark { background: var(--bg-mid); border-color: var(--gold-mid); }
+    .veille-method-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 24px 26px; }
+    .veille-method-card.dark { background: var(--espresso); border-color: var(--border); }
     .veille-method-card i { color: var(--gold); font-size: 22px; margin-bottom: 14px; display: block; }
     .veille-method-card h3 { font-family: 'Fraunces', serif; font-size: 20px; font-weight: 600; color: var(--ink); margin-bottom: 10px; }
-    .veille-method-card.dark h3 { color: var(--ink); }
+    .veille-method-card.dark h3 { color: var(--surface); }
     .veille-method-card p { font-size: 13px; line-height: 1.7; color: var(--ink-mid); }
-    .veille-method-card.dark p { color: var(--ink-mid); }
+    .veille-method-card.dark p { color: rgba(255,255,255,.55); }
     .veille-findings { margin-bottom: 0; }
     .veille-section-head { text-align: center; margin-bottom: 24px; }
     .veille-section-head h3 { font-family: 'Fraunces', serif; font-size: clamp(24px, 3.2vw, 36px); font-weight: 600; color: var(--ink); margin-bottom: 8px; }
     .veille-section-head p { font-size: 14px; color: var(--ink-muted); }
-    .findings-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; margin-bottom: 24px; }
-    .finding-card { background: var(--surface); border: 1px solid var(--gold-mid); border-radius: var(--radius-md); padding: 18px 16px; min-height: 0; transition: all .35s; }
+    .findings-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 24px; }
+    .finding-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 18px 16px; min-height: 0; transition: transform .25s var(--ease-out), box-shadow .25s var(--ease-out), border-color .25s var(--ease-out); }
     .finding-card:hover { transform: translateY(-4px); box-shadow: 0 12px 30px rgba(45,36,22,.08); border-color: var(--gold); }
-    .finding-icon { width: 36px; height: 36px; border-radius: 10px; background: rgba(201,162,39,.12); display: flex; align-items: center; justify-content: center; color: var(--gold); font-size: 15px; margin-bottom: 12px; }
+    .finding-icon { width: 36px; height: 36px; border-radius: 10px; background: rgba(232,184,75,.12); display: flex; align-items: center; justify-content: center; color: var(--gold); font-size: 15px; margin-bottom: 12px; }
     .finding-card h4 { font-size: 13px; font-weight: 700; color: var(--ink); margin-bottom: 6px; }
     .finding-card p { font-size: 11.5px; line-height: 1.6; color: var(--ink-muted); }
     .problem-block { background: linear-gradient(135deg, var(--gold), #f0cc5a); border-radius: var(--radius-lg); padding: 28px 36px; position: relative; overflow: hidden; box-shadow: 0 8px 32px rgba(232,184,75,.18); }
@@ -311,11 +381,11 @@
     .veille-transition { margin-top: 30px; text-align: center; }
     .veille-transition p { font-family: 'Fraunces', serif; font-size: clamp(18px, 2.2vw, 26px); line-height: 1.45; color: var(--ink); }
     .veille-transition em { color: var(--gold); font-style: italic; }
-    .veille-sources-inner { background: var(--surface); border-radius: var(--radius-lg); padding: 28px 32px; border: 1px solid var(--gold-mid); box-shadow: 0 4px 24px rgba(61,46,31,.04); width: 100%; }
+    .veille-sources-inner { background: var(--surface); border-radius: var(--radius-lg); padding: 28px 32px; border: 1px solid var(--border); box-shadow: 0 4px 24px rgba(61,46,31,.04); width: 100%; }
     .veille-sources-inner h3 { font-family: 'Fraunces', serif; font-size: 24px; font-weight: 600; color: var(--ink); text-align: center; margin-bottom: 6px; }
     .veille-sources-inner > p { text-align: center; color: var(--ink-muted); font-size: 12px; line-height: 1.6; max-width: 720px; margin: 0 auto 18px; }
     .sources-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
-    .source-card { background: var(--bg); border: 1px solid var(--gold-mid); border-radius: var(--radius-md); padding: 14px 14px; transition: all .35s; }
+    .source-card { background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 14px 14px; transition: transform .25s var(--ease-out), box-shadow .25s var(--ease-out), border-color .25s var(--ease-out); }
     .source-card:hover { border-color: var(--gold); box-shadow: 0 4px 16px rgba(61,46,31,.06); transform: translateY(-5px); }
     .source-card span { display: inline-block; margin-bottom: 6px; font-size: 10px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--gold); }
     .source-card h4 { font-size: 13px; font-weight: 700; color: var(--ink); margin-bottom: 5px; }
@@ -329,26 +399,26 @@
     .api-header .section-title { font-size: clamp(24px, 3.5vw, 40px); }
     .api-header .section-body { font-size: 13px; max-width: 760px; margin: 0 auto; }
     .api-brief { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-bottom: 22px; }
-    .api-brief-card { background: var(--surface); border: 1px solid var(--gold-mid); border-radius: var(--radius-md); padding: 14px 16px; }
+    .api-brief-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 14px 16px; }
     .api-brief-card span { font-size: 10px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--gold); }
     .api-brief-card h4 { font-size: 13px; font-weight: 700; color: var(--ink); margin: 6px 0; }
     .api-brief-card p { font-size: 11.5px; line-height: 1.6; color: var(--ink-muted); }
-    .api-table-card { background: var(--surface); border: 1px solid var(--gold-mid); border-radius: var(--radius-lg); box-shadow: 0 4px 24px rgba(61,46,31,.04); overflow: hidden; margin-bottom: 16px; }
-    .api-table-title { display: flex; align-items: center; gap: 12px; padding: 14px 20px; border-bottom: 1px solid var(--gold-mid); background: var(--bg); }
+    .api-table-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); box-shadow: 0 4px 24px rgba(61,46,31,.04); overflow: hidden; margin-bottom: 16px; }
+    .api-table-title { display: flex; align-items: center; gap: 12px; padding: 14px 20px; border-bottom: 1px solid var(--border); background: var(--bg); }
     .api-table-title i { color: var(--gold); font-size: 16px; }
     .api-table-title h3 { font-family: 'Fraunces', serif; font-size: 17px; font-weight: 600; color: var(--ink); }
     .api-table-wrapper { width: 100%; overflow-x: auto; }
     .api-table { width: 100%; border-collapse: collapse; min-width: 750px; }
-    .api-table th { background: var(--bg); color: var(--ink); font-size: 9px; font-weight: 700; letter-spacing: .09em; text-transform: uppercase; text-align: left; padding: 10px 14px; border-right: 1px solid var(--gold-mid); }
-    .api-table td { padding: 10px 14px; font-size: 12px; line-height: 1.55; color: var(--ink-mid); border-bottom: 1px solid var(--gold-mid); }
+    .api-table th { background: var(--bg); color: var(--ink); font-size: 9px; font-weight: 700; letter-spacing: .09em; text-transform: uppercase; text-align: left; padding: 10px 14px; border-right: 1px solid var(--border); }
+    .api-table td { padding: 10px 14px; font-size: 12px; line-height: 1.55; color: var(--ink-mid); border-bottom: 1px solid var(--border); }
     .api-table tr:hover td { background: var(--bg); }
     .api-name { font-weight: 700; color: var(--ink); display: block; margin-bottom: 4px; }
-    .api-badge { display: inline-flex; align-items: center; padding: 3px 8px; border-radius: 100px; background: rgba(201,162,39,.14); border: 1px solid rgba(201,162,39,.28); color: var(--gold); font-size: 9px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; }
+    .api-badge { display: inline-flex; align-items: center; padding: 3px 8px; border-radius: 100px; background: rgba(232,184,75,.14); border: 1px solid rgba(232,184,75,.28); color: var(--gold); font-size: 9px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; }
     .api-score { display: inline-flex; align-items: center; justify-content: center; min-width: 46px; padding: 5px 10px; border-radius: 100px; background: var(--gold); color: var(--ink); font-weight: 800; font-size: 11px; }
     .api-risk-low { color: #6aad5e; font-weight: 700; }
     .api-risk-medium { color: var(--gold); font-weight: 700; }
     .api-decision-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-top: 16px; }
-    .api-decision-card { background: var(--surface); border: 1px solid var(--gold-mid); border-radius: var(--radius-md); padding: 18px 18px; transition: all .3s; }
+    .api-decision-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 18px 18px; transition: border-color .2s var(--ease-out), box-shadow .2s var(--ease-out), transform .2s var(--ease-out); }
     .api-decision-card:hover { border-color: var(--gold); box-shadow: 0 4px 16px rgba(61,46,31,.06); transform: translateY(-3px); }
     .api-decision-card i { color: var(--gold); font-size: 18px; margin-bottom: 10px; display: block; }
     .api-decision-card h4 { font-size: 13px; font-weight: 700; color: var(--ink); margin-bottom: 6px; }
@@ -358,26 +428,26 @@
        CONCURRENTS — comparison table
        =========================================== */
     .concurrents-header { text-align: center; margin-bottom: 24px; }
-    .comp-table-wrapper { overflow-x: auto; border-radius: var(--radius-lg); border: 1px solid var(--gold-mid); }
+    .comp-table-wrapper { overflow-x: auto; border-radius: var(--radius-lg); border: 1px solid var(--border); }
     .comp-table { width: 100%; border-collapse: collapse; min-width: 680px; }
-    .comp-table th { background: var(--bg); padding: 12px 16px; font-family: 'Outfit'; font-size: 10px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--ink-muted); text-align: center; border-bottom: 1px solid var(--gold-mid); }
+    .comp-table th { background: var(--bg); padding: 12px 16px; font-family: 'Outfit'; font-size: 10px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--ink-muted); text-align: center; border-bottom: 1px solid var(--border); }
     .comp-table th:first-child { text-align: left; }
     .comp-table th.hl { color: var(--gold); }
-    .comp-table td { padding: 12px 16px; font-size: 13px; color: var(--ink-mid); text-align: center; border-bottom: 1px solid var(--gold-mid); }
+    .comp-table td { padding: 12px 16px; font-size: 13px; color: var(--ink-mid); text-align: center; border-bottom: 1px solid var(--border); }
     .comp-table td:first-child { font-weight: 600; color: var(--ink); text-align: left; }
     .comp-table .check { color: var(--success); font-size: 16px; }
     .comp-table .cross { color: var(--danger); font-size: 16px; }
-    .comp-table .warn { color: var(--warning); font-size: 16px; }
+    .comp-table .warn { color: var(--accent); font-size: 16px; }
 
     /* ===========================================
        ROADMAP — horizontal timeline
        =========================================== */
     .roadmap-header { text-align: center; margin-bottom: 36px; }
     .roadmap-timeline { display: flex; justify-content: space-between; position: relative; max-width: 1000px; margin: 0 auto; padding: 0 20px; }
-    .roadmap-timeline::before { content: ''; position: absolute; top: 26px; left: 10%; right: 10%; height: 2px; background: var(--gold-mid); z-index: 0; }
+    .roadmap-timeline::before { content: ''; position: absolute; top: 26px; left: 10%; right: 10%; height: 2px; background: var(--border); z-index: 0; }
     .roadmap-milestone { display: flex; flex-direction: column; align-items: center; gap: 12px; position: relative; z-index: 1; flex: 1; max-width: 200px; }
     .rm-dot { width: 16px; height: 16px; border-radius: 50%; background: var(--gold); flex-shrink: 0; box-shadow: 0 0 0 6px var(--gold-light); }
-    .rm-dot.future { background: var(--gold-mid); box-shadow: 0 0 0 6px var(--bg); }
+    .rm-dot.future { background: var(--border); box-shadow: 0 0 0 6px var(--bg); }
     .rm-label { font-size: 10px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--gold); }
     .rm-title { font-family: 'Fraunces', serif; font-size: 15px; font-weight: 600; color: var(--ink); text-align: center; line-height: 1.3; }
     .rm-items { list-style: none; text-align: center; }
@@ -389,7 +459,7 @@
     .tex { position: relative; }
     .tex::before {
       content: ''; position: absolute; inset: 0; z-index: 0;
-      background-color: #c8b898;
+      background-color: #D8C8B0;
       background-image:
         url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='f'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.04' numOctaves='5' result='big'/%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' result='grain'/%3E%3CfeMerge%3E%3CfeMergeNode in='big'/%3E%3CfeMergeNode in='grain'/%3E%3C/feMerge%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23f)' opacity='.12'/%3E%3C/svg%3E"),
         url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='f2'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.015' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23f2)' opacity='.06'/%3E%3C/svg%3E");
@@ -397,13 +467,13 @@
     }
     .tex::after {
       content: ''; position: absolute; inset: 0; z-index: 0;
-      background: var(--section-bg, var(--bg-light));
-      opacity: 0.85;
+      background: var(--section-bg, var(--bg));
+      opacity: 0.88;
       pointer-events: none;
     }
     .tex > * { position: relative; z-index: 1; }
 
-    .tex-dark::before { background-color: #3a2e20; }
+    .tex-dark::before { background-color: #2a2318; }
     .tex-dark::after { background: var(--espresso); opacity: 0.92; }
 
     /* ===========================================
@@ -417,59 +487,66 @@
     /* ===========================================
        FULL-SCREEN SYSTEM
        =========================================== */
-    section { height: 100vh; scroll-snap-align: start; overflow: hidden; display: flex; flex-direction: column; justify-content: center; }
+    section { position: relative; height: 100vh; scroll-snap-align: start; overflow: hidden; display: flex; flex-direction: column; justify-content: center; }
     #hero { align-items: center; min-height: 100vh; }
 
     #intro, #dashboard, #alertes, #notifications, #diagnostic, #carte,
     #profil, #admin, #tech,
     #apis-meteo, #apis-backend, #concurrents, #roadmap, #cta, #merci,
     #veille-intro, #veille-constats, #veille-sources { padding: 0 60px; }
-    #intro { --section-bg: var(--bg-light); }
-    #profil { --section-bg: var(--bg-tan); }
-    #notifications { --section-bg: var(--bg-warm); }
-    #dashboard { --section-bg: var(--bg-brown); }
-    #alertes { --section-bg: var(--bg-warm); }
-    #carte { --section-bg: var(--bg-deep); }
-    #diagnostic { --section-bg: var(--bg-tan); }
-    #tech { --section-bg: var(--bg-brown); }
-    #apis-meteo { --section-bg: var(--bg-warm); }
-    #apis-backend { --section-bg: var(--bg-brown); }
-    #roadmap { --section-bg: var(--bg-tan); }
-    #concurrents { --section-bg: var(--bg-deep); }
-    #admin { --section-bg: var(--bg-brown); }
-    #veille-intro { --section-bg: var(--bg-light); }
-    #veille-constats { --section-bg: var(--bg-warm); }
-    #veille-sources { --section-bg: var(--bg-tan); }
-    /* texte clair sur slides foncées */
-    #carte .section-title, #dashboard .section-title, #tech .section-title,
+    #intro { --section-bg: #EDE1D0; }
+    #profil { --section-bg: var(--surface); }
+    #notifications { --section-bg: var(--bg-outer); }
+    #dashboard { --section-bg: var(--espresso); }
+    #alertes { --section-bg: var(--bg); }
+    #carte { --section-bg: var(--surface); }
+    #diagnostic { --section-bg: var(--bg-outer); display: flex; flex-direction: column; justify-content: flex-start; align-items: center; padding-top: 0; }
+    #diagnostic .container { flex: none; margin-top: 0; padding-top: 0; transform: translateY(-12vh); }
+    #tech { --section-bg: var(--espresso); }
+    #apis-meteo { --section-bg: var(--bg-outer); }
+    #apis-backend { --section-bg: var(--espresso); }
+    #firebase { --section-bg: var(--espresso); }
+    #make { --section-bg: var(--bg); }
+    #roadmap { --section-bg: var(--bg); }
+    #concurrents { --section-bg: var(--espresso); }
+    #admin { --section-bg: var(--espresso); }
+    #veille-intro { --section-bg: var(--bg); }
+    #veille-constats { --section-bg: var(--surface); }
+    #veille-sources { --section-bg: var(--bg-outer); }
+    /* texte clair sur slides sombres */
+    #dashboard .section-title, #tech .section-title,
     #apis-backend .section-title, #admin .section-title,
-    #concurrents .section-title { color: var(--surface); }
-    #carte .section-body, #dashboard .section-body, #tech .section-body,
+    #concurrents .section-title, #firebase .section-title { color: var(--surface); }
+    #dashboard .section-body, #tech .section-body,
     #apis-backend .section-body, #admin .section-body,
-    #concurrents .section-body { color: rgba(255,255,255,.5); }
-    #carte .section-label, #dashboard .section-label, #tech .section-label,
+    #concurrents .section-body,     #firebase .section-body { color: rgba(255,255,255,.85); }
+    #dashboard .section-label, #tech .section-label,
     #apis-backend .section-label, #admin .section-label,
-    #concurrents .section-label { color: var(--gold-light); }
-    #carte .parcelle-step-info h4,
-    #carte .parcelle-step-info p { color: var(--surface); }
+    #concurrents .section-label, #firebase .section-label { color: var(--gold-light); }
+    #dashboard, #tech, #apis-backend, #concurrents, #admin, #firebase { background-color: var(--espresso); }
     #dashboard .feature-item-text h4 { color: rgba(255,255,255,.9); }
     #dashboard .feature-item-text p { color: rgba(255,255,255,.55); }
-    #admin .admin-feature div { color: rgba(255,255,255,.55); }
-    #admin .admin-feature strong { color: rgba(255,255,255,.85); }
+    #concurrents .comp-table th { color: rgba(255,255,255,.5); background: rgba(255,255,255,.04); }
+    #concurrents .comp-table td { color: rgba(255,255,255,.75); }
+    #concurrents .comp-table td:first-child { color: rgba(255,255,255,.85); }
+    #firebase .feature-item-text h4 { color: rgba(255,255,255,.9); }
+    #firebase .feature-item-text p { color: rgba(255,255,255,.7); }
+    #admin .admin-feature div { color: rgba(255,255,255,.75); }
+    #admin .admin-feature strong { color: rgba(255,255,255,.95); }
 
     .dark-grid { gap: 60px; }
 
     /* ===========================================
        ANIMATIONS
        =========================================== */
-    .r  { opacity: 0; transform: translateY(40px); transition: opacity .85s cubic-bezier(.16,1,.3,1), transform .85s cubic-bezier(.16,1,.3,1); }
-    .rl { opacity: 0; transform: translateX(-48px); transition: opacity .85s cubic-bezier(.16,1,.3,1), transform .85s cubic-bezier(.16,1,.3,1); }
-    .rr { opacity: 0; transform: translateX(48px); transition: opacity .85s cubic-bezier(.16,1,.3,1), transform .85s cubic-bezier(.16,1,.3,1); }
-    .rs { opacity: 0; transform: scale(.92); transition: opacity .85s cubic-bezier(.16,1,.3,1), transform .85s cubic-bezier(.16,1,.3,1); }
-    .rf { opacity: 0; transition: opacity .85s cubic-bezier(.16,1,.3,1); }
-    .rb { opacity: 0; filter: blur(6px); transition: opacity .85s cubic-bezier(.16,1,.3,1), filter .85s cubic-bezier(.16,1,.3,1); }
-    .vis { opacity: 1 !important; transform: none !important; filter: none !important; }
-    .d1 { transition-delay: .08s; } .d2 { transition-delay: .18s; } .d3 { transition-delay: .28s; } .d4 { transition-delay: .42s; } .d5 { transition-delay: .56s; }
+    .r  { opacity: 0; transform: translateY(32px); filter: blur(4px); transition: opacity .65s var(--ease-out), transform .65s var(--ease-out), filter .65s var(--ease-out); }
+    .rl { opacity: 0; transform: translateX(-40px); filter: blur(4px); transition: opacity .65s var(--ease-out), transform .65s var(--ease-out), filter .65s var(--ease-out); }
+    .rr { opacity: 0; transform: translateX(40px); filter: blur(4px); transition: opacity .65s var(--ease-out), transform .65s var(--ease-out), filter .65s var(--ease-out); }
+    .rs { opacity: 0; transform: scale(.95); filter: blur(2px); transition: opacity .65s var(--ease-out), transform .65s var(--ease-out), filter .65s var(--ease-out); }
+    .rf { opacity: 0; transition: opacity .65s var(--ease-out); }
+    .rb { opacity: 0; filter: blur(8px); transition: opacity .7s var(--ease-out), filter .7s var(--ease-out); }
+    .vis { opacity: 1 !important; transform: none !important; filter: blur(0) !important; }
+    .d1 { transition-delay: .07s; } .d2 { transition-delay: .16s; } .d3 { transition-delay: .25s; } .d4 { transition-delay: .36s; } .d5 { transition-delay: .50s; }
 
     /* ===========================================
        RESPONSIVE
@@ -477,10 +554,9 @@
     @media (max-width: 1100px) { .findings-grid { grid-template-columns: repeat(2, 1fr); } .sources-grid { grid-template-columns: repeat(2, 1fr); } .problem-grid { grid-template-columns: repeat(2, 1fr); } }
     @media (max-width: 1024px) {
       .intro-grid, .dark-grid { grid-template-columns: 1fr; gap: 50px; }
-      .parcelle-steps, .carte-features, .diag-screens, .score-grid, .hero-stats { grid-template-columns: repeat(2, 1fr); }
-      .hero-stats .stat-item { border-bottom: 1px solid var(--gold-mid); }
+      .parcelle-steps, .carte-features, .score-grid, .hero-stats { grid-template-columns: repeat(2, 1fr); }
+      .hero-stats .stat-item { border-bottom: 1px solid var(--border); }
       .tech-grid { grid-template-columns: repeat(2, 1fr); }
-      .parcelle-steps::before { display: none; }
       .phones-row { flex-direction: column; gap: 16px; }
       .api-brief, .api-decision-grid { grid-template-columns: 1fr; }
       .roadmap-timeline { flex-wrap: wrap; gap: 24px; justify-content: center; }
@@ -495,21 +571,51 @@
       .phones-row .screenshot-phone, .screenshot-phone { width: 180px; height: 380px; border-radius: 34px; }
     }
 
+    @media (max-height: 700px) {
+      :root { --radius-lg: 12px; --radius-md: 10px; }
+      section { padding: 0 40px; }
+      .hero-stats { margin-top: 30px; }
+      .hero-stats .stat-item { padding: 20px 14px; }
+      .stat-value { font-size: clamp(28px, 4vw, 42px); }
+      .hero-scroll-hint { bottom: 24px; }
+      .parcelle-steps, .carte-features, .score-grid { gap: 12px; }
+      .roadmap-timeline { margin-bottom: 0; }
+    }
+
+    @media (max-height: 600px) {
+      section { padding: 0 24px; }
+      .hero-stats { margin-top: 16px; }
+      .hero-stats .stat-item { padding: 12px 10px; }
+      .stat-value { font-size: clamp(22px, 3.5vw, 32px); }
+      .stat-value sup { font-size: clamp(14px, 1.8vw, 18px); }
+      .hero-eyebrow { margin-bottom: 16px; padding: 6px 14px; font-size: 10px; }
+      .hero-title { font-size: clamp(48px, 8vw, 80px); margin-bottom: 14px; }
+      .hero-tagline { margin-bottom: 24px; font-size: clamp(13px, 1.5vw, 16px); }
+      .hero-actions { gap: 10px; }
+      .btn-hero, .btn-hero-ghost { padding: 10px 24px; font-size: 11px; }
+      .hero-scroll-hint { display: none; }
+      .mini-phone { width: 175px; height: 360px; }
+      .parcelle-step-screen { width: 150px; height: 305px; }
+    }
+
     @media (prefers-reduced-motion: reduce) {
-      *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .2s !important; }
-      html { scroll-behavior: auto; }
+      *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; }
+      html { scroll-behavior: auto; scroll-snap-type: none; }
+      .hero-ring { display: none; }
+      .merci-ring { display: none; }
+      .scroll-line { display: none; }
     }
 
     /* ===========================================
        INLINE EDITING
        =========================================== */
     .edit-hotzone { position: fixed; top: 0; left: 0; width: 80px; height: 80px; z-index: 10000; cursor: pointer; }
-    .edit-toggle { position: fixed; top: 16px; left: 16px; z-index: 10001; width: 40px; height: 40px; border-radius: 50%; background: var(--surface); border: 1px solid var(--gold-mid); color: var(--gold); font-size: 14px; cursor: pointer; opacity: 0; pointer-events: none; transition: opacity .3s ease; display: flex; align-items: center; justify-content: center; }
+    .edit-toggle { position: fixed; top: 16px; left: 16px; z-index: 10001; width: 40px; height: 40px; border-radius: 50%; background: var(--surface); border: 1px solid var(--border); color: var(--gold); font-size: 14px; cursor: pointer; opacity: 0; pointer-events: none; transition: opacity .3s ease; display: flex; align-items: center; justify-content: center; }
     .edit-toggle.show, .edit-toggle.active { opacity: 1; pointer-events: auto; }
     .edit-toggle.active { background: var(--gold); color: var(--ink); border-color: var(--gold); }
     .edit-banner { position: fixed; top: 0; left: 0; right: 0; z-index: 9999; background: var(--gold); color: var(--ink); padding: 10px 20px; display: flex; align-items: center; justify-content: space-between; font-family: 'Outfit',sans-serif; font-size: 13px; font-weight: 600; transform: translateY(-100%); transition: transform .35s cubic-bezier(.16,1,.3,1); }
     .edit-banner.active { transform: translateY(0); }
-    .edit-banner button { background: none; border: 1px solid rgba(61,46,31,.2); border-radius: 6px; color: var(--ink); font-size: 14px; width: 32px; height: 32px; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; margin-left: 6px; transition: all .2s; }
+    .edit-banner button { background: none; border: 1px solid rgba(61,46,31,.2); border-radius: 6px; color: var(--ink); font-size: 14px; width: 32px; height: 32px; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; margin-left: 6px; transition: background .18s ease, border-color .18s ease; }
     .edit-banner button:hover { background: rgba(61,46,31,.1); }
     body.edit-active [contenteditable] { outline: 2px dashed var(--gold); outline-offset: 2px; border-radius: 2px; cursor: text; }
     body.edit-active [contenteditable]:hover { outline-color: var(--ink); }
@@ -517,6 +623,12 @@
   </style>
 </head>
 <body>
+
+  <!-- SPLASH SCREEN (slide 0, non comptée) -->
+  <div class="splash-fade" id="splash">
+    <h1 class="hero-title" style="color:#fff;">Agria</h1>
+    <p style="color:rgba(255,255,255,.3);font-size:12px;font-weight:500;letter-spacing:.14em;text-transform:uppercase;margin-top:24px;">Commencer</p>
+  </div>
 
   <!-- EDIT MODE -->
   <div class="edit-hotzone"></div>
@@ -543,6 +655,8 @@
       <a href="#profil">Profil</a>
       <a href="#admin">Admin</a>
       <a href="#tech">Stack</a>
+      <a href="#firebase">Firebase</a>
+      <a href="#make">Make</a>
       <a href="#concurrents">Vs</a>
       <a href="#roadmap">Roadmap</a>
     </div>
@@ -560,7 +674,6 @@
       <div class="hero-stats r d1">
         <div class="stat-item"><div class="stat-value"><span data-count="5">0</span></div><div class="stat-label">Onglets principaux</div></div>
         <div class="stat-item"><div class="stat-value"><span data-count="3">0</span></div><div class="stat-label">Étapes diagnostic IA</div></div>
-        <div class="stat-item"><div class="stat-value"><span data-count="100">0</span><sup>%</sup></div><div class="stat-label">React Native</div></div>
         <div class="stat-item"><div class="stat-value"><span data-count="24">0</span><sup>h</sup></div><div class="stat-label">Données en temps réel</div></div>
       </div>
     </div>
@@ -586,11 +699,10 @@
           <div class="finding-card rs d1"><div class="finding-icon"><svg class="svg-icon"><use href="#svg-thermo"/></svg></div><h4>Climat instable</h4><p>Les cultures exposées aux épisodes de chaleur, gel, sécheresse ou fortes pluies.</p></div>
           <div class="finding-card rs d2"><div class="finding-icon"><svg class="svg-icon"><use href="#svg-goutte"/></svg></div><h4>Stress hydrique</h4><p>Le manque d'eau impacte le rendement et oblige à anticiper l'irrigation.</p></div>
           <div class="finding-card rs d3"><div class="finding-icon"><svg class="svg-icon"><use href="#svg-feuille"/></svg></div><h4>Maladies des cultures</h4><p>Maladies et ravageurs à repérer rapidement pour éviter des pertes.</p></div>
-          <div class="finding-card rs d4"><div class="finding-icon"><i class="fa-solid fa-flask-vial"></i></div><h4>Réduction des intrants</h4><p>Pratiques évoluant vers une utilisation raisonnée des traitements.</p></div>
-          <div class="finding-card rs d5"><div class="finding-icon"><i class="fa-solid fa-database"></i></div><h4>Données dispersées</h4><p>Météo, diagnostics et parcelles souvent séparés, compliquant la décision.</p></div>
+          <div class="finding-card rs d4"><div class="finding-icon"><i class="fa-solid fa-database"></i></div><h4>Données dispersées</h4><p>Météo, diagnostics et parcelles souvent séparés, compliquant la décision.</p></div>
         </div>
       </div>
-      <div class="problem-block rs"><p class="problem-label">Problématique retenue</p><h3 class="problem-title">Comment une application mobile utilisant l'intelligence artificielle, la météo et la géolocalisation peut-elle aider les agriculteurs à détecter plus tôt les risques de maladies et de stress hydrique sur leurs parcelles ?</h3><div class="problem-grid"><div class="problem-pill">Diagnostic IA</div><div class="problem-pill">Données météo</div><div class="problem-pill">Carte des parcelles</div><div class="problem-pill">Alertes personnalisées</div></div></div>
+      <div class="problem-block rs"><p class="problem-label">Problématique retenue</p><h3 class="problem-title">Les outils de l'agriculteur sont dispersés entre applications météo, carnets de culture et fiches papier. Et si tout tenait dans une seule application mobile ?</h3><div class="problem-grid"><div class="problem-pill">Diagnostic IA</div><div class="problem-pill">Données météo</div><div class="problem-pill">Carte des parcelles</div><div class="problem-pill">Alertes personnalisées</div></div></div>
       <div class="veille-transition rf"><p>Cette problématique nous conduit à proposer <em>Agria</em>, une application mobile d'aide à la décision agricole.</p></div>
       </div>
     </div>
@@ -636,7 +748,8 @@
   </section>
 
   <!-- ═══════════════ DASHBOARD ═══════════════ -->
-  <section class="tex" id="dashboard">
+  <section class="tex-dark" id="dashboard">
+    <div class="bg-field" style="background-image:url('https://images.unsplash.com/photo-1574323347407-f5e1ad6d020b?w=1600&q=80');opacity:.12;"></div>
     <div class="container"><div class="dark-grid">
       <div class="rl">
         <p class="section-label">Tableau de bord</p>
@@ -644,7 +757,7 @@
         <p class="section-body">Le tableau de bord centralise toutes les informations essentielles. En un coup d'œil, consultez la météo, les alertes prioritaires et l'état de vos parcelles.</p>
         <ul class="feature-list">
           <li class="feature-item r d1"><div class="feature-item-icon"><i class="fa-solid fa-cloud-sun"></i></div><div class="feature-item-text"><h4>Météo dynamique</h4><p>Température en direct via OpenWeatherMap. Prévisions 5 jours intégrées.</p></div></li>
-          <li class="feature-item r d2"><div class="feature-item-icon"><i class="fa-solid fa-triangle-exclamation"></i></div><div class="feature-item-text"><h4>Alertes intelligentes</h4><p>Scoring additif multi-facteurs — Danger, Vigilance ou Info selon les conditions.</p></div></li>
+          <li class="feature-item r d2"><div class="feature-item-icon"><i class="fa-solid fa-triangle-exclamation"></i></div><div class="feature-item-text"><h4>Alertes intelligentes</h4><p>Scoring multi-facteurs — Danger, Vigilance ou Info selon les conditions.</p></div></li>
           <li class="feature-item r d3"><div class="feature-item-icon"><i class="fa-solid fa-seedling"></i></div><div class="feature-item-text"><h4>Aperçu des parcelles</h4><p>Visualisez vos champs, leur culture et leur état de santé depuis le dashboard.</p></div></li>
         </ul>
       </div>
@@ -660,7 +773,7 @@
       <div class="rl">
         <p class="section-label">Système d'alertes</p>
         <h2 class="section-title">Des alertes <em>intelligentes</em></h2>
-        <p class="section-body">Notre moteur évalue 7 facteurs météo en parallèle et calcule un score de risque. Rafraîchissement manuel ou automatique via webhook Make.com.</p>
+        <p class="section-body">Notre système évalue 7 facteurs météo en parallèle et calcule un score de risque. Rafraîchissement manuel (automatique envisagé via webhook Make.com).</p>
         <div class="score-grid">
           <div class="score-card sc-danger r d1"><div class="sc-val">≥ 5</div><div class="sc-desc">Risque élevé<br>Temp ≤ 2°C · Humidité ≥ 85%<br>Pluie · Neige · Gel</div></div>
           <div class="score-card sc-warning r d2"><div class="sc-val">≥ 3</div><div class="sc-desc">Vigilance<br>Temp ≤ 7°C · Humidité ≥ 70%<br>Conditions à surveiller</div></div>
@@ -682,11 +795,11 @@
       <div class="rr">
         <p class="section-label">Notifications</p>
         <h2 class="section-title">Rapports IA &amp; alertes <em>dans votre poche</em></h2>
-        <p class="section-body">Toutes vos analyses et alertes centralisées. Recevez les rapports détaillés de l'IA directement sur votre téléphone via les notifications push.</p>
+        <p class="section-body">Toutes vos analyses et alertes centralisées. Recevez les rapports détaillés de l'IA directement sur votre téléphone via les notifications.</p>
         <ul class="feature-list" style="margin-top:8px;">
-          <li class="feature-item r d1"><div class="feature-item-icon" style="background:rgba(201,162,39,.1);border-color:rgba(201,162,39,.2);"><i class="fa-solid fa-bell" style="color:var(--gold);"></i></div><div class="feature-item-text"><h4 style="color:var(--ink);">Badge non-lus</h4><p style="color:var(--ink-muted);">Compteur visible dans le header de l'app pour ne rien manquer.</p></div></li>
-          <li class="feature-item r d2"><div class="feature-item-icon" style="background:rgba(201,162,39,.1);border-color:rgba(201,162,39,.2);"><i class="fa-solid fa-arrow-right" style="color:var(--gold);"></i></div><div class="feature-item-text"><h4 style="color:var(--ink);">Swipe → supprimer</h4><p style="color:var(--ink-muted);">Glissez une notification vers la gauche pour la supprimer.</p></div></li>
-          <li class="feature-item r d3"><div class="feature-item-icon" style="background:rgba(201,162,39,.1);border-color:rgba(201,162,39,.2);"><i class="fa-solid fa-file-lines" style="color:var(--gold);"></i></div><div class="feature-item-text"><h4 style="color:var(--ink);">Rapport IA complet</h4><p style="color:var(--ink-muted);">Développez pour lire le diagnostic détaillé envoyé par l'IA.</p></div></li>
+          <li class="feature-item r d1"><div class="feature-item-icon" style="background:rgba(232,184,75,.1);border-color:rgba(232,184,75,.2);"><i class="fa-solid fa-bell" style="color:var(--gold);"></i></div><div class="feature-item-text"><h4 style="color:var(--ink);">Badge non-lus</h4><p style="color:var(--ink-muted);">Compteur visible dans le header de l'app pour ne rien manquer.</p></div></li>
+          <li class="feature-item r d2"><div class="feature-item-icon" style="background:rgba(232,184,75,.1);border-color:rgba(232,184,75,.2);"><i class="fa-solid fa-arrow-right" style="color:var(--gold);"></i></div><div class="feature-item-text"><h4 style="color:var(--ink);">Swipe → supprimer</h4><p style="color:var(--ink-muted);">Glissez une notification vers la gauche pour la supprimer.</p></div></li>
+          <li class="feature-item r d3"><div class="feature-item-icon" style="background:rgba(232,184,75,.1);border-color:rgba(232,184,75,.2);"><i class="fa-solid fa-file-lines" style="color:var(--gold);"></i></div><div class="feature-item-text"><h4 style="color:var(--ink);">Rapport IA complet</h4><p style="color:var(--ink-muted);">Développez pour lire le diagnostic détaillé envoyé par l'IA.</p></div></li>
         </ul>
       </div>
     </div></div>
@@ -694,12 +807,30 @@
 
   <!-- ═══════════════ DIAGNOSTIC ═══════════════ -->
   <section class="tex" id="diagnostic">
+    <div class="bg-diag-deco"></div>
     <div class="container">
-      <div class="diag-header"><p class="section-label rr">Fonctionnalité clé</p><h2 class="section-title r">Diagnostic IA en <em>3 étapes</em></h2><p class="section-body r" style="max-width:580px;margin:0 auto;">Notre moteur IA croise les symptômes observés avec les données météo locales pour diagnostiquer et recommander des traitements en temps réel.</p></div>
-      <div class="diag-screens">
-        <div class="diag-screen-item rs d1"><div class="diag-screen-label">Étape 1</div><div class="mini-phone"><img src="assets/diagnostic-etape-1.png" alt="Étape 1"></div><div class="diag-screen-desc">Choisir la culture — Blé, Maïs, Tournesol, Colza ou Vigne</div></div>
-        <div class="diag-screen-item rs d2"><div class="diag-screen-label">Étape 2</div><div class="mini-phone"><img src="assets/diagnostic-etape-2.png" alt="Étape 2"></div><div class="diag-screen-desc">Observer les symptômes — Jaunissement, flétrissement, insectes…</div></div>
-        <div class="diag-screen-item rs d3"><div class="diag-screen-label">Étape 3 + Résultat</div><div class="mini-phone"><img src="assets/diagnostic-etape-3.png" alt="Étape 3"></div><div class="diag-screen-desc">Localiser la parcelle pour enrichir le diagnostic IA</div></div>
+      <div class="diag-header"><p class="section-label rr">Fonctionnalité clé</p><h2 class="section-title r">Diagnostic IA en <em>3 étapes</em></h2><p class="section-body r">Notre système combiné à Make.com croise les symptômes observés avec les données météo locales pour diagnostiquer et recommander des traitements.</p></div>
+      <div class="diag-flow">
+        <div class="diag-step rs d1">
+          <div class="diag-step-badge">1</div>
+          <div class="diag-step-phone-wrap"><div class="diag-step-glow"></div><div class="mini-phone"><img src="assets/diagnostic-etape-1.png" alt="Étape 1"></div></div>
+          <div class="diag-step-label">Choisir la culture</div>
+          <div class="diag-step-desc">Sélectionnez votre culture parmi une base de 15 espèces</div>
+        </div>
+        <div class="diag-connector rs d2"></div>
+        <div class="diag-step rs d2">
+          <div class="diag-step-badge">2</div>
+          <div class="diag-step-phone-wrap"><div class="diag-step-glow"></div><div class="mini-phone"><img src="assets/diagnostic-etape-2.png" alt="Étape 2"></div></div>
+          <div class="diag-step-label">Observer les symptômes</div>
+          <div class="diag-step-desc">Décrivez ce que vous observez sur le terrain en quelques clics</div>
+        </div>
+        <div class="diag-connector rs d3"></div>
+        <div class="diag-step rs d3">
+          <div class="diag-step-badge">3</div>
+          <div class="diag-step-phone-wrap"><div class="diag-step-glow"></div><div class="mini-phone"><img src="assets/diagnostic-etape-3.png" alt="Étape 3"></div></div>
+          <div class="diag-step-label">Localiser &amp; diagnostiquer</div>
+          <div class="diag-step-desc">L'IA croise symptômes + météo locale pour un diagnostic précis</div>
+        </div>
       </div>
     </div>
   </section>
@@ -709,9 +840,9 @@
     <div class="container">
       <div class="carte-header"><p class="section-label rr">Carte interactive</p><h2 class="section-title r">Créez et gérez vos parcelles <em>sur la carte</em></h2><p class="section-body r">En quelques gestes, délimitez vos champs directement sur la vue satellite. Chaque parcelle est géolocalisée.</p></div>
       <div class="parcelle-steps">
-        <div class="parcelle-step rb d1"><div class="parcelle-step-num">1</div><div class="parcelle-step-screen"><img src="assets/carte-vue.png" alt="Carte"></div><div class="parcelle-step-info"><h4>Ouvrir la carte</h4><p>Vue satellite de France. Zoomez ou recherchez par nom.</p></div></div>
-        <div class="parcelle-step rb d2"><div class="parcelle-step-num">2</div><div class="parcelle-step-screen"><img src="assets/carte-creation.png" alt="Création"></div><div class="parcelle-step-info"><h4>Tracer la parcelle</h4><p>Cliquez point par point. Surface calculée automatiquement.</p></div></div>
-        <div class="parcelle-step rb d3"><div class="parcelle-step-num">3</div><div class="parcelle-step-screen"><img src="assets/carte-edition.png" alt="Édition"></div><div class="parcelle-step-info"><h4>Renseigner les infos</h4><p>Nom, culture, sol, stade, semis — modifiable à tout moment.</p></div></div>
+        <div class="parcelle-step rb d1"><div class="parcelle-step-screen"><img src="assets/carte-vue.png" alt="Carte"></div><div class="parcelle-step-info"><h4>Ouvrir la carte</h4><p>Vue satellite de France. Zoomez ou recherchez par nom.</p></div></div>
+        <div class="parcelle-step rb d2"><div class="parcelle-step-screen"><img src="assets/carte-creation.png" alt="Création"></div><div class="parcelle-step-info"><h4>Tracer la parcelle</h4><p>Cliquez point par point. Surface calculée automatiquement.</p></div></div>
+        <div class="parcelle-step rb d3"><div class="parcelle-step-screen"><img src="assets/carte-edition.png" alt="Édition"></div><div class="parcelle-step-info"><h4>Renseigner les infos</h4><p>Nom, culture, sol, stade, semis — modifiable à tout moment.</p></div></div>
       </div>
       <div class="carte-features" style="margin-top:24px;">
         <div class="carte-feat-card rs d1"><i class="fa-solid fa-map-location-dot"></i><h4>Parcelles géolocalisées</h4><p>Délimitez vos champs sur la vue satellite et retrouvez-les instantanément.</p></div>
@@ -724,24 +855,26 @@
   <!-- ═══════════════ PROFIL ═══════════════ -->
   <section class="tex" id="profil">
     <div class="container">
-      <div class="profile-header r"><p class="section-label">Profil &amp; Exploitation</p><h2 class="section-title">Une fiche exploitation <em>complète</em></h2><p class="section-body" style="max-width:620px;margin:0 auto 32px;">Avatar personnalisé, statistiques de parcelles, cultures actives et sections repliables. Édition du profil, changement d'email et de mot de passe intégrés.</p></div>
-      <div class="phones-row">
-        <div class="phone-prof-card r d1">
-          <div class="screenshot-phone" style="width:220px;height:460px;border-radius:40px;"><img src="assets/profil-replie.webp" alt="Profil"></div>
-          <div style="text-align:center;margin-top:12px;font-size:12px;font-weight:600;color:var(--ink);">Vue d'ensemble</div>
-          <div style="text-align:center;margin-top:3px;font-size:11px;color:var(--ink-muted);">Stats · Cultures · Sections</div>
+      <div class="profile-header r"><p class="section-label">Profil &amp; Exploitation</p><h2 class="section-title">Une fiche exploitation <em>complète</em></h2><p class="section-body" style="max-width:620px;margin:0 auto 28px;">Avatar, statistiques de parcelles, cultures actives et sections repliables. Édition du profil, changement d'email et de mot de passe intégrés.</p></div>
+      <div class="profile-showcase">
+        <div class="profile-card r d1">
+          <div class="profile-card-label"><span class="profile-dot"></span>Vue d'ensemble</div>
+          <div class="profile-card-phone"><div class="screenshot-phone" style="width:235px;height:480px;border-radius:40px;"><img src="assets/profil-replie.webp" alt="Profil"></div></div>
+          <div class="profile-card-legend">Statistiques de l'exploitation, cultures actives et sections repliables</div>
         </div>
-        <div class="phone-prof-card r d2">
-          <div class="screenshot-phone" style="width:220px;height:460px;border-radius:40px;"><img src="assets/profil-deplie.webp" alt="Profil déplié"></div>
-          <div style="text-align:center;margin-top:12px;font-size:12px;font-weight:600;color:var(--ink);">Édition</div>
-          <div style="text-align:center;margin-top:3px;font-size:11px;color:var(--ink-muted);">SIRET · Email · Mot de passe</div>
+        <div class="profile-arrow rs d2"><i class="fa-solid fa-arrow-right"></i></div>
+        <div class="profile-card r d2">
+          <div class="profile-card-label accent"><span class="profile-dot accent"></span>Édition</div>
+          <div class="profile-card-phone"><div class="screenshot-phone" style="width:235px;height:480px;border-radius:40px;"><img src="assets/profil-deplie.webp" alt="Profil déplié"></div></div>
+          <div class="profile-card-legend">Modification du SIRET, de l'email et du mot de passe</div>
         </div>
       </div>
     </div>
   </section>
 
   <!-- ═══════════════ ADMIN ═══════════════ -->
-  <section class="tex" id="admin">
+  <section class="tex-dark" id="admin" style="--vig:0.45;">
+    <div class="bg-field" style="background-image:url('https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=1600&q=80');opacity:.14;"></div>
     <div class="container"><div class="dark-grid">
       <div class="rl">
         <p class="section-label">Back-office</p>
@@ -761,58 +894,104 @@
   </section>
 
   <!-- ═══════════════ TECH ★ CORRIGÉ ═══════════════ -->
-  <section class="tex" id="tech">
+  <section class="tex-dark" id="tech" style="--vig:0.45;">
+    <div class="bg-field" style="background-image:url('https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=1600&q=80');opacity:.13;"></div><div class="bg-grid"></div>
     <div class="container">
       <div class="tech-header"><p class="section-label rr" style="text-align:center;">Stack technique</p><h2 class="section-title r" style="text-align:center;">Construit avec des technologies <em>robustes</em></h2></div>
       <div class="tech-grid">
-        <div class="tech-card rs d1"><div class="tech-emoji">📱</div><h4>React Native · Expo 54</h4><p>Application mobile cross-platform iOS &amp; Android. Expo Router, TypeScript strict, animations Reanimated.</p></div>
-        <div class="tech-card rs d2"><div class="tech-emoji">🔥</div><h4>Firebase RTDB + AsyncStorage</h4><p>Persistance hybride cloud/local. Authentification, base temps réel et stockage hors-ligne.</p></div>
-        <div class="tech-card rs d3"><div class="tech-emoji">🧠</div><h4>Moteur IA embarqué</h4><p>Base de 15 maladies, scoring de symptômes pondéré, recommandations agronomiques ciblées.</p></div>
-        <div class="tech-card rs d1"><div class="tech-emoji">🌤️</div><h4>OpenWeatherMap · Open-Meteo</h4><p>Double source météo : données temps réel + prévisions 7 jours avec historique.</p></div>
-        <div class="tech-card rs d2"><div class="tech-emoji">⚡</div><h4>Make.com (Integromat)</h4><p>Automatisation no-code : webhooks pour alertes météo et rapports de diagnostic détaillés.</p></div>
-        <div class="tech-card rs d3"><div class="tech-emoji">🗺️</div><h4>Leaflet · ArcGIS · Nominatim</h4><p>Carte interactive satellite, géocodage OpenStreetMap et dessin de polygones.</p></div>
+        <div class="tech-card rs d1"><div class="tech-emoji"><i class="fa-solid fa-mobile-screen-button"></i></div><h4>React Native · Expo</h4><p>App mobile cross-platform iOS &amp; Android. Développée avec Expo, Expo Go pour les tests instantanés sur appareil physique.</p></div>
+        <div class="tech-card rs d2"><div class="tech-emoji"><i class="fa-solid fa-database"></i></div><h4>Firebase RTDB + AsyncStorage</h4><p>Fonctionnement hybride cloud/local. Authentification, base de données temps réel et stockage hors-ligne.</p></div>
+        <div class="tech-card rs d3"><div class="tech-emoji"><i class="fa-solid fa-brain"></i></div><h4>Moteur IA embarqué</h4><p>Base de 15 maladies, scoring de symptômes, recommandations agronomiques ciblées.</p></div>
+        <div class="tech-card rs d1"><div class="tech-emoji"><i class="fa-solid fa-cloud-sun"></i></div><h4>OpenWeatherMap · Open-Meteo</h4><p>Double source météo : données temps réel + prévisions jours à venir avec historique.</p></div>
+        <div class="tech-card rs d2"><div class="tech-emoji"><i class="fa-solid fa-bolt"></i></div><h4>Make.com (Integromat)</h4><p>Automatisation no-code : webhooks pour alertes et rapports de diagnostic détaillés.</p></div>
+        <div class="tech-card rs d3"><div class="tech-emoji"><i class="fa-solid fa-map"></i></div><h4>Leaflet · ArcGIS · Nominatim</h4><p>Carte interactive satellite, géocodage OpenStreetMap et dessin de polygones.</p></div>
       </div>
     </div>
   </section>
 
   <!-- ═══════════════ APIs — 3 slides distinctes ═══════════════ -->
   <section class="tex" id="apis-meteo">
+    <div class="bg-grid" style="opacity:.15;"></div>
     <div class="container">
       <div class="api-header"><p class="section-label rr">Architecture technique</p><h2 class="section-title r">Choix des <em>APIs &amp; services</em></h2><p class="section-body r">Chaque intégration a été sélectionnée pour sa fiabilité et sa richesse de données.</p></div>
       <div class="api-brief r">
-        <div class="api-brief-card"><span><i class="fa-solid fa-bullseye"></i> Critère 1</span><h4>Usage terrain</h4><p>L'API doit servir un besoin métier direct : météo, géolocalisation, synchronisation ou diagnostic.</p></div>
-        <div class="api-brief-card"><span><i class="fa-solid fa-scale-balanced"></i> Critère 2</span><h4>Rapport effort / valeur</h4><p>On privilégie les solutions rapides à intégrer, fiables et riches pour un projet agricole concret.</p></div>
+        <div class="api-brief-card"><span><i class="fa-solid fa-bullseye"></i> Critère 1</span><h4>Usage terrain</h4><p>L'API doit servir un besoin direct : météo, géolocalisation, synchronisation ou diagnostic.</p></div>
+        <div class="api-brief-card"><span><i class="fa-solid fa-scale-balanced"></i> Critère 2</span><h4>Rapport effort / valeur</h4><p>On privilégie les solutions rapides à intégrer, fiables et riches.</p></div>
         <div class="api-brief-card"><span><i class="fa-solid fa-magnifying-glass-chart"></i> Critère 3</span><h4>Veille techno</h4><p>Les alternatives moins adaptées sont gardées comme points de comparaison.</p></div>
       </div>
       <div class="api-table-card r">
-        <div class="api-table-title"><i class="fa-solid fa-cloud-sun"></i><h3>API Météo</h3></div><div class="api-table-wrapper"><table class="api-table"><thead><tr><th>Service</th><th>Données disponibles</th><th>Limite gratuite</th><th>Risque</th><th>Score</th></tr></thead><tbody>
-          <tr><td><span class="api-name">OpenWeatherMap</span><span class="api-badge">✓ Retenu</span></td><td>Température, humidité, vent, prévisions 5 jours</td><td>1 000 req/jour</td><td><span class="api-risk-low">Faible</span></td><td><span class="api-score">9/10</span></td></tr>
-          <tr><td><span class="api-name">Météo-France API</span></td><td>Données officielles France, prévisions locales</td><td>500 req/jour</td><td><span class="api-risk-medium">Moyen</span></td><td><span class="api-score">7/10</span></td></tr>
-          <tr><td><span class="api-name">Weatherbit</span></td><td>Données agro-météo, indices UV</td><td>500 req/jour</td><td><span class="api-risk-low">Faible</span></td><td><span class="api-score">7/10</span></td></tr>
+         <div class="api-table-title"><i class="fa-solid fa-cloud-sun"></i><h3>API Météo</h3></div><div class="api-table-wrapper"><table class="api-table"><thead><tr><th>Service</th><th>Données disponibles</th><th>Limite gratuite</th><th>Synthèse</th></tr></thead><tbody>
+          <tr><td><span class="api-name">OpenWeatherMap</span><span class="api-badge">✓ Retenu</span></td><td>Température, humidité, vent, prévisions 5 jours</td><td>1 000 req/jour</td><td>SDK natif, doc claire, plafond généreux : choix évident pour besoin agricole temps réel.</td></tr>
+          <tr><td><span class="api-name">Météo-France API</span></td><td>Données officielles France, prévisions locales</td><td>500 req/jour</td><td>Données officielles mais plafond plus serré et doc moins intégrée aux SDK mobiles.</td></tr>
+          <tr><td><span class="api-name">Weatherbit</span></td><td>Données agro-météo, indices UV</td><td>500 req/jour</td><td>Intéressant pour données agro-spécifiques, redondant si OpenWeatherMap déjà retenu.</td></tr>
         </tbody></table></div>
       </div>
     </div>
   </section>
 
-  <section class="tex" id="apis-backend">
+  <section class="tex-dark" id="apis-backend" style="--vig:0.25;">
+    <div class="bg-field" style="background-image:url('https://images.unsplash.com/photo-1544197150-b99a580bb7a8?w=1600&q=80');opacity:.16;"></div><div class="bg-grid"></div>
     <div class="container">
       <div class="api-table-card r">
-        <div class="api-table-title"><i class="fa-solid fa-database"></i><h3>Backend &amp; Base de données</h3></div><div class="api-table-wrapper"><table class="api-table"><thead><tr><th>Service</th><th>Fonctionnalités clés</th><th>Auth</th><th>Temps réel</th><th>Score</th></tr></thead><tbody>
-          <tr><td><span class="api-name">Firebase</span><span class="api-badge">✓ Retenu</span></td><td>RTDB, Auth, Storage, Hosting</td><td><span class="api-risk-low">Natif</span></td><td><span class="api-risk-low">Natif</span></td><td><span class="api-score">9/10</span></td></tr>
-          <tr><td><span class="api-name">Supabase</span><span class="api-badge">Évalué</span></td><td>PostgreSQL, Auth, Storage, Edge Functions</td><td><span class="api-risk-low">Natif</span></td><td><span class="api-risk-low">WebSockets</span></td><td><span class="api-score">8/10</span></td></tr>
-          <tr><td><span class="api-name">Backend custom (Node.js)</span></td><td>Contrôle total, logique métier sur mesure</td><td><span class="api-risk-medium">À développer</span></td><td><span class="api-risk-high">À développer</span></td><td><span class="api-score">5/10</span></td></tr>
+         <div class="api-table-title"><i class="fa-solid fa-database"></i><h3>Backend &amp; Base de données</h3></div><div class="api-table-wrapper"><table class="api-table"><thead><tr><th>Service</th><th>Fonctionnalités clés</th><th>Auth</th><th>Temps réel</th><th>Synthèse</th></tr></thead><tbody>
+          <tr><td><span class="api-name">Firebase</span><span class="api-badge">✓ Retenu</span></td><td>RTDB, Auth, Storage, Hosting</td><td><span class="api-risk-low">Natif</span></td><td><span class="api-risk-low">Natif</span></td><td>Écosystème complet, auth + temps réel natifs, idéal pour React Native sans serveur.</td></tr>
+          <tr><td><span class="api-name">Supabase</span><span class="api-badge">Évalué</span></td><td>PostgreSQL, Auth, Storage, Edge Functions</td><td><span class="api-risk-low">Natif</span></td><td><span class="api-risk-low">WebSockets</span></td><td>Alternative solide avec SQL, plus complexe à configurer que Firebase pour du mobile.</td></tr>
+          <tr><td><span class="api-name">Backend custom (Node.js)</span></td><td>Contrôle total</td><td><span class="api-risk-medium">À développer</span></td><td><span class="api-risk-high">À développer</span></td><td>Flexibilité maximale mais hors sujet, alternive no-code.</td></tr>
         </tbody></table></div>
       </div>
       <div class="api-decision-grid r d1" style="margin-top:18px;">
         <div class="api-decision-card"><i class="fa-solid fa-circle-check"></i><h4>OpenWeatherMap</h4><p>Documentation claire, SDK disponible, limite gratuite suffisante et prévisions 5 jours intégrées.</p></div>
         <div class="api-decision-card"><i class="fa-brands fa-google"></i><h4>Firebase</h4><p>Écosystème tout-en-un adapté à React Native. Auth, stockage et base temps réel sans serveur.</p></div>
-        <div class="api-decision-card"><i class="fa-solid fa-brain"></i><h4>Moteur IA interne</h4><p>Diagnostic agronomique en règles métier croisées avec la météo. Zéro dépendance externe.</p></div>
+        <div class="api-decision-card"><i class="fa-solid fa-brain"></i><h4>IA intégrée</h4><p>Diagnostic agronomique métier croisée avec la météo grâce à Make.com.</p></div>
       </div>
     </div>
   </section>
 
+  <!-- ═══════════════ FIREBASE RTDB ═══════════════ -->
+  <section class="tex-dark" id="firebase" style="--vig:0.25;">
+    <div class="bg-field" style="background-image:url('https://images.unsplash.com/photo-1489875347897-49f64b51c1f8?w=1600&q=80');opacity:.16;"></div><div class="bg-grid"></div>
+    <div class="container"><div class="dark-grid">
+      <div class="rl">
+        <p class="section-label">Base de données</p>
+        <h2 class="section-title">Firebase <em>Realtime Database</em></h2>
+        <p class="section-body">Toutes les données de l'application sont synchronisées en temps réel via Firebase RTDB. Structure hiérarchique claire par utilisateur : profil, parcelles, diagnostics, alertes et sessions.</p>
+        <ul class="feature-list">
+          <li class="feature-item r d1"><div class="feature-item-icon"><i class="fa-solid fa-tree"></i></div><div class="feature-item-text"><h4>Arborescence /agriaData/</h4><p>Clés organisées par userId : profil, champs, diagnostics, alertes, sessions et credentials.</p></div></li>
+          <li class="feature-item r d2"><div class="feature-item-icon"><i class="fa-solid fa-sync"></i></div><div class="feature-item-text"><h4>Synchro temps réel</h4><p>Chaque modification est instantanément propagée à tous les clients connectés via WebSockets.</p></div></li>
+          <li class="feature-item r d3"><div class="feature-item-icon"><i class="fa-solid fa-shield-halved"></i></div><div class="feature-item-text"><h4>Sécurité par règles RTDB</h4><p>Règles : chaque utilisateur accède uniquement à ses données (profils, parcelles, diagnostics). Firebase Auth implémenté.</p></div></li>
+        </ul>
+      </div>
+      <div class="rr" style="display:flex;flex-direction:column;align-items:center;gap:16px;">
+        <div class="screenshot-wrap"><div class="screenshot-glow"></div><div class="screenshot-phone" style="width:260px;height:250px;border-radius:32px;"><img src="assets/firebase-rtdb-data.png" alt="Firebase RTDB Data"></div></div>
+        <div class="screenshot-wrap"><div class="screenshot-glow"></div><div class="screenshot-phone" style="width:260px;height:250px;border-radius:32px;"><img src="assets/firebase-rtdb-champs.png" alt="Parcelle Firebase"></div></div>
+      </div>
+    </div></div>
+  </section>
+
+  <!-- ═══════════════ MAKE.COM DIAGNOSTIC ═══════════════ -->
+  <section class="tex" id="make">
+    <div class="bg-grid" style="opacity:.12;"></div>
+    <div class="container"><div class="intro-grid">
+      <div class="rl">
+        <p class="section-label">Automatisation</p>
+        <h2 class="section-title">Make.com — <em>Diagnostic IA</em></h2>
+        <p class="section-body">Le scénario Make.com orchestre le diagnostic intelligent. L'application envoie les données (culture, symptômes, localisation) via webhook, un AI Agent expert agronome analyse et retourne un diagnostic détaillé avec recommandations.</p>
+        <ul class="feature-list" style="margin-top:8px;">
+          <li class="feature-item r d1"><div class="feature-item-icon"><i class="fa-solid fa-plug"></i></div><div class="feature-item-text"><h4>Webhook d'entrée</h4><p>L'app Expo envoie culture, symptômes et coordonnées GPS de la parcelle.</p></div></li>
+          <li class="feature-item r d2"><div class="feature-item-icon"><i class="fa-solid fa-robot"></i></div><div class="feature-item-text"><h4>AI Agent expert agronome</h4><p>Prompt en français : agit comme un expert, croise symptômes observés + météo locale → diagnostic.</p></div></li>
+          <li class="feature-item r d3"><div class="feature-item-icon"><i class="fa-solid fa-code"></i></div><div class="feature-item-text"><h4>Parse JSON + Webhook Respond</h4><p>Le JSON structuré (severity, text, recommendation) est renvoyé à l'app et stocké dans Firebase.</p></div></li>
+        </ul>
+      </div>
+      <div class="rr" style="display:flex;flex-direction:column;align-items:center;gap:16px;">
+        <div class="screenshot-wrap"><div class="screenshot-glow"></div><div class="screenshot-phone" style="width:260px;height:220px;border-radius:32px;background:var(--surface);"><img src="assets/make-diagnostic-scenario.png" alt="Scénario Make"></div></div>
+        <div class="screenshot-wrap"><div class="screenshot-glow"></div><div class="screenshot-phone" style="width:260px;height:270px;border-radius:32px;background:var(--surface);"><img src="assets/make-diagnostic-prompt.png" alt="Prompt AI Agent"></div></div>
+      </div>
+    </div></div>
+  </section>
+
   <!-- ═══════════════ CONCURRENTS ═══════════════ -->
-  <section class="tex" id="concurrents">
+  <section class="tex-dark" id="concurrents">
+    <div class="bg-field" style="background-image:url('https://images.unsplash.com/photo-1552664730-d307ca884978?w=1600&q=80');opacity:.10;"></div>
     <div class="container">
       <div class="concurrents-header rb"><p class="section-label">Positionnement</p><h2 class="section-title">Agria face aux <em>solutions existantes</em></h2><p class="section-body" style="max-width:700px;margin:0 auto 20px;">Aucune solution gratuite et mobile ne combine à la fois cartographie, diagnostic IA, météo et gestion multi-utilisateurs. C'est le positionnement unique d'Agria.</p></div>
       <div class="comp-table-wrapper rb d1">
@@ -845,18 +1024,19 @@
   </section>
 
   <!-- ═══════════════ CTA + MERCI ═══════════════ -->
-  <section class="tex-dark" id="cta">
+  <section id="cta">
     <div class="cta-photo"></div>
     <div class="container cta-content"><p class="section-label rr" style="color:rgba(45,36,22,.6);">Une application, une vision</p><h2 class="cta-title rs">Cultivez avec <em>intelligence</em></h2><p class="cta-sub rf d1">Agria — L'agriculture du futur, disponible aujourd'hui.</p></div>
   </section>
 
   <section class="tex-dark" id="merci">
+    <div class="merci-photo"></div><div class="merci-overlay"></div>
     <div class="merci-ring"></div><div class="merci-ring"></div><div class="merci-ring"></div>
     <div class="merci-content">
       <div class="merci-badge rs"><span class="merci-badge-dot"></span>Fin de présentation</div>
       <h2 class="merci-title rs d1">Merci <em>!</em></h2>
       <p class="merci-sub rf d2">Nous espérons qu'Agria vous a convaincu du potentiel de l'intelligence artificielle au service de l'agriculture de demain.</p>
-      <div class="merci-team rs d3"><div class="merci-member"><span class="merci-member-dot"></span>BTS SIO — Projet applicatif 2025</div><div class="merci-member"><span class="merci-member-dot"></span>Application mobile · Agriculture &amp; IA</div></div>
+      <div class="merci-team rs d3"><div class="merci-member"><span class="merci-member-dot"></span>B1-A - Projet d'étude 2026</div><div class="merci-member"><span class="merci-member-dot"></span>Application mobile · Agriculture &amp; IA</div></div>
       <p class="merci-agria rf d4">Agria · <span>L'agriculture intelligente</span></p>
     </div>
   </section>
@@ -1003,6 +1183,8 @@
         { sel: () => document.getElementById('tech'),                 name: 'Stack tech.' },
         { sel: () => document.getElementById('apis-meteo'),           name: 'API Météo' },
         { sel: () => document.getElementById('apis-backend'),         name: 'API Backend' },
+        { sel: () => document.getElementById('firebase'),            name: 'Firebase RTDB' },
+        { sel: () => document.getElementById('make'),                name: 'Make.com' },
         { sel: () => document.getElementById('concurrents'),          name: 'Concurrents' },
         { sel: () => document.getElementById('roadmap'),              name: 'Roadmap' },
         { sel: () => document.getElementById('cta'),                  name: 'Conclusion' },
@@ -1026,9 +1208,10 @@
     document.body.appendChild(progressBar);
 
     const navStyle = document.createElement('style');
-    navStyle.textContent = `#slide-indicator{position:fixed;right:28px;top:50%;transform:translateY(-50%);z-index:2000;display:flex;flex-direction:column;align-items:center;gap:8px;background:rgba(30,22,8,.82);border:1px solid rgba(232,184,75,.28);border-radius:50px;padding:14px 10px;backdrop-filter:blur(16px);box-shadow:0 8px 32px rgba(0,0,0,.4);transition:opacity .3s;opacity:.38;font-family:'Outfit',sans-serif;min-width:56px}#slide-indicator:hover{opacity:1}#si-prev,#si-next{width:32px;height:32px;border-radius:50%;background:rgba(232,184,75,.12);border:1px solid rgba(232,184,75,.22);color:rgba(255,255,255,.6);font-size:14px;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .2s;user-select:none;padding:0;line-height:1}#si-prev:hover,#si-next:hover{background:rgba(232,184,75,.3);color:#E8B84B;border-color:rgba(232,184,75,.55)}#si-prev:disabled,#si-next:disabled{opacity:.18;cursor:default;pointer-events:none}#si-info{text-align:center;display:flex;flex-direction:column;align-items:center;gap:2px}#si-num{font-size:21px;font-weight:700;color:#E8B84B;line-height:1}#si-total{font-size:10px;font-weight:500;color:rgba(255,255,255,.3);letter-spacing:.06em}#si-name{font-size:9px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:rgba(255,255,255,.38);max-width:52px;text-align:center;margin-top:4px;line-height:1.3}#slide-progress{position:fixed;top:0;left:0;height:2px;background:linear-gradient(to right,#E8B84B,#f0cc5a);z-index:3000;transition:width .45s cubic-bezier(.16,1,.3,1);width:0%}.slide-flash{position:fixed;inset:0;z-index:1500;background:rgba(30,22,8,.07);pointer-events:none;animation:flashFade .3s ease forwards}@keyframes flashFade{0%{opacity:1}100%{opacity:0}}@media(max-width:768px){#slide-indicator{right:10px;padding:10px 7px;min-width:44px}#si-num{font-size:16px}}`;
+    navStyle.textContent = `#slide-indicator{position:fixed;right:28px;top:50%;transform:translateY(-50%);z-index:2000;display:flex;flex-direction:column;align-items:center;gap:6px;background:rgba(26,21,16,.85);border:1px solid rgba(232,184,75,.28);border-radius:50px;padding:14px 10px;backdrop-filter:blur(16px);box-shadow:0 8px 32px rgba(0,0,0,.4);transition:opacity .3s,background .6s,border-color .6s;opacity:.38;font-family:'Outfit',sans-serif;width:58px}#slide-indicator:hover{opacity:1}body[data-theme="light"] #slide-indicator{background:rgba(253,248,238,.88);border-color:rgba(232,184,75,.4);box-shadow:0 4px 20px rgba(61,46,31,.1)}body[data-theme="light"] #slide-indicator #si-num{color:var(--gold)}body[data-theme="light"] #slide-indicator #si-total{color:var(--ink-muted)}body[data-theme="light"] #slide-indicator #si-name{color:var(--ink-mid)}body[data-theme="light"] #slide-indicator #si-prev,body[data-theme="light"] #slide-indicator #si-next{background:rgba(232,184,75,.1);border-color:rgba(232,184,75,.25);color:var(--ink-mid)}body[data-theme="light"] #slide-indicator #si-prev:hover,body[data-theme="light"] #slide-indicator #si-next:hover{background:rgba(232,184,75,.3);color:var(--ink)}body[data-theme="dark"] #slide-indicator #si-prev,body[data-theme="dark"] #slide-indicator #si-next{background:rgba(232,184,75,.12);border-color:rgba(232,184,75,.22);color:rgba(255,255,255,.6)}body[data-theme="dark"] #slide-indicator #si-prev:hover,body[data-theme="dark"] #slide-indicator #si-next:hover{background:rgba(232,184,75,.3);color:#E8B84B;border-color:rgba(232,184,75,.55)}body[data-theme="dark"] #slide-indicator #si-num{color:#E8B84B}body[data-theme="dark"] #slide-indicator #si-total{color:rgba(255,255,255,.3)}body[data-theme="dark"] #slide-indicator #si-name{color:rgba(255,255,255,.38)}#si-prev,#si-next{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:background .18s ease,border-color .18s ease,color .18s ease;user-select:none;padding:0;line-height:1;flex-shrink:0}#si-prev:disabled,#si-next:disabled{opacity:.18;cursor:default;pointer-events:none}#si-info{text-align:center;display:flex;flex-direction:column;align-items:center;gap:2px;width:100%}#si-num{font-size:20px;font-weight:700;line-height:1}#si-total{font-size:9px;font-weight:500;letter-spacing:.06em}#si-name{font-size:8px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;max-width:48px;text-align:center;margin-top:4px;line-height:1.2;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}#slide-progress{position:fixed;top:0;left:0;height:2px;background:linear-gradient(to right,#E8B84B,#f0cc5a);z-index:3000;transition:width .45s cubic-bezier(.16,1,.3,1);width:0%}.slide-flash{position:fixed;inset:0;z-index:1500;background:rgba(26,21,16,.07);pointer-events:none;animation:flashFade .3s ease forwards}@keyframes flashFade{0%{opacity:1}100%{opacity:0}}@media(max-width:768px){#slide-indicator{right:10px;width:48px;padding:10px 6px}#si-num{font-size:16px}#si-name{max-width:38px;font-size:7px}}`;
     document.head.appendChild(navStyle);
 
+    const darkSlides = ['Hero','Dashboard','Admin','Stack tech.','API Backend','Firebase RTDB','Concurrents','Merci !'];
     function updateIndicator(idx) {
       document.getElementById('si-num').textContent = idx + 1;
       document.getElementById('si-total').textContent = '/' + SLIDES.length;
@@ -1036,6 +1219,7 @@
       document.getElementById('si-prev').disabled = (idx === 0);
       document.getElementById('si-next').disabled = (idx === SLIDES.length - 1);
       document.getElementById('slide-progress').style.width = (SLIDES.length > 1 ? (idx / (SLIDES.length - 1)) * 100 : 100) + '%';
+      if (SLIDES[idx]) { document.body.setAttribute('data-theme', darkSlides.includes(SLIDES[idx].name) ? 'dark' : 'light'); }
     }
 
     function goTo(idx) {
@@ -1044,7 +1228,7 @@
       const flash = document.createElement('div'); flash.className = 'slide-flash'; document.body.appendChild(flash); setTimeout(() => flash.remove(), 320);
       window.scrollTo({ top: elScrollTop(SLIDES[currentIndex].el), behavior: 'smooth' });
       updateIndicator(currentIndex);
-      clearTimeout(scrollTimer); scrollTimer = setTimeout(() => { isScrolling = false; }, 900);
+      clearTimeout(scrollTimer); scrollTimer = setTimeout(() => { isScrolling = false; }, 800);
     }
 
     document.getElementById('si-prev').addEventListener('click', () => goTo(currentIndex - 1));
@@ -1052,17 +1236,22 @@
 
     document.addEventListener('keydown', (e) => {
       if (['INPUT','TEXTAREA','SELECT'].includes(document.activeElement.tagName)) return;
+      const splash = document.getElementById('splash');
+      if (splash && !splash.classList.contains('hidden')) {
+        if (['ArrowRight','ArrowDown','ArrowLeft','ArrowUp',' '].includes(e.key)) { e.preventDefault(); startPresentation(); return; }
+      }
       if (e.key === 'ArrowRight' || e.key === 'ArrowDown') { e.preventDefault(); goTo(currentIndex + 1); }
       else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') { e.preventDefault(); goTo(currentIndex - 1); }
       else if (e.key === 'Home') { e.preventDefault(); goTo(0); }
       else if (e.key === 'End') { e.preventDefault(); goTo(SLIDES.length - 1); }
+      else if (e.key === 'm' || e.key === 'M') { e.preventDefault(); toggleMap(); }
     });
 
     let lastWheelTime = 0;
     document.addEventListener('wheel', (e) => {
       const now = Date.now();
       if (Math.abs(e.deltaY) < 28) return;
-      if (now - lastWheelTime < 850) { e.preventDefault(); return; }
+      if (now - lastWheelTime < 400) { e.preventDefault(); return; }
       e.preventDefault(); lastWheelTime = now;
       goTo(currentIndex + (e.deltaY > 0 ? 1 : -1));
     }, { passive: false });
@@ -1091,7 +1280,41 @@
       });
     });
 
+    function startPresentation() {
+      document.getElementById('splash').classList.add('hidden');
+      goTo(0);
+    }
+
     updateIndicator(0);
+    document.body.setAttribute('data-theme', 'dark');
+
+    /* ===========================================
+       SOMMAIRE OVERLAY (touche M)
+       =========================================== */
+    const mapStyle = document.createElement('style');
+    mapStyle.textContent = `#slide-map{position:fixed;inset:0;z-index:5000;background:rgba(26,21,16,.94);backdrop-filter:blur(12px);display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .3s var(--ease-out)}#slide-map.open{opacity:1;pointer-events:auto}#slide-map-inner{display:flex;flex-wrap:wrap;gap:8px;max-width:760px;justify-content:center;padding:40px}#slide-map-inner button{background:rgba(232,184,75,.08);border:1px solid rgba(232,184,75,.2);border-radius:100px;padding:8px 18px;color:rgba(255,255,255,.65);font-family:'Outfit',sans-serif;font-size:12px;font-weight:500;cursor:pointer;transition:background .18s,color .18s,border-color .18s}#slide-map-inner button:hover,#slide-map-inner button.cur{background:rgba(232,184,75,.25);color:#E8B84B;border-color:rgba(232,184,75,.5)}#slide-map-hint{position:fixed;bottom:28px;left:50%;transform:translateX(-50%);z-index:100;font-size:10px;font-weight:600;letter-spacing:.1em;color:rgba(255,255,255,.15);text-transform:uppercase;pointer-events:none;font-family:'Outfit',sans-serif}@media(max-width:768px){#slide-map-inner{padding:20px;gap:6px}#slide-map-inner button{font-size:10px;padding:6px 12px}}`;
+    document.head.appendChild(mapStyle);
+
+    const mapOverlay = document.createElement('div');
+    mapOverlay.id = 'slide-map';
+    const mapInner = document.createElement('div');
+    mapInner.id = 'slide-map-inner';
+    mapOverlay.appendChild(mapInner);
+    document.body.appendChild(mapOverlay);
+
+    const mapHint = document.createElement('div');
+    mapHint.id = 'slide-map-hint';
+    mapHint.textContent = '';
+    document.body.appendChild(mapHint);
+
+    let mapOpen = false;
+    function toggleMap() {
+      mapOpen = !mapOpen;
+      mapOverlay.classList.toggle('open', mapOpen);
+      mapHint.style.opacity = mapOpen ? '0' : '1';
+      if (mapOpen) { mapInner.innerHTML = ''; SLIDES.forEach((s,i) => { const b = document.createElement('button'); b.textContent = (i+1)+'. '+s.name; if (i===currentIndex) b.classList.add('cur'); b.addEventListener('click',()=>{goTo(i);toggleMap();}); mapInner.appendChild(b); }); }
+    }
+    mapOverlay.addEventListener('click', (e) => { if (e.target === mapOverlay) toggleMap(); });
   </script>
 </body>
 </html>
