@@ -1,0 +1,1097 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#FDF8EE">
+  <title>Agria — Présentation</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,700;1,9..144,400;1,9..144,600&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <style>
+    /* ===========================================
+       THEME AGRIA — Couleurs applicatives réelles
+       =========================================== */
+    :root {
+      --bg-light:    #FDF8EE;
+      --bg:          #FDF8EE;    /* alias */
+      --bg-warm:     #EBDFCC;
+      --bg-tan:      #D4C0A0;
+      --bg-brown:    #A08464;
+      --bg-deep:     #6B5A44;
+      --surface:     #FFFDF6;
+      --gold:        #E8B84B;
+      --gold-deep:   #D4A853;
+      --gold-light:  #FDF3DC;
+      --gold-mid:    #EBE3D3;
+      --ink:         #3D2E1F;
+      --ink-mid:     #6B5D4F;
+      --ink-muted:   #A89880;
+      --danger:      #B5533A;
+      --warning:     #C4704A;
+      --success:     #7A9E5A;
+      --info:        #B8D4E8;
+      --espresso:    #1E1608;
+      --radius-lg:   16px;
+      --radius-md:   12px;
+      --radius-sm:   8px;
+    }
+
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    html { scroll-behavior: smooth; font-size: 16px; scroll-snap-type: y mandatory; }
+    body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--ink); overflow-x: hidden; }
+
+    ::-webkit-scrollbar { width: 4px; }
+    ::-webkit-scrollbar-track { background: var(--bg); }
+    ::-webkit-scrollbar-thumb { background: var(--gold); border-radius: 2px; }
+
+    /* ===========================================
+       NAV
+       =========================================== */
+    #mainNav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
+      padding: 24px 60px;
+      display: flex; align-items: center; justify-content: space-between;
+      background: transparent;
+      transition: padding .4s, background .4s, box-shadow .4s;
+    }
+    #mainNav.solid {
+      background: rgba(253,248,238,.72); backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+      padding: 14px 60px; box-shadow: 0 1px 0 rgba(232,184,75,.15);
+    }
+    .nav-logo { font-family: 'Fraunces', serif; font-size: 26px; font-weight: 700; color: var(--ink); letter-spacing: .02em; text-decoration: none; }
+    .nav-logo em { font-style: italic; color: var(--gold); }
+    .nav-center { display: flex; gap: 36px; }
+    .nav-center a { font-size: 12px; font-weight: 600; letter-spacing: .1em; color: var(--ink-mid); text-decoration: none; text-transform: uppercase; transition: color .2s; }
+    .nav-center a:hover { color: var(--ink); }
+
+    /* ===========================================
+       HERO
+       =========================================== */
+    #hero {
+      min-height: 100vh; position: relative;
+      background: var(--espresso);
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      text-align: center; padding: 140px 40px 100px; overflow: hidden;
+    }
+    .hero-photo {
+      position: absolute; inset: 0;
+      background-image: url('https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=1600&q=80');
+      background-size: cover; background-position: center; opacity: .18;
+    }
+    .hero-overlay {
+      position: absolute; inset: 0;
+      background: radial-gradient(ellipse 80% 60% at 50% 65%, rgba(201,162,39,.12) 0%, var(--espresso) 70%);
+    }
+    .hero-ring { position: absolute; border-radius: 50%; pointer-events: none; border: 1px solid rgba(201,162,39,.12); top: 50%; left: 50%; transform: translate(-50%, -50%); animation: ringPulse 8s ease-in-out infinite; }
+    .hero-ring:nth-child(3) { width: 500px; height: 500px; }
+    .hero-ring:nth-child(4) { width: 780px; height: 780px; animation-delay: 1.5s; border-color: rgba(201,162,39,.07); }
+    .hero-ring:nth-child(5) { width: 1060px; height: 1060px; animation-delay: 3s; border-color: rgba(201,162,39,.04); }
+    @keyframes ringPulse { 0%,100%{opacity:.5} 50%{opacity:1} }
+
+    .hero-content { position: relative; z-index: 2; max-width: 900px; }
+    .hero-eyebrow {
+      display: inline-flex; align-items: center; gap: 10px;
+      background: rgba(201,162,39,.12); border: 1px solid rgba(201,162,39,.28);
+      border-radius: 100px; padding: 8px 20px;
+      font-size: 11px; font-weight: 600; letter-spacing: .14em;
+      color: rgba(201,162,39,.9); text-transform: uppercase; margin-bottom: 36px;
+    }
+    .hero-eyebrow-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--gold); animation: dotBlink 2s ease-in-out infinite; }
+    @keyframes dotBlink { 0%,100%{opacity:.4} 50%{opacity:1} }
+    .hero-title { font-family: 'Fraunces', serif; font-size: clamp(80px, 13vw, 148px); font-weight: 700; line-height: .9; color: #fff; margin-bottom: 28px; letter-spacing: -.02em; }
+    .hero-title em { font-style: italic; color: var(--gold); }
+    .hero-tagline { font-size: clamp(16px, 2vw, 20px); font-weight: 300; color: rgba(255,255,255,.5); max-width: 520px; margin: 0 auto 56px; line-height: 1.8; }
+    .hero-actions { display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; }
+    .btn-hero { background: var(--gold); color: var(--ink); font-family: 'Outfit', sans-serif; font-size: 13px; font-weight: 700; letter-spacing: .08em; padding: 15px 38px; border-radius: 100px; text-decoration: none; text-transform: uppercase; transition: all .3s; }
+    .btn-hero:hover { background: #d4ad32; transform: translateY(-3px); box-shadow: 0 12px 30px rgba(201,162,39,.35); }
+    .btn-hero-ghost { background: transparent; color: rgba(255,255,255,.6); font-size: 13px; font-weight: 500; letter-spacing: .06em; padding: 15px 38px; border-radius: 100px; text-decoration: none; text-transform: uppercase; border: 1px solid rgba(255,255,255,.15); transition: all .3s; }
+    .btn-hero-ghost:hover { border-color: rgba(255,255,255,.45); color: #fff; }
+    .hero-scroll-hint { position: absolute; bottom: 48px; left: 50%; transform: translateX(-50%); display: flex; flex-direction: column; align-items: center; gap: 10px; color: rgba(255,255,255,.2); font-size: 10px; letter-spacing: .16em; text-transform: uppercase; }
+    .scroll-line { width: 1px; height: 44px; background: rgba(201,162,39,.3); animation: scrollFade 2.2s ease-in-out infinite; }
+    @keyframes scrollFade { 0%,100%{opacity:.15} 50%{opacity:.9} }
+
+    /* ===========================================
+       STATS (inside hero)
+       =========================================== */
+    .hero-stats { display: grid; grid-template-columns: repeat(4, 1fr); border-top: 1px solid rgba(201,162,39,.12); margin-top: 60px; position: relative; z-index: 2; max-width: 820px; width: 100%; }
+    .hero-stats .stat-item { padding: 32px 20px; text-align: center; border-right: 1px solid rgba(201,162,39,.1); transition: background .3s; }
+    .hero-stats .stat-item:hover { background: rgba(201,162,39,.05); }
+    .hero-stats .stat-item:last-child { border-right: none; }
+    .stat-value { font-family: 'Fraunces', serif; font-size: clamp(36px, 5vw, 52px); font-weight: 700; color: var(--gold); line-height: 1; margin-bottom: 8px; }
+    .stat-value sup { font-size: clamp(18px, 2.5vw, 24px); vertical-align: super; }
+    .stat-label { font-size: 10px; font-weight: 600; letter-spacing: .12em; color: rgba(255,255,255,.3); text-transform: uppercase; }
+
+    /* ===========================================
+       SECTIONS
+       =========================================== */
+    section { position: relative; overflow: visible; }
+    #hero { overflow: hidden; }
+    .container { max-width: 1180px; margin: 0 auto; }
+    .section-label { font-size: 10px; font-weight: 700; letter-spacing: .18em; text-transform: uppercase; color: var(--gold); margin-bottom: 14px; }
+    .section-title { font-family: 'Fraunces', serif; font-size: clamp(34px, 4.6vw, 54px); font-weight: 700; line-height: 1.06; margin-bottom: 16px; letter-spacing: -.02em; }
+    .section-title em { font-style: italic; color: var(--gold); }
+    .section-body { font-size: 16px; font-weight: 300; color: var(--ink-mid); line-height: 1.8; margin-bottom: 28px; }
+
+    /* ===========================================
+       PHONE FRAMES — Screenshot + Mini
+       =========================================== */
+    .phone-wrap { position: relative; display: flex; justify-content: center; align-items: center; }
+    .phone-glow { position: absolute; width: 280px; height: 480px; border-radius: 50%; background: radial-gradient(ellipse, rgba(201,162,39,.25) 0%, transparent 70%); filter: blur(40px); z-index: 0; }
+    .phone { position: relative; z-index: 1; width: 260px; height: 530px; background: var(--espresso); border-radius: 48px; border: 6px solid rgba(201,162,39,.3); box-shadow: 0 40px 80px rgba(0,0,0,.5), inset 0 1px 0 rgba(255,255,255,.08); overflow: hidden; display: flex; flex-direction: column; }
+    .phone-notch { position: absolute; top: 0; left: 50%; transform: translateX(-50%); width: 100px; height: 24px; background: var(--espresso); border-radius: 0 0 18px 18px; z-index: 10; display: flex; align-items: center; justify-content: center; }
+    .notch-pill { width: 60px; height: 5px; background: rgba(255,255,255,.12); border-radius: 3px; }
+    .phone-status { display: flex; justify-content: space-between; padding: 28px 16px 6px; font-size: 9px; font-weight: 600; color: rgba(255,255,255,.6); flex-shrink: 0; }
+
+    .screenshot-phone { width: 270px; height: 560px; background: #fff; border-radius: 50px; border: 6px solid rgba(201,162,39,.35); box-shadow: 0 50px 100px rgba(0,0,0,.5), 0 0 0 1px rgba(201,162,39,.1); overflow: hidden; position: relative; flex-shrink: 0; }
+    .screenshot-phone::before { content: ''; position: absolute; top: 0; left: 50%; transform: translateX(-50%); width: 100px; height: 22px; background: #fff; border-radius: 0 0 16px 16px; z-index: 5; }
+    .screenshot-phone img { width: 100%; height: 100%; object-fit: cover; object-position: top; display: block; }
+    .screenshot-wrap { position: relative; display: flex; justify-content: center; align-items: center; }
+    .screenshot-glow { position: absolute; width: 300px; height: 500px; background: radial-gradient(ellipse, rgba(201,162,39,.2) 0%, transparent 70%); filter: blur(50px); }
+
+    /* Dual phones */
+    .phones-row { display: flex; gap: 24px; align-items: center; justify-content: center; }
+    .phones-row .screenshot-phone { width: 220px; height: 460px; border-radius: 40px; }
+    .phones-row .screenshot-phone::before { width: 80px; height: 18px; }
+
+    .mini-phone { width: 235px; height: 480px; background: var(--ink); border-radius: 38px; border: 4px solid rgba(201,162,39,.3); box-shadow: 0 30px 60px rgba(45,36,22,.25); overflow: hidden; position: relative; }
+    .mini-phone::before { content: ''; position: absolute; top: 0; left: 50%; transform: translateX(-50%); width: 92px; height: 20px; background: var(--ink); border-radius: 0 0 14px 14px; z-index: 5; }
+    .mini-phone img { width: 100%; height: 100%; object-fit: cover; object-position: top; display: block; }
+
+    /* ===========================================
+       FEATURE LIST + CARDS
+       =========================================== */
+    .intro-grid, .dark-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 100px; align-items: center; }
+    .pills-row { display: flex; flex-wrap: wrap; gap: 10px; }
+    .pill { display: inline-flex; align-items: center; gap: 8px; background: var(--surface); border: 1px solid var(--gold-mid); border-radius: 100px; padding: 8px 18px; font-size: 13px; font-weight: 500; color: var(--ink-mid); transition: all .3s; }
+    .pill:hover { border-color: var(--gold); color: var(--ink); }
+    .pill i { color: var(--gold); }
+
+    .feature-list { list-style: none; display: flex; flex-direction: column; gap: 20px; }
+    .feature-item { display: flex; align-items: flex-start; gap: 18px; }
+    .feature-item-icon { width: 44px; height: 44px; border-radius: 12px; background: rgba(201,162,39,.1); border: 1px solid rgba(201,162,39,.2); display: flex; align-items: center; justify-content: center; color: var(--gold); font-size: 16px; flex-shrink: 0; }
+    .feature-item-text h4 { font-size: 15px; font-weight: 600; color: var(--ink); margin-bottom: 4px; }
+    .feature-item-text p { font-size: 13px; color: var(--ink-mid); line-height: 1.7; }
+
+    /* ===========================================
+       SCORE CARDS — Alertes
+       =========================================== */
+    .score-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-top: 16px; }
+    .score-card { background: var(--surface); border: 1px solid var(--gold-mid); border-radius: var(--radius-md); padding: 20px 16px; text-align: center; transition: all .3s; }
+    .score-card:hover { border-color: var(--gold); box-shadow: 0 4px 16px rgba(61,46,31,.06); }
+    .score-card .sc-val { font-family: 'Fraunces', serif; font-size: 32px; font-weight: 700; }
+    .score-card .sc-desc { font-size: 12px; color: var(--ink-muted); margin-top: 6px; line-height: 1.5; }
+    .sc-danger .sc-val { color: var(--danger); }
+    .sc-warning .sc-val { color: var(--warning); }
+    .sc-info .sc-val { color: var(--gold); }
+
+    /* ===========================================
+       ADMIN FEATURES
+       =========================================== */
+    .profile-header { text-align: center; margin-bottom: 10px; }
+    .phone-prof-card { display: flex; flex-direction: column; align-items: center; }
+    .admin-feature { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 12px; }
+    .admin-feature i { color: var(--gold); font-size: 14px; margin-top: 3px; flex-shrink: 0; }
+    .admin-feature div { font-size: 13px; color: var(--ink-muted); line-height: 1.6; }
+    .admin-feature strong { color: var(--ink); }
+
+    /* ===========================================
+       DIAGNOSTIC
+       =========================================== */
+    .diag-header { text-align: center; margin-bottom: 32px; }
+    .diag-header .section-title { font-size: clamp(28px, 4vw, 42px); margin-bottom: 10px; }
+    .diag-header .section-body { font-size: 14px; margin-bottom: 0; }
+    .diag-screens { display: grid; grid-template-columns: repeat(3, 1fr); gap: 28px; align-items: start; margin-top: 32px; }
+    .diag-screen-item { display: flex; flex-direction: column; align-items: center; gap: 16px; }
+    .diag-screen-label { font-size: 12px; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; color: var(--gold); text-align: center; }
+    .diag-screen-desc { font-size: 13px; color: var(--ink-muted); text-align: center; line-height: 1.6; max-width: 200px; }
+
+    /* ===========================================
+       CARTE
+       =========================================== */
+    .carte-header { text-align: center; margin-bottom: 28px; }
+    .carte-header .section-title { font-size: clamp(26px, 3.5vw, 40px); margin-bottom: 10px; }
+    .carte-header .section-body { font-size: 13px; margin-bottom: 0; max-width: 600px; margin: 0 auto; }
+    .parcelle-steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0; position: relative; margin-bottom: 28px; }
+    .parcelle-steps::before { content: ''; position: absolute; top: 104px; left: 16.5%; right: 16.5%; height: 2px; background: linear-gradient(to right, var(--gold), var(--gold)); opacity: .3; z-index: 0; }
+    .parcelle-step { display: flex; flex-direction: column; align-items: center; gap: 20px; position: relative; z-index: 1; }
+    .parcelle-step-num { width: 38px; height: 38px; border-radius: 50%; background: var(--gold); color: var(--ink); font-size: 15px; font-weight: 700; display: flex; align-items: center; justify-content: center; box-shadow: 0 6px 20px rgba(201,162,39,.4); flex-shrink: 0; }
+    .parcelle-step-screen { width: 190px; height: 385px; background: var(--ink); border-radius: 34px; border: 4px solid rgba(201,162,39,.3); box-shadow: 0 30px 60px rgba(0,0,0,.5); overflow: hidden; position: relative; transition: transform .4s; }
+    .parcelle-step-screen:hover { transform: translateY(-8px) scale(1.02); box-shadow: 0 40px 80px rgba(0,0,0,.6); }
+    .parcelle-step-screen::before { content: ''; position: absolute; top: 0; left: 50%; transform: translateX(-50%); width: 82px; height: 20px; background: var(--ink); border-radius: 0 0 14px 14px; z-index: 5; }
+    .parcelle-step-screen img { width: 100%; height: 100%; object-fit: cover; object-position: top; display: block; }
+    .parcelle-step-info { text-align: center; max-width: 220px; }
+    .parcelle-step-info h4 { font-size: 13px; font-weight: 600; color: var(--ink); margin-bottom: 4px; }
+    .parcelle-step-info p { font-size: 11px; color: var(--ink-muted); line-height: 1.5; }
+    .carte-features { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+    .carte-feat-card { background: var(--surface); border-radius: var(--radius-md); padding: 20px 18px; border: 1px solid var(--gold-mid); transition: all .4s; }
+    .carte-feat-card:hover { border-color: var(--gold); box-shadow: 0 4px 16px rgba(61,46,31,.06); transform: translateY(-4px); }
+    .carte-feat-card i { font-size: 20px; color: var(--gold); margin-bottom: 12px; display: block; }
+    .carte-feat-card h4 { font-size: 13px; font-weight: 600; color: var(--ink); margin-bottom: 5px; }
+    .carte-feat-card p { font-size: 11.5px; color: var(--ink-muted); line-height: 1.6; }
+
+    /* ===========================================
+       TECH
+       =========================================== */
+    .tech-header { text-align: center; margin-bottom: 40px; }
+    .tech-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; max-width: 960px; margin: 0 auto; }
+    .tech-card { background: var(--surface); border-radius: var(--radius-md); padding: 22px 20px; border: 1px solid var(--gold-mid); transition: all .4s; }
+    .tech-card:hover { border-color: var(--gold); box-shadow: 0 4px 16px rgba(61,46,31,.06); transform: translateY(-4px); }
+    .tech-emoji { font-size: 26px; margin-bottom: 12px; }
+    .tech-card h4 { font-size: 14px; font-weight: 600; color: var(--ink); margin-bottom: 7px; }
+    .tech-card p { font-size: 12px; color: var(--ink-muted); line-height: 1.65; }
+
+    /* ===========================================
+       CTA + MERCI
+       =========================================== */
+    #cta { background: var(--gold); padding: 120px 60px; text-align: center; position: relative; overflow: hidden; }
+    .cta-photo { position: absolute; inset: 0; background-image: url('https://images.unsplash.com/photo-1464226184884-fa280b87c399?w=1600&q=80'); background-size: cover; background-position: center; opacity: .12; }
+    .cta-content { position: relative; z-index: 2; }
+    .cta-title { font-family: 'Fraunces', serif; font-size: clamp(54px, 8vw, 92px); font-weight: 700; color: var(--ink); line-height: 1.0; margin-bottom: 22px; letter-spacing: -.02em; }
+    .cta-title em { font-style: italic; color: rgba(45,36,22,.55); }
+    .cta-sub { font-size: 18px; color: rgba(45,36,22,.65); margin-bottom: 0; font-weight: 300; }
+
+    #merci { background: var(--espresso); padding: 130px 60px; text-align: center; position: relative; overflow: hidden; }
+    #merci::before { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse 70% 60% at 50% 50%, rgba(201,162,39,.13) 0%, transparent 70%); pointer-events: none; }
+    .merci-ring { position: absolute; border-radius: 50%; border: 1px solid rgba(201,162,39,.1); top: 50%; left: 50%; transform: translate(-50%, -50%); pointer-events: none; }
+    .merci-ring:nth-child(2) { width: 400px; height: 400px; }
+    .merci-ring:nth-child(3) { width: 680px; height: 680px; border-color: rgba(201,162,39,.06); }
+    .merci-ring:nth-child(4) { width: 960px; height: 960px; border-color: rgba(201,162,39,.04); }
+    .merci-content { position: relative; z-index: 2; max-width: 820px; margin: 0 auto; }
+    .merci-badge { display: inline-flex; align-items: center; gap: 10px; background: rgba(201,162,39,.12); border: 1px solid rgba(201,162,39,.28); border-radius: 100px; padding: 8px 22px; font-size: 11px; font-weight: 600; letter-spacing: .14em; color: rgba(201,162,39,.9); text-transform: uppercase; margin-bottom: 42px; }
+    .merci-badge-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--gold); animation: dotBlink 2s ease-in-out infinite; }
+    .merci-title { font-family: 'Fraunces', serif; font-size: clamp(64px, 11vw, 120px); font-weight: 700; line-height: .9; color: #fff; letter-spacing: -.02em; margin-bottom: 32px; }
+    .merci-title em { font-style: italic; color: var(--gold); }
+    .merci-sub { font-size: clamp(16px, 2vw, 20px); font-weight: 300; color: rgba(255,255,255,.42); line-height: 1.8; max-width: 560px; margin: 0 auto 52px; }
+    .merci-team { display: flex; align-items: center; justify-content: center; gap: 20px; flex-wrap: wrap; }
+    .merci-member { display: flex; align-items: center; gap: 10px; background: rgba(201,162,39,.07); border: 1px solid rgba(201,162,39,.16); border-radius: 100px; padding: 10px 20px; font-size: 14px; font-weight: 500; color: rgba(255,255,255,.7); transition: all .3s; }
+    .merci-member:hover { background: rgba(201,162,39,.15); border-color: rgba(201,162,39,.35); color: #fff; }
+    .merci-member-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--gold); flex-shrink: 0; }
+    .merci-agria { margin-top: 60px; font-family: 'Fraunces', serif; font-size: 18px; font-weight: 600; color: rgba(255,255,255,.2); letter-spacing: .06em; }
+    .merci-agria span { color: var(--gold); }
+    footer { background: var(--espresso); padding: 40px 60px; display: flex; align-items: center; justify-content: space-between; border-top: 1px solid rgba(201,162,39,.1); }
+    .footer-logo { font-family: 'Fraunces', serif; font-size: 22px; font-weight: 700; color: var(--gold); letter-spacing: .03em; }
+    .footer-copy { font-size: 12px; color: rgba(255,255,255,.2); }
+    .footer-right { font-size: 11px; color: rgba(255,255,255,.25); }
+
+    /* ===========================================
+       VEILLE TECHNOLOGIQUE
+       =========================================== */
+    .veille-container { max-width: 1180px; margin: 0 auto; position: relative; z-index: 2; width: 100%; }
+    .veille-header { text-align: center; max-width: 820px; margin: 0 auto 36px; }
+    .veille-label { font-size: 11px; font-weight: 700; letter-spacing: .16em; text-transform: uppercase; color: var(--gold); margin-bottom: 16px; }
+    .veille-title { font-family: 'Fraunces', serif; font-size: clamp(28px, 4vw, 44px); font-weight: 600; line-height: 1.08; color: var(--ink); margin-bottom: 14px; }
+    .veille-title em { font-style: italic; color: var(--gold); }
+    .veille-subtitle { font-size: 14px; font-weight: 300; line-height: 1.7; color: var(--ink-mid); }
+    .veille-method { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-bottom: 0; }
+    .veille-method-card { background: var(--surface); border: 1px solid var(--gold-mid); border-radius: var(--radius-lg); padding: 24px 26px; }
+    .veille-method-card.dark { background: var(--bg-mid); border-color: var(--gold-mid); }
+    .veille-method-card i { color: var(--gold); font-size: 22px; margin-bottom: 14px; display: block; }
+    .veille-method-card h3 { font-family: 'Fraunces', serif; font-size: 20px; font-weight: 600; color: var(--ink); margin-bottom: 10px; }
+    .veille-method-card.dark h3 { color: var(--ink); }
+    .veille-method-card p { font-size: 13px; line-height: 1.7; color: var(--ink-mid); }
+    .veille-method-card.dark p { color: var(--ink-mid); }
+    .veille-findings { margin-bottom: 0; }
+    .veille-section-head { text-align: center; margin-bottom: 24px; }
+    .veille-section-head h3 { font-family: 'Fraunces', serif; font-size: clamp(24px, 3.2vw, 36px); font-weight: 600; color: var(--ink); margin-bottom: 8px; }
+    .veille-section-head p { font-size: 14px; color: var(--ink-muted); }
+    .findings-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; margin-bottom: 24px; }
+    .finding-card { background: var(--surface); border: 1px solid var(--gold-mid); border-radius: var(--radius-md); padding: 18px 16px; min-height: 0; transition: all .35s; }
+    .finding-card:hover { transform: translateY(-4px); box-shadow: 0 12px 30px rgba(45,36,22,.08); border-color: var(--gold); }
+    .finding-icon { width: 36px; height: 36px; border-radius: 10px; background: rgba(201,162,39,.12); display: flex; align-items: center; justify-content: center; color: var(--gold); font-size: 15px; margin-bottom: 12px; }
+    .finding-card h4 { font-size: 13px; font-weight: 700; color: var(--ink); margin-bottom: 6px; }
+    .finding-card p { font-size: 11.5px; line-height: 1.6; color: var(--ink-muted); }
+    .problem-block { background: linear-gradient(135deg, var(--gold), #f0cc5a); border-radius: var(--radius-lg); padding: 28px 36px; position: relative; overflow: hidden; box-shadow: 0 8px 32px rgba(232,184,75,.18); }
+    .problem-label { font-size: 11px; font-weight: 700; letter-spacing: .16em; text-transform: uppercase; color: rgba(45,36,22,.62); margin-bottom: 14px; }
+    .problem-title { font-family: 'Fraunces', serif; font-size: clamp(16px, 2vw, 22px); font-weight: 700; line-height: 1.3; color: var(--ink); max-width: 930px; margin-bottom: 16px; }
+    .problem-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-top: 16px; }
+    .problem-pill { background: rgba(255,255,255,.35); border: 1px solid rgba(45,36,22,.12); border-radius: 100px; padding: 9px 12px; font-size: 11px; font-weight: 700; color: rgba(45,36,22,.78); text-align: center; }
+    .veille-transition { margin-top: 30px; text-align: center; }
+    .veille-transition p { font-family: 'Fraunces', serif; font-size: clamp(18px, 2.2vw, 26px); line-height: 1.45; color: var(--ink); }
+    .veille-transition em { color: var(--gold); font-style: italic; }
+    .veille-sources-inner { background: var(--surface); border-radius: var(--radius-lg); padding: 28px 32px; border: 1px solid var(--gold-mid); box-shadow: 0 4px 24px rgba(61,46,31,.04); width: 100%; }
+    .veille-sources-inner h3 { font-family: 'Fraunces', serif; font-size: 24px; font-weight: 600; color: var(--ink); text-align: center; margin-bottom: 6px; }
+    .veille-sources-inner > p { text-align: center; color: var(--ink-muted); font-size: 12px; line-height: 1.6; max-width: 720px; margin: 0 auto 18px; }
+    .sources-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+    .source-card { background: var(--bg); border: 1px solid var(--gold-mid); border-radius: var(--radius-md); padding: 14px 14px; transition: all .35s; }
+    .source-card:hover { border-color: var(--gold); box-shadow: 0 4px 16px rgba(61,46,31,.06); transform: translateY(-5px); }
+    .source-card span { display: inline-block; margin-bottom: 6px; font-size: 10px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--gold); }
+    .source-card h4 { font-size: 13px; font-weight: 700; color: var(--ink); margin-bottom: 5px; }
+    .source-card p { font-size: 11px; line-height: 1.5; color: var(--ink-muted); margin-bottom: 8px; }
+    .source-card a { display: inline-flex; align-items: center; gap: 7px; color: var(--gold); font-size: 11px; font-weight: 600; text-decoration: none; }
+
+    /* ===========================================
+       APIS
+       =========================================== */
+    .api-header { text-align: center; margin-bottom: 28px; }
+    .api-header .section-title { font-size: clamp(24px, 3.5vw, 40px); }
+    .api-header .section-body { font-size: 13px; max-width: 760px; margin: 0 auto; }
+    .api-brief { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-bottom: 22px; }
+    .api-brief-card { background: var(--surface); border: 1px solid var(--gold-mid); border-radius: var(--radius-md); padding: 14px 16px; }
+    .api-brief-card span { font-size: 10px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--gold); }
+    .api-brief-card h4 { font-size: 13px; font-weight: 700; color: var(--ink); margin: 6px 0; }
+    .api-brief-card p { font-size: 11.5px; line-height: 1.6; color: var(--ink-muted); }
+    .api-table-card { background: var(--surface); border: 1px solid var(--gold-mid); border-radius: var(--radius-lg); box-shadow: 0 4px 24px rgba(61,46,31,.04); overflow: hidden; margin-bottom: 16px; }
+    .api-table-title { display: flex; align-items: center; gap: 12px; padding: 14px 20px; border-bottom: 1px solid var(--gold-mid); background: var(--bg); }
+    .api-table-title i { color: var(--gold); font-size: 16px; }
+    .api-table-title h3 { font-family: 'Fraunces', serif; font-size: 17px; font-weight: 600; color: var(--ink); }
+    .api-table-wrapper { width: 100%; overflow-x: auto; }
+    .api-table { width: 100%; border-collapse: collapse; min-width: 750px; }
+    .api-table th { background: var(--bg); color: var(--ink); font-size: 9px; font-weight: 700; letter-spacing: .09em; text-transform: uppercase; text-align: left; padding: 10px 14px; border-right: 1px solid var(--gold-mid); }
+    .api-table td { padding: 10px 14px; font-size: 12px; line-height: 1.55; color: var(--ink-mid); border-bottom: 1px solid var(--gold-mid); }
+    .api-table tr:hover td { background: var(--bg); }
+    .api-name { font-weight: 700; color: var(--ink); display: block; margin-bottom: 4px; }
+    .api-badge { display: inline-flex; align-items: center; padding: 3px 8px; border-radius: 100px; background: rgba(201,162,39,.14); border: 1px solid rgba(201,162,39,.28); color: var(--gold); font-size: 9px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; }
+    .api-score { display: inline-flex; align-items: center; justify-content: center; min-width: 46px; padding: 5px 10px; border-radius: 100px; background: var(--gold); color: var(--ink); font-weight: 800; font-size: 11px; }
+    .api-risk-low { color: #6aad5e; font-weight: 700; }
+    .api-risk-medium { color: var(--gold); font-weight: 700; }
+    .api-decision-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-top: 16px; }
+    .api-decision-card { background: var(--surface); border: 1px solid var(--gold-mid); border-radius: var(--radius-md); padding: 18px 18px; transition: all .3s; }
+    .api-decision-card:hover { border-color: var(--gold); box-shadow: 0 4px 16px rgba(61,46,31,.06); transform: translateY(-3px); }
+    .api-decision-card i { color: var(--gold); font-size: 18px; margin-bottom: 10px; display: block; }
+    .api-decision-card h4 { font-size: 13px; font-weight: 700; color: var(--ink); margin-bottom: 6px; }
+    .api-decision-card p { font-size: 11.5px; line-height: 1.65; color: var(--ink-muted); }
+
+    /* ===========================================
+       CONCURRENTS — comparison table
+       =========================================== */
+    .concurrents-header { text-align: center; margin-bottom: 24px; }
+    .comp-table-wrapper { overflow-x: auto; border-radius: var(--radius-lg); border: 1px solid var(--gold-mid); }
+    .comp-table { width: 100%; border-collapse: collapse; min-width: 680px; }
+    .comp-table th { background: var(--bg); padding: 12px 16px; font-family: 'Outfit'; font-size: 10px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--ink-muted); text-align: center; border-bottom: 1px solid var(--gold-mid); }
+    .comp-table th:first-child { text-align: left; }
+    .comp-table th.hl { color: var(--gold); }
+    .comp-table td { padding: 12px 16px; font-size: 13px; color: var(--ink-mid); text-align: center; border-bottom: 1px solid var(--gold-mid); }
+    .comp-table td:first-child { font-weight: 600; color: var(--ink); text-align: left; }
+    .comp-table .check { color: var(--success); font-size: 16px; }
+    .comp-table .cross { color: var(--danger); font-size: 16px; }
+    .comp-table .warn { color: var(--warning); font-size: 16px; }
+
+    /* ===========================================
+       ROADMAP — horizontal timeline
+       =========================================== */
+    .roadmap-header { text-align: center; margin-bottom: 36px; }
+    .roadmap-timeline { display: flex; justify-content: space-between; position: relative; max-width: 1000px; margin: 0 auto; padding: 0 20px; }
+    .roadmap-timeline::before { content: ''; position: absolute; top: 26px; left: 10%; right: 10%; height: 2px; background: var(--gold-mid); z-index: 0; }
+    .roadmap-milestone { display: flex; flex-direction: column; align-items: center; gap: 12px; position: relative; z-index: 1; flex: 1; max-width: 200px; }
+    .rm-dot { width: 16px; height: 16px; border-radius: 50%; background: var(--gold); flex-shrink: 0; box-shadow: 0 0 0 6px var(--gold-light); }
+    .rm-dot.future { background: var(--gold-mid); box-shadow: 0 0 0 6px var(--bg); }
+    .rm-label { font-size: 10px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--gold); }
+    .rm-title { font-family: 'Fraunces', serif; font-size: 15px; font-weight: 600; color: var(--ink); text-align: center; line-height: 1.3; }
+    .rm-items { list-style: none; text-align: center; }
+    .rm-items li { font-size: 11px; color: var(--ink-muted); line-height: 1.7; }
+
+    /* ===========================================
+       CRUMPLED PAPER TEXTURE
+       =========================================== */
+    .tex { position: relative; }
+    .tex::before {
+      content: ''; position: absolute; inset: 0; z-index: 0;
+      background-color: #c8b898;
+      background-image:
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='f'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.04' numOctaves='5' result='big'/%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' result='grain'/%3E%3CfeMerge%3E%3CfeMergeNode in='big'/%3E%3CfeMergeNode in='grain'/%3E%3C/feMerge%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23f)' opacity='.12'/%3E%3C/svg%3E"),
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='f2'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.015' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23f2)' opacity='.06'/%3E%3C/svg%3E");
+      pointer-events: none;
+    }
+    .tex::after {
+      content: ''; position: absolute; inset: 0; z-index: 0;
+      background: var(--section-bg, var(--bg-light));
+      opacity: 0.85;
+      pointer-events: none;
+    }
+    .tex > * { position: relative; z-index: 1; }
+
+    .tex-dark::before { background-color: #3a2e20; }
+    .tex-dark::after { background: var(--espresso); opacity: 0.92; }
+
+    /* ===========================================
+       SVG ICONS
+       =========================================== */
+    .svg-icon { display: inline-block; width: 20px; height: 20px; vertical-align: middle; flex-shrink: 0; }
+    .svg-icon.sm { width: 16px; height: 16px; }
+    .svg-icon.lg { width: 24px; height: 24px; }
+    .svg-icon.xl { width: 32px; height: 32px; }
+
+    /* ===========================================
+       FULL-SCREEN SYSTEM
+       =========================================== */
+    section { height: 100vh; scroll-snap-align: start; overflow: hidden; display: flex; flex-direction: column; justify-content: center; }
+    #hero { align-items: center; min-height: 100vh; }
+
+    #intro, #dashboard, #alertes, #notifications, #diagnostic, #carte,
+    #profil, #admin, #tech,
+    #apis-meteo, #apis-backend, #concurrents, #roadmap, #cta, #merci,
+    #veille-intro, #veille-constats, #veille-sources { padding: 0 60px; }
+    #intro { --section-bg: var(--bg-light); }
+    #profil { --section-bg: var(--bg-tan); }
+    #notifications { --section-bg: var(--bg-warm); }
+    #dashboard { --section-bg: var(--bg-brown); }
+    #alertes { --section-bg: var(--bg-warm); }
+    #carte { --section-bg: var(--bg-deep); }
+    #diagnostic { --section-bg: var(--bg-tan); }
+    #tech { --section-bg: var(--bg-brown); }
+    #apis-meteo { --section-bg: var(--bg-warm); }
+    #apis-backend { --section-bg: var(--bg-brown); }
+    #roadmap { --section-bg: var(--bg-tan); }
+    #concurrents { --section-bg: var(--bg-deep); }
+    #admin { --section-bg: var(--bg-brown); }
+    #veille-intro { --section-bg: var(--bg-light); }
+    #veille-constats { --section-bg: var(--bg-warm); }
+    #veille-sources { --section-bg: var(--bg-tan); }
+    /* texte clair sur slides foncées */
+    #carte .section-title, #dashboard .section-title, #tech .section-title,
+    #apis-backend .section-title, #admin .section-title,
+    #concurrents .section-title { color: var(--surface); }
+    #carte .section-body, #dashboard .section-body, #tech .section-body,
+    #apis-backend .section-body, #admin .section-body,
+    #concurrents .section-body { color: rgba(255,255,255,.5); }
+    #carte .section-label, #dashboard .section-label, #tech .section-label,
+    #apis-backend .section-label, #admin .section-label,
+    #concurrents .section-label { color: var(--gold-light); }
+    #carte .parcelle-step-info h4,
+    #carte .parcelle-step-info p { color: var(--surface); }
+    #dashboard .feature-item-text h4 { color: rgba(255,255,255,.9); }
+    #dashboard .feature-item-text p { color: rgba(255,255,255,.55); }
+    #admin .admin-feature div { color: rgba(255,255,255,.55); }
+    #admin .admin-feature strong { color: rgba(255,255,255,.85); }
+
+    .dark-grid { gap: 60px; }
+
+    /* ===========================================
+       ANIMATIONS
+       =========================================== */
+    .r  { opacity: 0; transform: translateY(40px); transition: opacity .85s cubic-bezier(.16,1,.3,1), transform .85s cubic-bezier(.16,1,.3,1); }
+    .rl { opacity: 0; transform: translateX(-48px); transition: opacity .85s cubic-bezier(.16,1,.3,1), transform .85s cubic-bezier(.16,1,.3,1); }
+    .rr { opacity: 0; transform: translateX(48px); transition: opacity .85s cubic-bezier(.16,1,.3,1), transform .85s cubic-bezier(.16,1,.3,1); }
+    .rs { opacity: 0; transform: scale(.92); transition: opacity .85s cubic-bezier(.16,1,.3,1), transform .85s cubic-bezier(.16,1,.3,1); }
+    .rf { opacity: 0; transition: opacity .85s cubic-bezier(.16,1,.3,1); }
+    .rb { opacity: 0; filter: blur(6px); transition: opacity .85s cubic-bezier(.16,1,.3,1), filter .85s cubic-bezier(.16,1,.3,1); }
+    .vis { opacity: 1 !important; transform: none !important; filter: none !important; }
+    .d1 { transition-delay: .08s; } .d2 { transition-delay: .18s; } .d3 { transition-delay: .28s; } .d4 { transition-delay: .42s; } .d5 { transition-delay: .56s; }
+
+    /* ===========================================
+       RESPONSIVE
+       =========================================== */
+    @media (max-width: 1100px) { .findings-grid { grid-template-columns: repeat(2, 1fr); } .sources-grid { grid-template-columns: repeat(2, 1fr); } .problem-grid { grid-template-columns: repeat(2, 1fr); } }
+    @media (max-width: 1024px) {
+      .intro-grid, .dark-grid { grid-template-columns: 1fr; gap: 50px; }
+      .parcelle-steps, .carte-features, .diag-screens, .score-grid, .hero-stats { grid-template-columns: repeat(2, 1fr); }
+      .hero-stats .stat-item { border-bottom: 1px solid var(--gold-mid); }
+      .tech-grid { grid-template-columns: repeat(2, 1fr); }
+      .parcelle-steps::before { display: none; }
+      .phones-row { flex-direction: column; gap: 16px; }
+      .api-brief, .api-decision-grid { grid-template-columns: 1fr; }
+      .roadmap-timeline { flex-wrap: wrap; gap: 24px; justify-content: center; }
+      .roadmap-timeline::before { display: none; }
+      .roadmap-milestone { max-width: 160px; }
+    }
+    @media (max-width: 768px) {
+      #mainNav { padding: 14px 20px; }
+      #mainNav.solid { padding: 10px 20px; }
+      .nav-center { display: none; }
+      .findings-grid, .sources-grid, .problem-grid, .tech-grid { grid-template-columns: 1fr; }
+      .phones-row .screenshot-phone, .screenshot-phone { width: 180px; height: 380px; border-radius: 34px; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .2s !important; }
+      html { scroll-behavior: auto; }
+    }
+
+    /* ===========================================
+       INLINE EDITING
+       =========================================== */
+    .edit-hotzone { position: fixed; top: 0; left: 0; width: 80px; height: 80px; z-index: 10000; cursor: pointer; }
+    .edit-toggle { position: fixed; top: 16px; left: 16px; z-index: 10001; width: 40px; height: 40px; border-radius: 50%; background: var(--surface); border: 1px solid var(--gold-mid); color: var(--gold); font-size: 14px; cursor: pointer; opacity: 0; pointer-events: none; transition: opacity .3s ease; display: flex; align-items: center; justify-content: center; }
+    .edit-toggle.show, .edit-toggle.active { opacity: 1; pointer-events: auto; }
+    .edit-toggle.active { background: var(--gold); color: var(--ink); border-color: var(--gold); }
+    .edit-banner { position: fixed; top: 0; left: 0; right: 0; z-index: 9999; background: var(--gold); color: var(--ink); padding: 10px 20px; display: flex; align-items: center; justify-content: space-between; font-family: 'Outfit',sans-serif; font-size: 13px; font-weight: 600; transform: translateY(-100%); transition: transform .35s cubic-bezier(.16,1,.3,1); }
+    .edit-banner.active { transform: translateY(0); }
+    .edit-banner button { background: none; border: 1px solid rgba(61,46,31,.2); border-radius: 6px; color: var(--ink); font-size: 14px; width: 32px; height: 32px; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; margin-left: 6px; transition: all .2s; }
+    .edit-banner button:hover { background: rgba(61,46,31,.1); }
+    body.edit-active [contenteditable] { outline: 2px dashed var(--gold); outline-offset: 2px; border-radius: 2px; cursor: text; }
+    body.edit-active [contenteditable]:hover { outline-color: var(--ink); }
+    body.edit-active [contenteditable]:focus { outline-color: var(--ink); outline-style: solid; background: rgba(232,184,75,.05); }
+  </style>
+</head>
+<body>
+
+  <!-- EDIT MODE -->
+  <div class="edit-hotzone"></div>
+  <button class="edit-toggle" id="editToggle" title="Mode édition (E)"><i class="fa-solid fa-pen-to-square"></i></button>
+  <div class="edit-banner" id="editBanner">
+    <span>✏️ Mode édition</span>
+    <div>
+      <button id="editSave" title="Sauvegarder (Ctrl+S)"><i class="fa-solid fa-check"></i></button>
+      <button id="editExport" title="Exporter le fichier"><i class="fa-solid fa-download"></i></button>
+      <button id="editCancel" title="Quitter (Echap)"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+  </div>
+
+  <!-- NAVIGATION -->
+  <nav id="mainNav">
+    <a class="nav-logo" href="#hero">Agria</a>
+    <div class="nav-center">
+      <a href="#veille-intro">Veille</a>
+      <a href="#intro">Aperçu</a>
+      <a href="#dashboard">Dashboard</a>
+      <a href="#alertes">Alertes</a>
+      <a href="#diagnostic">Diagnostic</a>
+      <a href="#carte">Carte</a>
+      <a href="#profil">Profil</a>
+      <a href="#admin">Admin</a>
+      <a href="#tech">Stack</a>
+      <a href="#concurrents">Vs</a>
+      <a href="#roadmap">Roadmap</a>
+    </div>
+  </nav>
+
+  <!-- HERO -->
+  <section class="tex-dark" id="hero">
+    <div class="hero-photo"></div><div class="hero-overlay"></div>
+    <div class="hero-ring"></div><div class="hero-ring"></div><div class="hero-ring"></div>
+    <div class="hero-content">
+      <div class="hero-eyebrow"><span class="hero-eyebrow-dot"></span>Application mobile · Agriculture &amp; Intelligence Artificielle</div>
+      <h1 class="hero-title">Agria</h1>
+      <p class="hero-tagline">L'intelligence artificielle au service de l'agriculteur moderne. Gérez, diagnostiquez et optimisez vos cultures en temps réel.</p>
+      <div class="hero-actions"><a href="#intro" class="btn-hero">Découvrir l'application</a><a href="#tech" class="btn-hero-ghost">Stack technique →</a></div>
+      <div class="hero-stats r d1">
+        <div class="stat-item"><div class="stat-value"><span data-count="5">0</span></div><div class="stat-label">Onglets principaux</div></div>
+        <div class="stat-item"><div class="stat-value"><span data-count="3">0</span></div><div class="stat-label">Étapes diagnostic IA</div></div>
+        <div class="stat-item"><div class="stat-value"><span data-count="100">0</span><sup>%</sup></div><div class="stat-label">React Native</div></div>
+        <div class="stat-item"><div class="stat-value"><span data-count="24">0</span><sup>h</sup></div><div class="stat-label">Données en temps réel</div></div>
+      </div>
+    </div>
+    <div class="hero-scroll-hint"><span>Défiler</span><div class="scroll-line"></div></div>
+  </section>
+
+  <!-- ═══════════════ VEILLE TECHNOLOGIQUE ═══════════════ -->
+  <section class="tex" id="veille-intro">
+    <div class="veille-container">
+      <div class="veille-header rf"><p class="veille-label">Veille technologique</p><h2 class="veille-title">Comprendre les enjeux agricoles avant de concevoir <em>Agria</em></h2><p class="veille-subtitle">Avant de définir notre solution, nous avons étudié les usages de l'intelligence artificielle dans l'agriculture, les problématiques rencontrées sur le terrain et les solutions existantes.</p></div>
+      <div class="veille-method">
+        <div class="veille-method-card rf d1"><i class="fa-solid fa-magnifying-glass-chart"></i><h3>Notre démarche</h3><p>Nous avons croisé des sources institutionnelles, scientifiques et applicatives : ministère de l'Agriculture, INRAE, Météo-France, FAO, outils agricoles existants et applications de diagnostic.</p></div>
+        <div class="veille-method-card dark rf d2"><i class="fa-solid fa-seedling"></i><h3>Objectif de la veille</h3><p>Identifier un besoin réel du secteur agricole, puis imaginer une application mobile simple intégrant de l'IA, de la météo, une carte interactive et des alertes utiles à la prise de décision.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="tex" id="veille-constats">
+    <div class="veille-container">
+      <div class="veille-findings">
+        <div class="veille-section-head rs"><h3>Constats issus de la veille</h3><p>Plusieurs enjeux ressortent et justifient la création d'un outil d'aide à la décision.</p></div>
+        <div class="findings-grid">
+          <div class="finding-card rs d1"><div class="finding-icon"><svg class="svg-icon"><use href="#svg-thermo"/></svg></div><h4>Climat instable</h4><p>Les cultures exposées aux épisodes de chaleur, gel, sécheresse ou fortes pluies.</p></div>
+          <div class="finding-card rs d2"><div class="finding-icon"><svg class="svg-icon"><use href="#svg-goutte"/></svg></div><h4>Stress hydrique</h4><p>Le manque d'eau impacte le rendement et oblige à anticiper l'irrigation.</p></div>
+          <div class="finding-card rs d3"><div class="finding-icon"><svg class="svg-icon"><use href="#svg-feuille"/></svg></div><h4>Maladies des cultures</h4><p>Maladies et ravageurs à repérer rapidement pour éviter des pertes.</p></div>
+          <div class="finding-card rs d4"><div class="finding-icon"><i class="fa-solid fa-flask-vial"></i></div><h4>Réduction des intrants</h4><p>Pratiques évoluant vers une utilisation raisonnée des traitements.</p></div>
+          <div class="finding-card rs d5"><div class="finding-icon"><i class="fa-solid fa-database"></i></div><h4>Données dispersées</h4><p>Météo, diagnostics et parcelles souvent séparés, compliquant la décision.</p></div>
+        </div>
+      </div>
+      <div class="problem-block rs"><p class="problem-label">Problématique retenue</p><h3 class="problem-title">Comment une application mobile utilisant l'intelligence artificielle, la météo et la géolocalisation peut-elle aider les agriculteurs à détecter plus tôt les risques de maladies et de stress hydrique sur leurs parcelles ?</h3><div class="problem-grid"><div class="problem-pill">Diagnostic IA</div><div class="problem-pill">Données météo</div><div class="problem-pill">Carte des parcelles</div><div class="problem-pill">Alertes personnalisées</div></div></div>
+      <div class="veille-transition rf"><p>Cette problématique nous conduit à proposer <em>Agria</em>, une application mobile d'aide à la décision agricole.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="tex" id="veille-sources">
+    <div class="veille-container">
+      <div class="veille-sources-inner rb d1"><h3>Sources étudiées</h3><p>La veille s'appuie sur des sources institutionnelles, scientifiques et applicatives.</p>
+        <div class="sources-grid">
+          <div class="source-card"><span>Institutionnel</span><h4>Ministère de l'Agriculture</h4><p>Usages de l'IA pour la performance des exploitations.</p><a href="https://agriculture.gouv.fr" target="_blank">Voir <i class="fa-solid fa-arrow-up-right-from-square"></i></a></div>
+          <div class="source-card"><span>Scientifique</span><h4>INRAE</h4><p>Impacts du changement climatique, rendements, modélisation.</p><a href="https://www.inrae.fr" target="_blank">Voir <i class="fa-solid fa-arrow-up-right-from-square"></i></a></div>
+          <div class="source-card"><span>Météo</span><h4>Météo-France</h4><p>Données climatiques locales et outils d'analyse.</p><a href="https://meteofrance.fr" target="_blank">Voir <i class="fa-solid fa-arrow-up-right-from-square"></i></a></div>
+          <div class="source-card"><span>Eau</span><h4>Eaufrance</h4><p>Impacts de la sécheresse sur les récoltes et ressources en eau.</p><a href="https://www.eaufrance.fr" target="_blank">Voir <i class="fa-solid fa-arrow-up-right-from-square"></i></a></div>
+          <div class="source-card"><span>Application</span><h4>Plantix</h4><p>App mobile de diagnostic des maladies des plantes.</p><a href="https://plantix.net" target="_blank">Voir <i class="fa-solid fa-arrow-up-right-from-square"></i></a></div>
+          <div class="source-card"><span>Diagnostic</span><h4>e-Phytia</h4><p>Portail français d'identification des maladies et ravageurs.</p><a href="https://ephytia.inrae.fr" target="_blank">Voir <i class="fa-solid fa-arrow-up-right-from-square"></i></a></div>
+          <div class="source-card"><span>Parcelles</span><h4>MesParcelles</h4><p>Outil de gestion parcellaire, suivi cultural et traçabilité.</p><a href="https://mesparcelles.fr" target="_blank">Voir <i class="fa-solid fa-arrow-up-right-from-square"></i></a></div>
+          <div class="source-card"><span>Données</span><h4>API-Agro</h4><p>Catalogue de données agricoles pour le secteur.</p><a href="https://www.api-agro.fr" target="_blank">Voir <i class="fa-solid fa-arrow-up-right-from-square"></i></a></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════ INTRO — APERÇU ═══════════════ -->
+  <section class="tex" id="intro">
+    <div class="container"><div class="intro-grid">
+      <div class="rl">
+        <p class="section-label">À propos</p>
+        <h2 class="section-title">L'IA au service de vos <em>cultures</em></h2>
+        <p class="section-body">Agria est une application mobile pensée pour les agriculteurs d'aujourd'hui. Elle combine intelligence artificielle, données météo en temps réel et diagnostic agronomique pour vous aider à prendre les meilleures décisions.</p>
+        <div class="pills-row">
+          <span class="pill"><svg class="svg-icon sm"><use href="#svg-thermo"/></svg> Météo en direct</span>
+          <span class="pill"><svg class="svg-icon sm"><use href="#svg-carte"/></svg> Carte des parcelles</span>
+          <span class="pill"><svg class="svg-icon sm"><use href="#svg-cerveau"/></svg> Diagnostic IA</span>
+          <span class="pill"><svg class="svg-icon sm"><use href="#svg-cloche"/></svg> Alertes intelligentes</span>
+          <span class="pill"><i class="fa-solid fa-user-tie"></i> Profil exploitation</span>
+          <span class="pill"><i class="fa-solid fa-database"></i> Firebase + AsyncStorage</span>
+        </div>
+      </div>
+      <div class="rr" style="display:flex;justify-content:center;">
+        <div class="screenshot-wrap"><div class="screenshot-glow"></div><div class="screenshot-phone"><img src="assets/dashboard-home.png" alt="Dashboard Agria"></div></div>
+      </div>
+    </div></div>
+  </section>
+
+  <!-- ═══════════════ DASHBOARD ═══════════════ -->
+  <section class="tex" id="dashboard">
+    <div class="container"><div class="dark-grid">
+      <div class="rl">
+        <p class="section-label">Tableau de bord</p>
+        <h2 class="section-title">Un aperçu complet de votre <em>exploitation</em></h2>
+        <p class="section-body">Le tableau de bord centralise toutes les informations essentielles. En un coup d'œil, consultez la météo, les alertes prioritaires et l'état de vos parcelles.</p>
+        <ul class="feature-list">
+          <li class="feature-item r d1"><div class="feature-item-icon"><i class="fa-solid fa-cloud-sun"></i></div><div class="feature-item-text"><h4>Météo dynamique</h4><p>Température en direct via OpenWeatherMap. Prévisions 5 jours intégrées.</p></div></li>
+          <li class="feature-item r d2"><div class="feature-item-icon"><i class="fa-solid fa-triangle-exclamation"></i></div><div class="feature-item-text"><h4>Alertes intelligentes</h4><p>Scoring additif multi-facteurs — Danger, Vigilance ou Info selon les conditions.</p></div></li>
+          <li class="feature-item r d3"><div class="feature-item-icon"><i class="fa-solid fa-seedling"></i></div><div class="feature-item-text"><h4>Aperçu des parcelles</h4><p>Visualisez vos champs, leur culture et leur état de santé depuis le dashboard.</p></div></li>
+        </ul>
+      </div>
+      <div class="rr" style="display:flex;justify-content:center;">
+        <div class="screenshot-wrap"><div class="screenshot-glow"></div><div class="screenshot-phone"><img src="assets/dashboard-parcelle.png" alt="Détail parcelle"></div></div>
+      </div>
+    </div></div>
+  </section>
+
+  <!-- ═══════════════ ALERTES ★ NOUVEAU ═══════════════ -->
+  <section class="tex" id="alertes">
+    <div class="container"><div class="dark-grid">
+      <div class="rl">
+        <p class="section-label">Système d'alertes</p>
+        <h2 class="section-title">Des alertes <em>intelligentes</em></h2>
+        <p class="section-body">Notre moteur évalue 7 facteurs météo en parallèle et calcule un score de risque. Rafraîchissement manuel ou automatique via webhook Make.com.</p>
+        <div class="score-grid">
+          <div class="score-card sc-danger r d1"><div class="sc-val">≥ 5</div><div class="sc-desc">Risque élevé<br>Temp ≤ 2°C · Humidité ≥ 85%<br>Pluie · Neige · Gel</div></div>
+          <div class="score-card sc-warning r d2"><div class="sc-val">≥ 3</div><div class="sc-desc">Vigilance<br>Temp ≤ 7°C · Humidité ≥ 70%<br>Conditions à surveiller</div></div>
+          <div class="score-card sc-info r d3"><div class="sc-val">&lt; 3</div><div class="sc-desc">Info<br>Conditions normales<br>Pas de risque particulier</div></div>
+        </div>
+      </div>
+      <div class="rr" style="display:flex;justify-content:center;">
+        <div class="screenshot-wrap"><div class="screenshot-glow"></div><div class="screenshot-phone"><img src="assets/alertes-dashboard.webp" alt="Alertes Agria"></div></div>
+      </div>
+    </div></div>
+  </section>
+
+  <!-- ═══════════════ NOTIFICATIONS ★ NOUVEAU ═══════════════ -->
+  <section class="tex" id="notifications">
+    <div class="container"><div class="intro-grid">
+      <div class="rl" style="display:flex;justify-content:center;">
+        <div class="screenshot-wrap"><div class="screenshot-glow"></div><div class="screenshot-phone"><img src="assets/notifications.webp" alt="Notifications Agria"></div></div>
+      </div>
+      <div class="rr">
+        <p class="section-label">Notifications</p>
+        <h2 class="section-title">Rapports IA &amp; alertes <em>dans votre poche</em></h2>
+        <p class="section-body">Toutes vos analyses et alertes centralisées. Recevez les rapports détaillés de l'IA directement sur votre téléphone via les notifications push.</p>
+        <ul class="feature-list" style="margin-top:8px;">
+          <li class="feature-item r d1"><div class="feature-item-icon" style="background:rgba(201,162,39,.1);border-color:rgba(201,162,39,.2);"><i class="fa-solid fa-bell" style="color:var(--gold);"></i></div><div class="feature-item-text"><h4 style="color:var(--ink);">Badge non-lus</h4><p style="color:var(--ink-muted);">Compteur visible dans le header de l'app pour ne rien manquer.</p></div></li>
+          <li class="feature-item r d2"><div class="feature-item-icon" style="background:rgba(201,162,39,.1);border-color:rgba(201,162,39,.2);"><i class="fa-solid fa-arrow-right" style="color:var(--gold);"></i></div><div class="feature-item-text"><h4 style="color:var(--ink);">Swipe → supprimer</h4><p style="color:var(--ink-muted);">Glissez une notification vers la gauche pour la supprimer.</p></div></li>
+          <li class="feature-item r d3"><div class="feature-item-icon" style="background:rgba(201,162,39,.1);border-color:rgba(201,162,39,.2);"><i class="fa-solid fa-file-lines" style="color:var(--gold);"></i></div><div class="feature-item-text"><h4 style="color:var(--ink);">Rapport IA complet</h4><p style="color:var(--ink-muted);">Développez pour lire le diagnostic détaillé envoyé par l'IA.</p></div></li>
+        </ul>
+      </div>
+    </div></div>
+  </section>
+
+  <!-- ═══════════════ DIAGNOSTIC ═══════════════ -->
+  <section class="tex" id="diagnostic">
+    <div class="container">
+      <div class="diag-header"><p class="section-label rr">Fonctionnalité clé</p><h2 class="section-title r">Diagnostic IA en <em>3 étapes</em></h2><p class="section-body r" style="max-width:580px;margin:0 auto;">Notre moteur IA croise les symptômes observés avec les données météo locales pour diagnostiquer et recommander des traitements en temps réel.</p></div>
+      <div class="diag-screens">
+        <div class="diag-screen-item rs d1"><div class="diag-screen-label">Étape 1</div><div class="mini-phone"><img src="assets/diagnostic-etape-1.png" alt="Étape 1"></div><div class="diag-screen-desc">Choisir la culture — Blé, Maïs, Tournesol, Colza ou Vigne</div></div>
+        <div class="diag-screen-item rs d2"><div class="diag-screen-label">Étape 2</div><div class="mini-phone"><img src="assets/diagnostic-etape-2.png" alt="Étape 2"></div><div class="diag-screen-desc">Observer les symptômes — Jaunissement, flétrissement, insectes…</div></div>
+        <div class="diag-screen-item rs d3"><div class="diag-screen-label">Étape 3 + Résultat</div><div class="mini-phone"><img src="assets/diagnostic-etape-3.png" alt="Étape 3"></div><div class="diag-screen-desc">Localiser la parcelle pour enrichir le diagnostic IA</div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════ CARTE ═══════════════ -->
+  <section class="tex" id="carte">
+    <div class="container">
+      <div class="carte-header"><p class="section-label rr">Carte interactive</p><h2 class="section-title r">Créez et gérez vos parcelles <em>sur la carte</em></h2><p class="section-body r">En quelques gestes, délimitez vos champs directement sur la vue satellite. Chaque parcelle est géolocalisée.</p></div>
+      <div class="parcelle-steps">
+        <div class="parcelle-step rb d1"><div class="parcelle-step-num">1</div><div class="parcelle-step-screen"><img src="assets/carte-vue.png" alt="Carte"></div><div class="parcelle-step-info"><h4>Ouvrir la carte</h4><p>Vue satellite de France. Zoomez ou recherchez par nom.</p></div></div>
+        <div class="parcelle-step rb d2"><div class="parcelle-step-num">2</div><div class="parcelle-step-screen"><img src="assets/carte-creation.png" alt="Création"></div><div class="parcelle-step-info"><h4>Tracer la parcelle</h4><p>Cliquez point par point. Surface calculée automatiquement.</p></div></div>
+        <div class="parcelle-step rb d3"><div class="parcelle-step-num">3</div><div class="parcelle-step-screen"><img src="assets/carte-edition.png" alt="Édition"></div><div class="parcelle-step-info"><h4>Renseigner les infos</h4><p>Nom, culture, sol, stade, semis — modifiable à tout moment.</p></div></div>
+      </div>
+      <div class="carte-features" style="margin-top:24px;">
+        <div class="carte-feat-card rs d1"><i class="fa-solid fa-map-location-dot"></i><h4>Parcelles géolocalisées</h4><p>Délimitez vos champs sur la vue satellite et retrouvez-les instantanément.</p></div>
+        <div class="carte-feat-card rs d2"><i class="fa-solid fa-ruler-combined"></i><h4>Surface automatique</h4><p>La surface en hectares est calculée en temps réel pendant le tracé.</p></div>
+        <div class="carte-feat-card rs d3"><i class="fa-solid fa-pen-to-square"></i><h4>Édition complète</h4><p>Modifiez culture, sol, stade et date de semis à tout moment.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════ PROFIL ═══════════════ -->
+  <section class="tex" id="profil">
+    <div class="container">
+      <div class="profile-header r"><p class="section-label">Profil &amp; Exploitation</p><h2 class="section-title">Une fiche exploitation <em>complète</em></h2><p class="section-body" style="max-width:620px;margin:0 auto 32px;">Avatar personnalisé, statistiques de parcelles, cultures actives et sections repliables. Édition du profil, changement d'email et de mot de passe intégrés.</p></div>
+      <div class="phones-row">
+        <div class="phone-prof-card r d1">
+          <div class="screenshot-phone" style="width:220px;height:460px;border-radius:40px;"><img src="assets/profil-replie.webp" alt="Profil"></div>
+          <div style="text-align:center;margin-top:12px;font-size:12px;font-weight:600;color:var(--ink);">Vue d'ensemble</div>
+          <div style="text-align:center;margin-top:3px;font-size:11px;color:var(--ink-muted);">Stats · Cultures · Sections</div>
+        </div>
+        <div class="phone-prof-card r d2">
+          <div class="screenshot-phone" style="width:220px;height:460px;border-radius:40px;"><img src="assets/profil-deplie.webp" alt="Profil déplié"></div>
+          <div style="text-align:center;margin-top:12px;font-size:12px;font-weight:600;color:var(--ink);">Édition</div>
+          <div style="text-align:center;margin-top:3px;font-size:11px;color:var(--ink-muted);">SIRET · Email · Mot de passe</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════ ADMIN ═══════════════ -->
+  <section class="tex" id="admin">
+    <div class="container"><div class="dark-grid">
+      <div class="rl">
+        <p class="section-label">Back-office</p>
+        <h2 class="section-title">Gestion &amp; <em>Maintenance</em></h2>
+        <p class="section-body">Un panneau d'administration complet pour superviser l'application : statistiques, gestion des parcelles, utilisateurs et logs d'actions.</p>
+        <div class="admin-feature r d1"><i class="fa-solid fa-chart-pie"></i><div><strong>Dashboard stats</strong> — Utilisateurs, parcelles, hectares et top culture.</div></div>
+        <div class="admin-feature r d2"><i class="fa-solid fa-list-check"></i><div><strong>CRUD parcelles</strong> — Recherche, tri (nom/surface/email), édition et suppression.</div></div>
+        <div class="admin-feature r d3"><i class="fa-solid fa-users"></i><div><strong>Gestion utilisateurs</strong> — Fiche détaillée, déconnexion forcée, suppression de compte.</div></div>
+        <div class="admin-feature r d4"><i class="fa-solid fa-clock-rotate-left"></i><div><strong>Purge &amp; nettoyage</strong> — Suppression inactifs +6 mois, données orphelines en un clic.</div></div>
+        <div class="admin-feature r d5"><i class="fa-solid fa-scroll"></i><div><strong>Logs d'actions</strong> — Historique complet : créations, suppressions, modifications.</div></div>
+      </div>
+      <div class="rr"><div class="phones-row">
+        <div class="screenshot-phone"><img src="assets/admin-dashboard.webp" alt="Admin dashboard"></div>
+        <div class="screenshot-phone"><img src="assets/admin-parcelles.webp" alt="Admin parcelles"></div>
+      </div></div>
+    </div></div>
+  </section>
+
+  <!-- ═══════════════ TECH ★ CORRIGÉ ═══════════════ -->
+  <section class="tex" id="tech">
+    <div class="container">
+      <div class="tech-header"><p class="section-label rr" style="text-align:center;">Stack technique</p><h2 class="section-title r" style="text-align:center;">Construit avec des technologies <em>robustes</em></h2></div>
+      <div class="tech-grid">
+        <div class="tech-card rs d1"><div class="tech-emoji">📱</div><h4>React Native · Expo 54</h4><p>Application mobile cross-platform iOS &amp; Android. Expo Router, TypeScript strict, animations Reanimated.</p></div>
+        <div class="tech-card rs d2"><div class="tech-emoji">🔥</div><h4>Firebase RTDB + AsyncStorage</h4><p>Persistance hybride cloud/local. Authentification, base temps réel et stockage hors-ligne.</p></div>
+        <div class="tech-card rs d3"><div class="tech-emoji">🧠</div><h4>Moteur IA embarqué</h4><p>Base de 15 maladies, scoring de symptômes pondéré, recommandations agronomiques ciblées.</p></div>
+        <div class="tech-card rs d1"><div class="tech-emoji">🌤️</div><h4>OpenWeatherMap · Open-Meteo</h4><p>Double source météo : données temps réel + prévisions 7 jours avec historique.</p></div>
+        <div class="tech-card rs d2"><div class="tech-emoji">⚡</div><h4>Make.com (Integromat)</h4><p>Automatisation no-code : webhooks pour alertes météo et rapports de diagnostic détaillés.</p></div>
+        <div class="tech-card rs d3"><div class="tech-emoji">🗺️</div><h4>Leaflet · ArcGIS · Nominatim</h4><p>Carte interactive satellite, géocodage OpenStreetMap et dessin de polygones.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════ APIs — 3 slides distinctes ═══════════════ -->
+  <section class="tex" id="apis-meteo">
+    <div class="container">
+      <div class="api-header"><p class="section-label rr">Architecture technique</p><h2 class="section-title r">Choix des <em>APIs &amp; services</em></h2><p class="section-body r">Chaque intégration a été sélectionnée pour sa fiabilité et sa richesse de données.</p></div>
+      <div class="api-brief r">
+        <div class="api-brief-card"><span><i class="fa-solid fa-bullseye"></i> Critère 1</span><h4>Usage terrain</h4><p>L'API doit servir un besoin métier direct : météo, géolocalisation, synchronisation ou diagnostic.</p></div>
+        <div class="api-brief-card"><span><i class="fa-solid fa-scale-balanced"></i> Critère 2</span><h4>Rapport effort / valeur</h4><p>On privilégie les solutions rapides à intégrer, fiables et riches pour un projet agricole concret.</p></div>
+        <div class="api-brief-card"><span><i class="fa-solid fa-magnifying-glass-chart"></i> Critère 3</span><h4>Veille techno</h4><p>Les alternatives moins adaptées sont gardées comme points de comparaison.</p></div>
+      </div>
+      <div class="api-table-card r">
+        <div class="api-table-title"><i class="fa-solid fa-cloud-sun"></i><h3>API Météo</h3></div><div class="api-table-wrapper"><table class="api-table"><thead><tr><th>Service</th><th>Données disponibles</th><th>Limite gratuite</th><th>Risque</th><th>Score</th></tr></thead><tbody>
+          <tr><td><span class="api-name">OpenWeatherMap</span><span class="api-badge">✓ Retenu</span></td><td>Température, humidité, vent, prévisions 5 jours</td><td>1 000 req/jour</td><td><span class="api-risk-low">Faible</span></td><td><span class="api-score">9/10</span></td></tr>
+          <tr><td><span class="api-name">Météo-France API</span></td><td>Données officielles France, prévisions locales</td><td>500 req/jour</td><td><span class="api-risk-medium">Moyen</span></td><td><span class="api-score">7/10</span></td></tr>
+          <tr><td><span class="api-name">Weatherbit</span></td><td>Données agro-météo, indices UV</td><td>500 req/jour</td><td><span class="api-risk-low">Faible</span></td><td><span class="api-score">7/10</span></td></tr>
+        </tbody></table></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="tex" id="apis-backend">
+    <div class="container">
+      <div class="api-table-card r">
+        <div class="api-table-title"><i class="fa-solid fa-database"></i><h3>Backend &amp; Base de données</h3></div><div class="api-table-wrapper"><table class="api-table"><thead><tr><th>Service</th><th>Fonctionnalités clés</th><th>Auth</th><th>Temps réel</th><th>Score</th></tr></thead><tbody>
+          <tr><td><span class="api-name">Firebase</span><span class="api-badge">✓ Retenu</span></td><td>RTDB, Auth, Storage, Hosting</td><td><span class="api-risk-low">Natif</span></td><td><span class="api-risk-low">Natif</span></td><td><span class="api-score">9/10</span></td></tr>
+          <tr><td><span class="api-name">Supabase</span><span class="api-badge">Évalué</span></td><td>PostgreSQL, Auth, Storage, Edge Functions</td><td><span class="api-risk-low">Natif</span></td><td><span class="api-risk-low">WebSockets</span></td><td><span class="api-score">8/10</span></td></tr>
+          <tr><td><span class="api-name">Backend custom (Node.js)</span></td><td>Contrôle total, logique métier sur mesure</td><td><span class="api-risk-medium">À développer</span></td><td><span class="api-risk-high">À développer</span></td><td><span class="api-score">5/10</span></td></tr>
+        </tbody></table></div>
+      </div>
+      <div class="api-decision-grid r d1" style="margin-top:18px;">
+        <div class="api-decision-card"><i class="fa-solid fa-circle-check"></i><h4>OpenWeatherMap</h4><p>Documentation claire, SDK disponible, limite gratuite suffisante et prévisions 5 jours intégrées.</p></div>
+        <div class="api-decision-card"><i class="fa-brands fa-google"></i><h4>Firebase</h4><p>Écosystème tout-en-un adapté à React Native. Auth, stockage et base temps réel sans serveur.</p></div>
+        <div class="api-decision-card"><i class="fa-solid fa-brain"></i><h4>Moteur IA interne</h4><p>Diagnostic agronomique en règles métier croisées avec la météo. Zéro dépendance externe.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════ CONCURRENTS ═══════════════ -->
+  <section class="tex" id="concurrents">
+    <div class="container">
+      <div class="concurrents-header rb"><p class="section-label">Positionnement</p><h2 class="section-title">Agria face aux <em>solutions existantes</em></h2><p class="section-body" style="max-width:700px;margin:0 auto 20px;">Aucune solution gratuite et mobile ne combine à la fois cartographie, diagnostic IA, météo et gestion multi-utilisateurs. C'est le positionnement unique d'Agria.</p></div>
+      <div class="comp-table-wrapper rb d1">
+        <table class="comp-table">
+          <thead><tr><th>Fonctionnalité</th><th class="hl">Agria</th><th>Plantix</th><th>MesParcelles</th></tr></thead>
+          <tbody>
+            <tr><td>Diagnostic IA des cultures</td><td><span class="check">&#10003;</span> 3 étapes</td><td><span class="check">&#10003;</span> Photo IA</td><td><span class="cross">&#10007;</span></td></tr>
+            <tr><td>Cartographie &amp; parcelles</td><td><span class="check">&#10003;</span> Satellite</td><td><span class="cross">&#10007;</span></td><td><span class="check">&#10003;</span></td></tr>
+            <tr><td>Météo &amp; alertes</td><td><span class="check">&#10003;</span> Temps réel</td><td><span class="cross">&#10007;</span></td><td><span class="warn">~</span> OAD</td></tr>
+            <tr><td>Multi-utilisateurs</td><td><span class="check">&#10003;</span></td><td><span class="cross">&#10007;</span></td><td><span class="check">&#10003;</span></td></tr>
+            <tr><td>Mobile (iOS + Android)</td><td><span class="check">&#10003;</span></td><td><span class="warn">~</span> Android</td><td><span class="check">&#10003;</span></td></tr>
+            <tr><td>Gratuit</td><td><span class="check">&#10003;</span></td><td><span class="check">&#10003;</span></td><td><span class="cross">&#10007;</span> Abonnement</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════ ROADMAP ═══════════════ -->
+  <section class="tex" id="roadmap">
+    <div class="container">
+      <div class="roadmap-header rs"><p class="section-label">Feuille de route</p><h2 class="section-title">Les <em>prochaines étapes</em></h2><p class="section-body" style="max-width:600px;margin:0 auto 32px;">Agria évolue pour répondre aux besoins croissants des agriculteurs et des coopératives.</p></div>
+      <div class="roadmap-timeline rs d1">
+        <div class="roadmap-milestone"><div class="rm-dot"></div><div class="rm-label">V1 · Actuelle</div><div class="rm-title">Lancement</div><ul class="rm-items"><li>Diagnostic IA</li><li>Carto &amp; météo</li><li>Alertes scoring</li></ul></div>
+        <div class="roadmap-milestone"><div class="rm-dot"></div><div class="rm-label">V2 · 2026</div><div class="rm-title">Prédictions</div><ul class="rm-items"><li>Rendement par parcelle</li><li>Plus de cultures</li><li>Export des données</li></ul></div>
+        <div class="roadmap-milestone"><div class="rm-dot future"></div><div class="rm-label">V3 · 2027</div><div class="rm-title">Communauté</div><ul class="rm-items"><li>Marketplace intrants</li><li>Forum agriculteurs</li><li>API publique</li></ul></div>
+        <div class="roadmap-milestone"><div class="rm-dot future"></div><div class="rm-label">V4 · Vision</div><div class="rm-title">Jumeau numérique</div><ul class="rm-items"><li>Imagerie satellite NDVI</li><li>Drones</li><li>Irrigation IA</li></ul></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════ CTA + MERCI ═══════════════ -->
+  <section class="tex-dark" id="cta">
+    <div class="cta-photo"></div>
+    <div class="container cta-content"><p class="section-label rr" style="color:rgba(45,36,22,.6);">Une application, une vision</p><h2 class="cta-title rs">Cultivez avec <em>intelligence</em></h2><p class="cta-sub rf d1">Agria — L'agriculture du futur, disponible aujourd'hui.</p></div>
+  </section>
+
+  <section class="tex-dark" id="merci">
+    <div class="merci-ring"></div><div class="merci-ring"></div><div class="merci-ring"></div>
+    <div class="merci-content">
+      <div class="merci-badge rs"><span class="merci-badge-dot"></span>Fin de présentation</div>
+      <h2 class="merci-title rs d1">Merci <em>!</em></h2>
+      <p class="merci-sub rf d2">Nous espérons qu'Agria vous a convaincu du potentiel de l'intelligence artificielle au service de l'agriculture de demain.</p>
+      <div class="merci-team rs d3"><div class="merci-member"><span class="merci-member-dot"></span>BTS SIO — Projet applicatif 2025</div><div class="merci-member"><span class="merci-member-dot"></span>Application mobile · Agriculture &amp; IA</div></div>
+      <p class="merci-agria rf d4">Agria · <span>L'agriculture intelligente</span></p>
+    </div>
+  </section>
+
+  <footer>
+    <span class="footer-logo">Agria</span>
+    <span class="footer-copy">L'agriculture intelligente · 2025</span>
+    <span class="footer-right">Application mobile · Agriculture &amp; IA</span>
+  </footer>
+
+  <svg xmlns="http://www.w3.org/2000/svg" style="display:none">
+    <symbol id="svg-ble" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v4M12 6C9.5 6 7 7.5 7 10s2.5 4 5 4 5 1.5 5 4-2.5 4-5 4M12 6c2.5 0 5 1.5 5 4s-2.5 4-5 4M8 6h8M8 18h8M12 18v4"/></symbol>
+    <symbol id="svg-goutte" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"/></symbol>
+    <symbol id="svg-thermo" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 14.76V3.5a2.5 2.5 0 0 0-5 0v11.26a4.5 4.5 0 1 0 5 0z"/></symbol>
+    <symbol id="svg-feuille" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M11 20A7 7 0 0 1 9.8 6.9C15.5 4.9 17 3.5 19 2c1 3-1 8-8 13.5"/><path d="M15 9c-2 2-4 5-4 9"/></symbol>
+    <symbol id="svg-cerveau" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5a3 3 0 1 0-5.997.125 4 4 0 0 0-2.526 5.77 4 4 0 0 0 .556 6.588A4 4 0 1 0 12 18Z"/><path d="M12 5a3 3 0 1 1 5.997.125 4 4 0 0 1 2.526 5.77 4 4 0 0 1-.556 6.588A4 4 0 1 1 12 18Z"/><path d="M15 13a4.5 4.5 0 0 1-3-4 4.5 4.5 0 0 1-3 4"/><path d="M17.599 6.5a3 3 0 0 0 .399-1.375"/><path d="M6.003 5.125A3 3 0 0 0 6.401 6.5"/><path d="M3.477 10.896a4 4 0 0 1 .585-.396"/><path d="M19.938 10.5a4 4 0 0 1 .585.396"/><path d="M6 18a4 4 0 0 1-1.967-.516"/><path d="M19.967 17.484A4 4 0 0 1 18 18"/></symbol>
+    <symbol id="svg-carte" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></symbol>
+    <symbol id="svg-cloche" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></symbol>
+  </svg>
+
+  <script>
+    /* ===========================================
+       INLINE EDITOR
+       =========================================== */
+    const editor = {
+      isActive: false,
+
+      toggleEditMode() {
+        this.isActive = !this.isActive;
+        document.body.classList.toggle('edit-active', this.isActive);
+        document.getElementById('editBanner').classList.toggle('active', this.isActive);
+        document.getElementById('editToggle').classList.toggle('active', this.isActive);
+
+        const editable = document.querySelectorAll('h1, h2, h3, h4, p, span, a, li, td, th, div.stat-value, div.stat-label');
+        editable.forEach(el => {
+          if (this.isActive) {
+            if (!el.hasAttribute('contenteditable') && !el.closest('script, style, nav, .edit-banner, .edit-toggle, .edit-hotzone, #slide-indicator, #slide-progress')) {
+              el.setAttribute('contenteditable', 'true');
+            }
+          } else {
+            el.removeAttribute('contenteditable');
+          }
+        });
+      },
+
+      exportFile() {
+        const editableEls = Array.from(document.querySelectorAll('[contenteditable]'));
+        editableEls.forEach(el => el.removeAttribute('contenteditable'));
+        document.body.classList.remove('edit-active');
+        const editToggle = document.getElementById('editToggle');
+        const editBanner = document.getElementById('editBanner');
+        editToggle.classList.remove('active', 'show');
+        editBanner.classList.remove('active');
+
+        const html = '<!DOCTYPE html>\n' + document.documentElement.outerHTML;
+        const blob = new Blob([html], { type: 'text/html' });
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = 'presentation-agria.html';
+        a.click();
+        URL.revokeObjectURL(a.href);
+
+        document.body.classList.add('edit-active');
+        editableEls.forEach(el => el.setAttribute('contenteditable', 'true'));
+        editToggle.classList.add('active');
+        editBanner.classList.add('active');
+      },
+
+      saveToLocalStorage() {
+        const editableEls = Array.from(document.querySelectorAll('[contenteditable]'));
+        editableEls.forEach(el => el.removeAttribute('contenteditable'));
+        document.body.classList.remove('edit-active');
+        const editToggle = document.getElementById('editToggle');
+        const editBanner = document.getElementById('editBanner');
+        editToggle.classList.remove('active', 'show');
+        editBanner.classList.remove('active');
+
+        const html = '<!DOCTYPE html>\n' + document.documentElement.outerHTML;
+        localStorage.setItem('agria-presentation', html);
+
+        document.body.classList.add('edit-active');
+        editableEls.forEach(el => el.setAttribute('contenteditable', 'true'));
+        editToggle.classList.add('active');
+        editBanner.classList.add('active');
+      }
+    };
+
+    document.getElementById('editToggle').addEventListener('click', () => editor.toggleEditMode());
+    document.getElementById('editSave').addEventListener('click', () => editor.saveToLocalStorage());
+    document.getElementById('editExport').addEventListener('click', () => editor.exportFile());
+    document.getElementById('editCancel').addEventListener('click', () => editor.toggleEditMode());
+
+    const hotzone = document.querySelector('.edit-hotzone');
+    let hideTimeout = null;
+    hotzone.addEventListener('mouseenter', () => { clearTimeout(hideTimeout); document.getElementById('editToggle').classList.add('show'); });
+    hotzone.addEventListener('mouseleave', () => { hideTimeout = setTimeout(() => { if (!editor.isActive) document.getElementById('editToggle').classList.remove('show'); }, 400); });
+    document.getElementById('editToggle').addEventListener('mouseenter', () => clearTimeout(hideTimeout));
+    document.getElementById('editToggle').addEventListener('mouseleave', () => { hideTimeout = setTimeout(() => { if (!editor.isActive) document.getElementById('editToggle').classList.remove('show'); }, 400); });
+    hotzone.addEventListener('click', () => editor.toggleEditMode());
+
+    document.addEventListener('keydown', (e) => {
+      const focused = document.activeElement;
+      if (e.key === 'Escape' && editor.isActive && !focused.getAttribute('contenteditable')) { e.preventDefault(); editor.toggleEditMode(); }
+      if ((e.key === 'e' || e.key === 'E') && !focused.getAttribute('contenteditable') && !['INPUT','TEXTAREA','SELECT'].includes(focused.tagName)) { e.preventDefault(); editor.toggleEditMode(); }
+      if ((e.ctrlKey || e.metaKey) && e.key === 's' && editor.isActive) { e.preventDefault(); editor.saveToLocalStorage(); }
+    });
+  </script>
+
+  <script>
+    const nav = document.getElementById('mainNav');
+    window.addEventListener('scroll', () => { nav.classList.toggle('solid', window.scrollY > 60); }, { passive: true });
+
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (!entry.isIntersecting) return;
+        entry.target.classList.add('vis');
+        const counters = entry.target.querySelectorAll('[data-count]');
+        counters.forEach(counter => {
+          if (counter.dataset.done) return;
+          counter.dataset.done = '1';
+          const target = parseInt(counter.dataset.count, 10);
+          let current = 0;
+          const inc = Math.ceil(target / 35);
+          const ti = setInterval(() => { current = Math.min(current + inc, target); counter.textContent = current; if (current >= target) clearInterval(ti); }, 38);
+        });
+      });
+    }, { threshold: 0.15 });
+    document.querySelectorAll('.r, .rl, .rr, .rs, .rf, .rb').forEach(el => io.observe(el));
+
+    function buildSlides() {
+      const raw = [
+        { sel: () => document.getElementById('hero'),                name: 'Hero' },
+        { sel: () => document.getElementById('veille-intro'),        name: 'Veille' },
+        { sel: () => document.getElementById('veille-constats'),     name: 'Constats' },
+        { sel: () => document.getElementById('veille-sources'),      name: 'Sources' },
+        { sel: () => document.getElementById('intro'),               name: 'Aperçu' },
+        { sel: () => document.getElementById('dashboard'),            name: 'Dashboard' },
+        { sel: () => document.getElementById('alertes'),              name: 'Alertes' },
+        { sel: () => document.getElementById('notifications'),        name: 'Notifications' },
+        { sel: () => document.getElementById('diagnostic'),           name: 'Diagnostic IA' },
+        { sel: () => document.getElementById('carte'),                name: 'Carte' },
+        { sel: () => document.getElementById('profil'),               name: 'Profil' },
+        { sel: () => document.getElementById('admin'),                name: 'Admin' },
+        { sel: () => document.getElementById('tech'),                 name: 'Stack tech.' },
+        { sel: () => document.getElementById('apis-meteo'),           name: 'API Météo' },
+        { sel: () => document.getElementById('apis-backend'),         name: 'API Backend' },
+        { sel: () => document.getElementById('concurrents'),          name: 'Concurrents' },
+        { sel: () => document.getElementById('roadmap'),              name: 'Roadmap' },
+        { sel: () => document.getElementById('cta'),                  name: 'Conclusion' },
+        { sel: () => document.getElementById('merci'),                name: 'Merci !' },
+      ];
+      return raw.map(r => ({ el: r.sel(), name: r.name })).filter(r => r.el !== null);
+    }
+
+    let SLIDES = buildSlides();
+    function elScrollTop(el) { return Math.round(el.getBoundingClientRect().top + window.scrollY); }
+
+    let currentIndex = 0, isScrolling = false, scrollTimer = null;
+
+    const indicator = document.createElement('div');
+    indicator.id = 'slide-indicator';
+    indicator.innerHTML = `<button id="si-prev" aria-label="Précédent">&#8593;</button><div id="si-info"><span id="si-num">1</span><span id="si-total">/${SLIDES.length}</span><div id="si-name">Hero</div></div><button id="si-next" aria-label="Suivant">&#8595;</button>`;
+    document.body.appendChild(indicator);
+
+    const progressBar = document.createElement('div');
+    progressBar.id = 'slide-progress';
+    document.body.appendChild(progressBar);
+
+    const navStyle = document.createElement('style');
+    navStyle.textContent = `#slide-indicator{position:fixed;right:28px;top:50%;transform:translateY(-50%);z-index:2000;display:flex;flex-direction:column;align-items:center;gap:8px;background:rgba(30,22,8,.82);border:1px solid rgba(232,184,75,.28);border-radius:50px;padding:14px 10px;backdrop-filter:blur(16px);box-shadow:0 8px 32px rgba(0,0,0,.4);transition:opacity .3s;opacity:.38;font-family:'Outfit',sans-serif;min-width:56px}#slide-indicator:hover{opacity:1}#si-prev,#si-next{width:32px;height:32px;border-radius:50%;background:rgba(232,184,75,.12);border:1px solid rgba(232,184,75,.22);color:rgba(255,255,255,.6);font-size:14px;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .2s;user-select:none;padding:0;line-height:1}#si-prev:hover,#si-next:hover{background:rgba(232,184,75,.3);color:#E8B84B;border-color:rgba(232,184,75,.55)}#si-prev:disabled,#si-next:disabled{opacity:.18;cursor:default;pointer-events:none}#si-info{text-align:center;display:flex;flex-direction:column;align-items:center;gap:2px}#si-num{font-size:21px;font-weight:700;color:#E8B84B;line-height:1}#si-total{font-size:10px;font-weight:500;color:rgba(255,255,255,.3);letter-spacing:.06em}#si-name{font-size:9px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:rgba(255,255,255,.38);max-width:52px;text-align:center;margin-top:4px;line-height:1.3}#slide-progress{position:fixed;top:0;left:0;height:2px;background:linear-gradient(to right,#E8B84B,#f0cc5a);z-index:3000;transition:width .45s cubic-bezier(.16,1,.3,1);width:0%}.slide-flash{position:fixed;inset:0;z-index:1500;background:rgba(30,22,8,.07);pointer-events:none;animation:flashFade .3s ease forwards}@keyframes flashFade{0%{opacity:1}100%{opacity:0}}@media(max-width:768px){#slide-indicator{right:10px;padding:10px 7px;min-width:44px}#si-num{font-size:16px}}`;
+    document.head.appendChild(navStyle);
+
+    function updateIndicator(idx) {
+      document.getElementById('si-num').textContent = idx + 1;
+      document.getElementById('si-total').textContent = '/' + SLIDES.length;
+      document.getElementById('si-name').textContent = SLIDES[idx] ? SLIDES[idx].name : '';
+      document.getElementById('si-prev').disabled = (idx === 0);
+      document.getElementById('si-next').disabled = (idx === SLIDES.length - 1);
+      document.getElementById('slide-progress').style.width = (SLIDES.length > 1 ? (idx / (SLIDES.length - 1)) * 100 : 100) + '%';
+    }
+
+    function goTo(idx) {
+      if (idx < 0 || idx >= SLIDES.length || isScrolling) return;
+      currentIndex = idx; isScrolling = true;
+      const flash = document.createElement('div'); flash.className = 'slide-flash'; document.body.appendChild(flash); setTimeout(() => flash.remove(), 320);
+      window.scrollTo({ top: elScrollTop(SLIDES[currentIndex].el), behavior: 'smooth' });
+      updateIndicator(currentIndex);
+      clearTimeout(scrollTimer); scrollTimer = setTimeout(() => { isScrolling = false; }, 900);
+    }
+
+    document.getElementById('si-prev').addEventListener('click', () => goTo(currentIndex - 1));
+    document.getElementById('si-next').addEventListener('click', () => goTo(currentIndex + 1));
+
+    document.addEventListener('keydown', (e) => {
+      if (['INPUT','TEXTAREA','SELECT'].includes(document.activeElement.tagName)) return;
+      if (e.key === 'ArrowRight' || e.key === 'ArrowDown') { e.preventDefault(); goTo(currentIndex + 1); }
+      else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') { e.preventDefault(); goTo(currentIndex - 1); }
+      else if (e.key === 'Home') { e.preventDefault(); goTo(0); }
+      else if (e.key === 'End') { e.preventDefault(); goTo(SLIDES.length - 1); }
+    });
+
+    let lastWheelTime = 0;
+    document.addEventListener('wheel', (e) => {
+      const now = Date.now();
+      if (Math.abs(e.deltaY) < 28) return;
+      if (now - lastWheelTime < 850) { e.preventDefault(); return; }
+      e.preventDefault(); lastWheelTime = now;
+      goTo(currentIndex + (e.deltaY > 0 ? 1 : -1));
+    }, { passive: false });
+
+    let rafPending = false;
+    window.addEventListener('scroll', () => {
+      if (isScrolling || rafPending) return;
+      rafPending = true;
+      requestAnimationFrame(() => {
+        rafPending = false;
+        const viewMid = window.scrollY + window.innerHeight * 0.18;
+        let best = 0, bestDist = Infinity;
+        SLIDES.forEach((s, i) => { const top = elScrollTop(s.el); const dist = Math.abs(top - viewMid); if (dist < bestDist) { bestDist = dist; best = i; } });
+        if (best !== currentIndex) { currentIndex = best; updateIndicator(currentIndex); }
+      });
+    }, { passive: true });
+
+    document.querySelectorAll('.nav-center a').forEach(a => {
+      a.addEventListener('click', (e) => {
+        const href = a.getAttribute('href');
+        if (!href || !href.startsWith('#')) return;
+        const targetEl = document.querySelector(href);
+        if (!targetEl) return;
+        const idx = SLIDES.findIndex(s => s.el === targetEl);
+        if (idx !== -1) { e.preventDefault(); goTo(idx); }
+      });
+    });
+
+    updateIndicator(0);
+  </script>
+</body>
+</html>
