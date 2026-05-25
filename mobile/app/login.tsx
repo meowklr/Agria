@@ -15,6 +15,18 @@ export default function LoginScreen() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
+  const fbError = (e: any): string => {
+    const code = e?.code || '';
+    if (code === 'auth/invalid-email') return 'Format d\'email invalide.';
+    if (code === 'auth/user-not-found' || code === 'auth/invalid-credential') return 'Email ou mot de passe incorrect.';
+    if (code === 'auth/wrong-password') return 'Mot de passe incorrect.';
+    if (code === 'auth/email-already-in-use') return 'Un compte existe deja avec cet email.';
+    if (code === 'auth/weak-password') return 'Mot de passe : minimum 6 caracteres.';
+    if (code === 'auth/too-many-requests') return 'Trop de tentatives. Reessayez plus tard.';
+    if (code === 'auth/network-request-failed') return 'Erreur reseau. Verifiez votre connexion.';
+    return e?.message || 'Erreur inconnue.';
+  };
+
   const handleLogin = async () => {
     if (!email.trim() || !password.trim()) { setError('Veuillez remplir l\'email et le mot de passe.'); return; }
     setLoading(true); setError('');
@@ -23,7 +35,7 @@ export default function LoginScreen() {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       router.replace('/(tabs)');
     } catch (e: any) {
-      setError(e.message || 'Connexion echouee.');
+      setError(fbError(e));
     } finally {
       setLoading(false);
     }
@@ -31,14 +43,14 @@ export default function LoginScreen() {
 
   const handleRegister = async () => {
     if (!email.trim() || !password.trim()) { setError('Veuillez remplir l\'email et le mot de passe.'); return; }
-    if (password.trim().length < 4) { setError('Mot de passe : minimum 4 caracteres.'); return; }
+    if (password.trim().length < 6) { setError('Mot de passe : minimum 6 caracteres.'); return; }
     setLoading(true); setError('');
     try {
       await register(email.trim(), password);
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       router.replace('/(tabs)');
     } catch (e: any) {
-      setError(e.message || 'Inscription echouee.');
+      setError(fbError(e));
     } finally {
       setLoading(false);
     }
@@ -47,12 +59,12 @@ export default function LoginScreen() {
   const handleDev = async () => {
     setLoading(true); setError('');
     try {
-      try { await register('dev@agria.fr', 'admin'); } catch {}
-      await login('dev@agria.fr', 'admin');
+      try { await register('dev@agria.fr', 'admin123'); } catch {}
+      await login('dev@agria.fr', 'admin123');
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       router.replace('/(admin)');
     } catch (e: any) {
-      setError(e.message || 'Acces developpeur echoue.');
+      setError(fbError(e));
     } finally {
       setLoading(false);
     }
@@ -71,7 +83,7 @@ export default function LoginScreen() {
           <View>
             <Text style={{ fontSize: 13, fontWeight: '500', color: colors.textSecondary, marginBottom: 6, textTransform: 'uppercase', letterSpacing: 0.4, fontFamily: fontFamily.sans }}>Mot de passe</Text>
             <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-              <View style={{ flex: 1 }}><Input value={password} onChangeText={setPassword} placeholder="Mot de passe" secureTextEntry={!showPwd} /></View>
+              <View style={{ flex: 1 }}><Input value={password} onChangeText={setPassword} placeholder="Mot de passe (6+ car.)" secureTextEntry={!showPwd} /></View>
               <TouchableOpacity onPress={() => setShowPwd(!showPwd)} style={{ marginLeft: -40, padding: 8 }} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
                 <Ionicons name={showPwd ? 'eye-off-outline' : 'eye-outline'} size={20} color={colors.textMuted} />
               </TouchableOpacity>

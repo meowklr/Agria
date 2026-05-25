@@ -31,7 +31,14 @@
       "expo-router",
       "expo-asset",
       "expo-font",
-      "expo-notifications"
+      "expo-notifications",
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Agria a besoin d'acces a vos photos pour personnaliser votre profil.",
+          "cameraPermission": "Agria a besoin d'acces a l'appareil photo pour votre avatar."
+        }
+      ]
     ]
   }
 }

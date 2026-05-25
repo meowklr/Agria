@@ -86,7 +86,6 @@ export default function AdminUtilisateurs() {
                   {u.profile?.siret && <View style={s.row}><Text style={s.lbl}>SIRET</Text><Text style={s.val}>{u.profile.siret}</Text></View>}
                   {u.profile?.typeAgriculture && <View style={s.row}><Text style={s.lbl}>Type agri.</Text><Text style={s.val}>{u.profile.typeAgriculture}</Text></View>}
                   {u.profile?.ville && <View style={s.row}><Text style={s.lbl}>Ville</Text><Text style={s.val}>{u.profile.ville}</Text></View>}
-                  {u.password ? <View style={s.row}><Text style={s.lbl}>Mot de passe</Text><Text style={[s.val, { color: colors.danger }]}>{u.password}</Text></View> : null}
                   <View style={s.row}><Text style={s.lbl}>Derniere activite</Text><Text style={s.val}>{ts(u.lastLogin)}</Text></View>
                   <View style={s.row}><Text style={s.lbl}>ID</Text><Text style={[s.val, { fontSize: 10 }]}>{u.userId}</Text></View>
                   <TouchableOpacity style={s.btn} onPress={() => router.push({ pathname: '/(admin)/parcelles', params: { userId: u.userId } })}>

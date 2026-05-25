@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'; import { View, Text, ScrollView, Switch, TouchableOpacity, Modal, Alert, KeyboardAvoidingView, Platform, LayoutAnimation, UIManager } from 'react-native'; import { router } from 'expo-router'; import * as Haptics from 'expo-haptics'; import { useSafeAreaInsets } from 'react-native-safe-area-context'; import { Ionicons } from '@expo/vector-icons'; import { colors, radius, fontFamily } from '../../src/theme'; import { Card } from '../../src/components/Card'; import { Button } from '../../src/components/Button'; import { Input } from '../../src/components/Input'; import { useProfile } from '../../src/hooks/useProfile'; import { logout, changePassword, updateEmail, getSessionEmail, getUserId } from '../../src/services/auth'; import { deleteOwnAccount } from '../../src/services/admin'; import { ScreenFade } from '../../src/components/ScreenFade';
+import React, { useEffect, useState } from 'react'; import { View, Text, ScrollView, Switch, TouchableOpacity, Modal, Alert, KeyboardAvoidingView, Platform, LayoutAnimation, UIManager, Image, ActivityIndicator, ActionSheetIOS } from 'react-native'; import { router } from 'expo-router'; import * as Haptics from 'expo-haptics'; import * as ImagePicker from 'expo-image-picker'; import { useSafeAreaInsets } from 'react-native-safe-area-context'; import { Ionicons } from '@expo/vector-icons'; import { colors, radius, fontFamily } from '../../src/theme'; import { Card } from '../../src/components/Card'; import { Button } from '../../src/components/Button'; import { Input } from '../../src/components/Input'; import { useProfile } from '../../src/hooks/useProfile'; import { logout, changePassword, updateEmail, getSessionEmail, getUserId } from '../../src/services/auth'; import { deleteOwnAccount } from '../../src/services/admin'; import { ScreenFade } from '../../src/components/ScreenFade';
 
 if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
   UIManager.setLayoutAnimationEnabledExperimental(true);
@@ -20,7 +20,7 @@ const DATA_SOCIAL = [
 const lbl = (t: string) => <Text style={{fontSize:12,fontWeight:'500',color:colors.textSecondary,marginBottom:6,textTransform:'uppercase',letterSpacing:0.3,fontFamily:fontFamily.sans}}>{t}</Text>;
 
 export default function ProfilScreen() {
-  const { profile, prefs, stats, saveProfile, savePrefs } = useProfile();
+  const { profile, prefs, stats, saveProfile, savePrefs, avatarUploading, uploadAvatar, deleteUserAvatar } = useProfile();
   const [prenom, setPrenom] = useState(''); const [nom, setNom] = useState(''); const [tel, setTel] = useState('');
   const [expl, setExpl] = useState(''); const [siret, setSiret] = useState(''); const [typeAgri, setTypeAgri] = useState('');
   const [notifs, setNotifs] = useState(false); const [uniteHa, setUniteHa] = useState(true);
@@ -33,6 +33,59 @@ export default function ProfilScreen() {
     setter(!current);
   };
   const showSaved = () => { setSavedOk(true); setTimeout(() => setSavedOk(false), 1800); };
+
+  const pickAndUpload = async (type: 'camera' | 'gallery') => {
+    try {
+      const permission = type === 'camera'
+        ? await ImagePicker.requestCameraPermissionsAsync()
+        : await ImagePicker.requestMediaLibraryPermissionsAsync();
+      if (!permission.granted) {
+        Alert.alert('Permission refusee', 'Autorisez l\'acces dans les reglages de votre telephone.');
+        return;
+      }
+      const result = type === 'camera'
+        ? await ImagePicker.launchCameraAsync({ allowsEditing: true, aspect: [1, 1], quality: 0.7 })
+        : await ImagePicker.launchImageLibraryAsync({ allowsEditing: true, aspect: [1, 1], quality: 0.7 });
+      if (!result.canceled && result.assets?.[0]?.uri) {
+        await uploadAvatar(result.assets[0].uri);
+      }
+    } catch (e: any) {
+      Alert.alert('Erreur', e.message || 'Impossible de charger la photo.');
+    }
+  };
+
+  const handleAvatarDelete = async () => {
+    try { await deleteUserAvatar(); } catch (e: any) { Alert.alert('Erreur', e.message || 'Impossible de supprimer la photo.'); }
+  };
+
+  const handleAvatarPress = () => {
+    if (Platform.OS === 'ios') {
+      const options = profile.imageBase64
+        ? ['Prendre une photo', 'Choisir dans la galerie', 'Supprimer la photo', 'Annuler']
+        : ['Prendre une photo', 'Choisir dans la galerie', 'Annuler'];
+      ActionSheetIOS.showActionSheetWithOptions(
+        {
+          options,
+          cancelButtonIndex: options.length - 1,
+          destructiveButtonIndex: profile.imageBase64 ? 2 : -1,
+          tintColor: colors.primary,
+        },
+        (idx) => {
+          if (idx === 0) pickAndUpload('camera');
+          else if (idx === 1) pickAndUpload('gallery');
+          else if (idx === 2 && profile.imageBase64) handleAvatarDelete();
+        },
+      );
+    } else {
+      Alert.alert('Photo de profil', undefined, [
+        { text: 'Prendre une photo', onPress: () => pickAndUpload('camera') },
+        { text: 'Choisir dans la galerie', onPress: () => pickAndUpload('gallery') },
+        ...(profile.imageBase64 ? [{ text: 'Supprimer la photo', style: 'destructive' as const, onPress: () => handleAvatarDelete() }] : []),
+        { text: 'Annuler', style: 'cancel' },
+      ]);
+    }
+  };
+
   const [newEmail, setNewEmail] = useState('');
   const [oldPwd, setOldPwd] = useState(''); const [newPwd, setNewPwd] = useState('');
   const insets = useSafeAreaInsets();
@@ -51,9 +104,29 @@ export default function ProfilScreen() {
 
     {/* HEADER AVATAR */}
     <View style={{ flexDirection: 'row', alignItems: 'center', gap: 14, marginBottom: 20, paddingHorizontal: 4 }}>
-      <View style={{ width: 56, height: 56, borderRadius: 28, backgroundColor: colors.primary, justifyContent: 'center', alignItems: 'center' }}>
-        <Text style={{ fontSize: 20, fontWeight: '700', color: colors.text, fontFamily: fontFamily.serif }}>{initials}</Text>
-      </View>
+      <TouchableOpacity onPress={handleAvatarPress} activeOpacity={0.8}>
+        <View>
+          <View style={{ width: 60, height: 60, borderRadius: 30, borderWidth: 2, borderColor: colors.primary, padding: 2 }}>
+            {profile.imageBase64 ? (
+              <View style={{ flex: 1, borderRadius: 27, overflow: 'hidden', backgroundColor: colors.border }}>
+                <Image source={{ uri: profile.imageBase64 }} style={{ width: '100%', height: '100%' }} />
+              </View>
+            ) : (
+              <View style={{ flex: 1, borderRadius: 27, backgroundColor: colors.primary, justifyContent: 'center', alignItems: 'center' }}>
+                <Text style={{ fontSize: 20, fontWeight: '700', color: colors.text, fontFamily: fontFamily.serif }}>{initials}</Text>
+              </View>
+            )}
+          </View>
+          <View style={{ position: 'absolute', bottom: 2, right: 0, width: 22, height: 22, borderRadius: 11, backgroundColor: colors.surface, borderWidth: 1.5, borderColor: colors.primary, justifyContent: 'center', alignItems: 'center' }}>
+            <Ionicons name="camera-outline" size={12} color={colors.primary} />
+          </View>
+          {avatarUploading && (
+            <View style={{ position: 'absolute', top: 2, left: 2, right: 2, bottom: 2, backgroundColor: 'rgba(0,0,0,0.3)', borderRadius: 28, justifyContent: 'center', alignItems: 'center' }}>
+              <ActivityIndicator color="#fff" size="small" />
+            </View>
+          )}
+        </View>
+      </TouchableOpacity>
       <View style={{ flex: 1 }}>
         <Text style={{ fontSize: 18, fontWeight: '600', color: colors.text, fontFamily: fontFamily.sans }}>
           {prenom ? prenom + ' ' + nom : 'Mon profil'}
@@ -118,7 +191,7 @@ export default function ProfilScreen() {
         {lbl('Changer email')}<Input value={newEmail} onChangeText={setNewEmail} placeholder={profile.email || 'Nouvel email'} keyboardType="email-address" autoCapitalize="none" />
         <Button title="Mettre a jour l'email" variant="secondary" onPress={async () => { try { const old = await getSessionEmail(); if (!old) throw new Error('Session introuvable.'); await updateEmail(old, newEmail); Alert.alert('OK', 'Email mis a jour.'); setNewEmail(''); } catch(e:any) { Alert.alert('Erreur', e.message); } }} />
         <View style={{ height: 1, backgroundColor: colors.border, marginVertical: 4 }} />
-        {lbl('Changer mot de passe')}<Input value={oldPwd} onChangeText={setOldPwd} placeholder="Ancien mot de passe" secureTextEntry /><Input value={newPwd} onChangeText={setNewPwd} placeholder="Nouveau (4+ car.)" secureTextEntry />
+        {lbl('Changer mot de passe')}<Input value={oldPwd} onChangeText={setOldPwd} placeholder="Ancien mot de passe" secureTextEntry /><Input value={newPwd} onChangeText={setNewPwd} placeholder="Nouveau (6+ car.)" secureTextEntry />
         <Button title="Changer le mot de passe" variant="secondary" onPress={async () => { try { const old = await getSessionEmail(); if (!old) throw new Error('Session introuvable.'); await changePassword(old, oldPwd, newPwd); Alert.alert('OK', 'Mot de passe change.'); setOldPwd(''); setNewPwd(''); } catch(e:any) { Alert.alert('Erreur', e.message); } }} />
         <View style={{ height: 1, backgroundColor: colors.border, marginVertical: 4 }} />
         <Button title="Supprimer mon compte" variant="secondary" onPress={() => { Alert.alert('Supprimer le compte', 'Toutes vos donnees seront definitivement perdues.', [{ text: 'Annuler', style: 'cancel' }, { text: 'Tout supprimer', style: 'destructive', onPress: async () => { try { const uid = await getUserId(); await deleteOwnAccount(uid); await logout(); router.replace('/login'); } catch(e:any) { Alert.alert('Erreur', e.message); } } }]); }} style={{ borderColor: colors.danger }} />

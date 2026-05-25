@@ -1,5 +1,4 @@
 alertes communautaires, pq pas reliées a make. demander des impletation qui pourraient etre cool et pertinentes pour notre app.
-ajouter avatar personnalisé.
 remplacer les screenshots par les screens actules (notamment diagnostic et dashboard alertes)
 heberger sur un cloud pour etre accessible a tout moment.
 
@@ -15,78 +14,34 @@ Des skills spécialisés présentation viennent d'être installés :
 - frontend-design : design web distinctif
 - emil-design-eng : polish UI, animations, composants
 - design-motion-principles : audit motion design (3 designers)
-═══════════════════════════════════════
-1. PROBLÈME DE PALETTE DE COULEURS
-═══════════════════════════════════════
-Les couleurs de fond des sections (--bg-warm: #EBDFCC, --bg-tan: #D4C0A0,
---bg-brown: #A08464, --bg-deep: #6B5A44) sont inventées et n'existent pas
-dans l'app réelle.
-Couleurs réelles de l'app :
-  Fond principal (bg):       #FDF8EE
-  Surface carte (surface):   #FFFDF6
-  Arrière-plan outer:        #F3EFE6
-  Admin dark bg:             #1a1510
-  Admin tab bar:             #2a2318
-  Or primaire (primary):     #E8B84B
-  Or hover:                  #D4A853
-  Terre cuite (accent):      #C4704A
-  Rouge (danger):            #B5533A
-  Vert (success):            #7A9E5A
-  Bleu (info):               #B8D4E8
-  Texte principal:           #3D2E1F
-  Texte secondaire:          #6B5D4F
-  Texte muted:               #A89880
-  Bordure:                   #EBE3D3
-Ce qui est déjà correct dans la présentation : gold, danger, success, info,
-surface, bg, text, textSecondary, textMuted, border. Le --espresso (#1E1608)
-doit devenir #1a1510.
-À faire : remplacer les --section-bg par des alternances de #FDF8EE, #F3EFE6
-et #FFFDF6 pour les sections claires, et #1a1510 pour les sections sombres
-(hero, admin, dashboard, tech, apis-backend, concurrents, merci).
-Vérifier le contraste texte/fond partout : pas de texte clair sur fond clair,
-pas de texte sombre sur fond sombre.
-═══════════════════════════════════════
-2. SCREENSHOTS À CAPTURER
-═══════════════════════════════════════
-Firebase Realtime Database (2 captures) :
-  a) Console Firebase → Realtime Database → onglet "Data"
-     Montrer l'arborescence /agriaData/ avec les clés visibles
-     (agria_uid_, agria_cred_, agria_session, agria_user_profile_,
-      agria_champs_, agria_diagnostics_, agria_alert_, etc.)
-  b) Un enregistrement déplié, idéalement agria_champs_{userId}
-     montrant un objet parcelle (id, nom, culture, surface, stade, etc.)
-Make.com (2 captures) :
-  a) La page du scénario "Agria - Alerte Meteo Agricole"
-     Vue d'ensemble avec les 4 modules connectés :
-     Webhook → AI Agent (RunLocalAIAgent) → Parse JSON → Webhook Respond
-  b) Le détail du module AI Agent montrant le prompt en français
-     (l'agent agit comme expert agronome, reçoit ville/météo/prévisions/
-      parcelles/alerte, et retourne un JSON avec severity/text/recommendation)
-Placer les screenshots dans presentation/assets/
-═══════════════════════════════════════
-3. AMÉLIORATIONS À PROPOSER
-═══════════════════════════════════════
-Tu as maintenant accès à frontend-slides, marp-slide, frontend-design,
-emil-design-eng et design-motion-principles. En t'appuyant sur TOUTES
-ces connaissances, propose-moi une série d'améliorations pertinentes
-pour cette présentation (palette, structure des slides, animations,
-typographie, densité de contenu, navigation, cohérence visuelle,
-accessibilité, etc.). Les slides existantes sont en scroll-snap vertical
-avec 19 sections.
-Points déjà identifiés :
-- Palette à rectifier (cf. point 1)
-- Nouvelles slides Firebase + Make.com à ajouter (cf. point 2)
-- transition: all → propriétés précises (Emil)
-- :active scale sur les boutons (Emil)
-- blur à l'entrée des animations (Jakub)
-- Cohérence des radius et box-shadows
-═══════════════════════════════════════
-4. PLAN D'EXÉCUTION
-═══════════════════════════════════════
-Étape 1 : Charger les skills présentation (frontend-slides, marp-slide,
-          frontend-design, emil-design-eng, design-motion-principles)
-Étape 2 : Proposer une série d'améliorations basées sur ces skills
-Étape 3 : Me montrer les screenshots Firebase et Make.com capturés
-Étape 4 : On définit ensemble les slides à ajouter/modifier
-Étape 5 : Appliquer la palette corrigée + toutes les améliorations
-Étape 6 : Vérification finale (contraste, responsive, animations)
+
+
+Nous travaillons sur l'app mobile Agria située dans :
+D:\Téléchargements\agria\agria\mobile\
+Le projet est une app agricole (React Native/Expo) nommée Agria,
+avec Firebase Realtime DB + Auth et Make.com pour l'automatisation.
+La palette réelle de l'app est dans mobile/src/theme/index.ts.
+Architecture :
+- mobile/app/ → pages Expo Router (tabs: dashboard, carte, diagnostic, profil + admin + login)
+- mobile/src/components/ → composants UI (Badge, Button, Card, Input, Typography, etc.)
+- mobile/src/services/ → logique métier (auth, weather, diagnostic, champs, alerts, firebase)
+- mobile/src/hooks/ → hooks custom (useAlerts, useChamps, useDiagnostic, useWeather, etc.)
+- mobile/src/data/ → données statiques (config, cropData)
+Stack technique :
+- React Native 0.81.5, Expo SDK 54, TypeScript 5.9
+- Expo Router (file-based routing), react-native-reanimated, react-native-gesture-handler
+- Polices : Fraunces (serif), Outfit (sans-serif) via @expo-google-fonts
+- APIs : OpenWeatherMap, Open-Meteo, Nominatim (geocoding)
+- Design : warm earth tones (#E8B84B primary, #FDF8EE bg, #3D2E1F text)
+Skills disponibles :
+- brainstorming : exploration du besoin avant toute implémentation
+- test-driven-development : TDD, écrire les tests avant le code
+- systematic-debugging : débogage méthodique étape par étape
+- writing-plans / executing-plans : planification + exécution multi-étapes
+- verification-before-completion : toujours vérifier avant de déclarer fini
+- frontend-design : design mobile distinctif et créatif
+- emil-design-eng : polish UI, micro-interactions, animations (Emil Kowalski)
+- design-motion-principles : audit motion design (Kowalski, Krehel, Tompkins)
+- web-animation-design : animations et transitions (CSS, Framer Motion, GSAP)
+- dispatching-parallel-agents / subagent-driven-development : travail parallèle
+- finishing-a-development-branch : merge, PR, ou cleanup de branche

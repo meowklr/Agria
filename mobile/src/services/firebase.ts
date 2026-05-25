@@ -1,6 +1,11 @@
-import { initializeApp, getApps, FirebaseApp } from 'firebase/app';
+import { initializeApp, FirebaseApp } from 'firebase/app';
 import { getDatabase, ref, get, set, remove, Database } from 'firebase/database';
+import { getAuth as fbGetAuth, initializeAuth as fbInitAuth, Auth } from 'firebase/auth';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+
+const _authPreload = require('firebase/auth');
+_authPreload.initializeAuth;
+_authPreload.getAuth;
 
 const FB = {
   apiKey: process.env.EXPO_PUBLIC_FIREBASE_API_KEY || '',
@@ -12,21 +17,71 @@ const FB = {
   appId: process.env.EXPO_PUBLIC_FIREBASE_APP_ID || '',
 };
 
+const configured = !!(FB.apiKey && FB.databaseURL);
+
 let app: FirebaseApp | null = null;
 let db: Database | null = null;
+let auth: Auth | null = null;
+let initAttempted = false;
 
-function getApp(): FirebaseApp | null {
-  if (app) return app;
-  if (!FB.apiKey || !FB.databaseURL) return null;
-  try { app = getApps().length === 0 ? initializeApp(FB) : getApps()[0]; return app; }
-  catch { return null; }
+function tryInitFirebase(): boolean {
+  if (initAttempted) return !!auth;
+  initAttempted = true;
+  if (!configured) return false;
+
+  try {
+    app = initializeApp(FB);
+    db = getDatabase(app);
+
+    try {
+      auth = fbInitAuth(app, {
+        persistence: undefined,
+      });
+    } catch (e1) {
+      console.warn('[Firebase] fbInitAuth failed, trying fbGetAuth:', (e1 as Error).message);
+      try {
+        auth = fbGetAuth(app);
+      } catch (e2) {
+        console.warn('[Firebase] getAuth also failed:', (e2 as Error).message);
+        auth = null;
+      }
+    }
+    return !!auth;
+  } catch (e) {
+    console.warn('[Firebase] init failed, running offline:', (e as Error).message);
+    app = null;
+    db = null;
+    auth = null;
+    return false;
+  }
 }
-function getDb(): Database | null {
-  if (db) return db;
-  const a = getApp(); if (!a) return null;
-  db = getDatabase(a); return db;
+
+let initTimer: ReturnType<typeof setTimeout> | null = null;
+
+export function scheduleFirebaseInit(): void {
+  if (auth) return;
+  if (initTimer) return;
+  initTimer = setTimeout(() => {
+    initTimer = null;
+    if (!auth) {
+      initAttempted = false;
+      tryInitFirebase();
+    }
+  }, 0);
 }
+
+export function getAuthInstance(): Auth {
+  tryInitFirebase();
+  if (!auth) throw new Error('Firebase non initialise — verifiez le fichier .env');
+  return auth;
+}
+
 function safeKey(key: string): string { return key.replace(/[.#$\/\[\]]/g, '_'); }
+
+function getDb(): Database | null {
+  tryInitFirebase();
+  return db;
+}
 
 export async function checkFirebaseConnection(): Promise<boolean> {
   const database = getDb();
