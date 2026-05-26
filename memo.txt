@@ -3,7 +3,7 @@ remplacer les screenshots par les screens actules (notamment diagnostic et dashb
 heberger sur un cloud pour etre accessible a tout moment.
 
 Nous travaillons sur une présentation HTML située dans :
-D:\Téléchargements\agria\agria\presentation\presentation-agria.html
+C:\Users\t!m\Desktop\agria\presentation\presentation-agria.html
 Le projet est une app mobile agricole (React Native/Expo) nommée Agria,
 avec Firebase Realtime DB et Make.com.
 La palette réelle de l'app est dans mobile/src/theme/index.ts.
