@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'; import { View, Text, ScrollView, Switch, TouchableOpacity, Modal, Alert, KeyboardAvoidingView, Platform, LayoutAnimation, UIManager, Image, ActivityIndicator, ActionSheetIOS } from 'react-native'; import { router } from 'expo-router'; import * as Haptics from 'expo-haptics'; import * as ImagePicker from 'expo-image-picker'; import { useSafeAreaInsets } from 'react-native-safe-area-context'; import { Ionicons } from '@expo/vector-icons'; import { colors, radius, fontFamily } from '../../src/theme'; import { Card } from '../../src/components/Card'; import { Button } from '../../src/components/Button'; import { Input } from '../../src/components/Input'; import { useProfile } from '../../src/hooks/useProfile'; import { logout, changePassword, updateEmail, getSessionEmail, getUserId } from '../../src/services/auth'; import { deleteOwnAccount } from '../../src/services/admin'; import { ScreenFade } from '../../src/components/ScreenFade';
+import React, { useEffect, useState, useCallback } from 'react'; import { View, Text, ScrollView, Switch, TouchableOpacity, Modal, Alert, KeyboardAvoidingView, Platform, LayoutAnimation, UIManager, Image, ActivityIndicator, ActionSheetIOS } from 'react-native'; import { router, useFocusEffect } from 'expo-router'; import * as Haptics from 'expo-haptics'; import * as ImagePicker from 'expo-image-picker'; import { useSafeAreaInsets } from 'react-native-safe-area-context'; import { Ionicons } from '@expo/vector-icons'; import { colors, radius, fontFamily } from '../../src/theme'; import { Card } from '../../src/components/Card'; import { Button } from '../../src/components/Button'; import { Input } from '../../src/components/Input'; import { useProfile } from '../../src/hooks/useProfile'; import { logout, changePassword, updateEmail, getSessionEmail, getUserId } from '../../src/services/auth'; import { deleteOwnAccount } from '../../src/services/admin'; import { ScreenFade } from '../../src/components/ScreenFade';
 
 if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
   UIManager.setLayoutAnimationEnabledExperimental(true);
@@ -20,7 +20,7 @@ const DATA_SOCIAL = [
 const lbl = (t: string) => <Text style={{fontSize:12,fontWeight:'500',color:colors.textSecondary,marginBottom:6,textTransform:'uppercase',letterSpacing:0.3,fontFamily:fontFamily.sans}}>{t}</Text>;
 
 export default function ProfilScreen() {
-  const { profile, prefs, stats, saveProfile, savePrefs, avatarUploading, uploadAvatar, deleteUserAvatar } = useProfile();
+  const { profile, prefs, stats, saveProfile, savePrefs, reload, avatarUploading, uploadAvatar, deleteUserAvatar } = useProfile();
   const [prenom, setPrenom] = useState(''); const [nom, setNom] = useState(''); const [tel, setTel] = useState('');
   const [expl, setExpl] = useState(''); const [siret, setSiret] = useState(''); const [typeAgri, setTypeAgri] = useState('');
   const [notifs, setNotifs] = useState(false); const [uniteHa, setUniteHa] = useState(true);
@@ -91,6 +91,8 @@ export default function ProfilScreen() {
   const insets = useSafeAreaInsets();
 
   useEffect(() => { setPrenom(profile.prenom||''); setNom(profile.nom||''); setTel(profile.telephone||''); setExpl(profile.exploitation||''); setSiret(profile.siret||''); setTypeAgri(profile.typeAgriculture||''); setNotifs(prefs.notifications||false); setUniteHa(prefs.uniteHa!==false); }, [profile, prefs]);
+
+  useFocusEffect(useCallback(() => { reload(); }, [reload]));
 
   const initials = ((prenom||'A')[0]+(nom||'A')[0]).toUpperCase();
 

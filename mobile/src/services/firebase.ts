@@ -1,11 +1,45 @@
-import { initializeApp, FirebaseApp } from 'firebase/app';
+import { initializeApp, getApps, FirebaseApp } from 'firebase/app';
 import { getDatabase, ref, get, set, remove, Database } from 'firebase/database';
-import { getAuth as fbGetAuth, initializeAuth as fbInitAuth, Auth } from 'firebase/auth';
+import '@firebase/component';
+import { getAuth, initializeAuth, Auth } from 'firebase/auth';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const _authPreload = require('firebase/auth');
-_authPreload.initializeAuth;
-_authPreload.getAuth;
+function getReactNativePersistence(storage: typeof AsyncStorage) {
+  const STORAGE_AVAILABLE_KEY = '__sak';
+
+  const Persistence = class {
+    type = 'LOCAL' as const;
+
+    async _isAvailable(): Promise<boolean> {
+      try {
+        if (!storage) return false;
+        await storage.setItem(STORAGE_AVAILABLE_KEY, '1');
+        await storage.removeItem(STORAGE_AVAILABLE_KEY);
+        return true;
+      } catch {
+        return false;
+      }
+    }
+
+    _set(key: string, value: unknown): Promise<void> {
+      return storage.setItem(key, JSON.stringify(value));
+    }
+
+    async _get<T>(key: string): Promise<T | null> {
+      const json = await storage.getItem(key);
+      return json ? (JSON.parse(json) as T) : null;
+    }
+
+    _remove(key: string): Promise<void> {
+      return storage.removeItem(key);
+    }
+
+    _addListener(_key: string, _listener: (value: unknown) => void): void {}
+    _removeListener(_key: string, _listener: (value: unknown) => void): void {}
+  };
+
+  return Persistence;
+}
 
 const FB = {
   apiKey: process.env.EXPO_PUBLIC_FIREBASE_API_KEY || '',
@@ -27,26 +61,27 @@ let initAttempted = false;
 function tryInitFirebase(): boolean {
   if (initAttempted) return !!auth;
   initAttempted = true;
-  if (!configured) return false;
+
+  if (!configured) {
+    if (__DEV__) console.warn('[Firebase] Configuration .env incomplete — missing keys:', {
+      apiKey: !!FB.apiKey,
+      databaseURL: !!FB.databaseURL,
+      projectId: !!FB.projectId,
+    });
+    return false;
+  }
 
   try {
-    app = initializeApp(FB);
-    db = getDatabase(app);
-
-    try {
-      auth = fbInitAuth(app, {
-        persistence: undefined,
-      });
-    } catch (e1) {
-      console.warn('[Firebase] fbInitAuth failed, trying fbGetAuth:', (e1 as Error).message);
-      try {
-        auth = fbGetAuth(app);
-      } catch (e2) {
-        console.warn('[Firebase] getAuth also failed:', (e2 as Error).message);
-        auth = null;
-      }
+    if (getApps().length > 0) {
+      app = getApps()[0];
+    } else {
+      app = initializeApp(FB);
     }
-    return !!auth;
+    db = getDatabase(app);
+    auth = initializeAuth(app, {
+      persistence: getReactNativePersistence(AsyncStorage),
+    });
+    return true;
   } catch (e) {
     console.warn('[Firebase] init failed, running offline:', (e as Error).message);
     app = null;
