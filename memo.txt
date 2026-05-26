@@ -17,7 +17,7 @@ Des skills spécialisés présentation viennent d'être installés :
 
 
 Nous travaillons sur l'app mobile Agria située dans :
-D:\Téléchargements\agria\agria\mobile\
+\agria\mobile\
 Le projet est une app agricole (React Native/Expo) nommée Agria,
 avec Firebase Realtime DB + Auth et Make.com pour l'automatisation.
 La palette réelle de l'app est dans mobile/src/theme/index.ts.

@@ -39,6 +39,7 @@ export default function DiagnosticScreen() {
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const statusOpacity = useRef(new Animated.Value(0)).current;
   const emailErrOpacity = useRef(new Animated.Value(0)).current;
+  const submittedAnim = useRef(new Animated.Value(0)).current;
   const insets = useSafeAreaInsets();
   if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
     UIManager.setLayoutAnimationEnabledExperimental(true);
@@ -46,6 +47,9 @@ export default function DiagnosticScreen() {
   useEffect(() => { 
     loadHistory(); 
   }, []);
+  useEffect(() => {
+    Animated.timing(submittedAnim, { toValue: submitted ? 1 : 0, duration: 320, useNativeDriver: true }).start();
+  }, [submitted]);
   useEffect(() => {
     if (pendingDetailed && result) {
       setPendingDetailed(false);
@@ -86,11 +90,19 @@ export default function DiagnosticScreen() {
       const webhookUrl = CONFIG.MAKE_DIAGNOSTIC_WEBHOOK_URL;
       const payload = { culture, symptomes: sympts, ville, email: email.trim(), diagnostic: result.nom, gravite: result.gravite, explication: result.explication, recommandations: result.recommandations, meteo: result.meteo };
 
-      const res = await fetch(webhookUrl, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
-      });
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 60000);
+      let res: Response;
+      try {
+        res = await fetch(webhookUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+          signal: controller.signal,
+        });
+      } finally {
+        clearTimeout(timeoutId);
+      }
 
       const responseText = await res.text();
       const notificationTitle = `Analyse ${labelCulture(culture)} - ${result.nom}`;
@@ -107,6 +119,7 @@ export default function DiagnosticScreen() {
       try { await add(notificationTitle, responseText); } catch (e) { console.warn('Erreur en sauvegardant la notif interne', e); }
 
       setSendStatus('success');
+      LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
       setSubmitted(true);
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       statusOpacity.setValue(0);
@@ -114,8 +127,8 @@ export default function DiagnosticScreen() {
       setTimeout(() => {
         Animated.timing(statusOpacity, { toValue: 0, duration: 200, useNativeDriver: true }).start(() => setSendStatus(null));
       }, 3000);
-    } catch (e) {
-      console.error(e);
+    } catch (e: any) {
+      if (e?.name !== 'AbortError') console.error(e);
       setSendStatus('error');
       statusOpacity.setValue(0);
       Animated.timing(statusOpacity, { toValue: 1, duration: 220, useNativeDriver: true }).start();
@@ -183,14 +196,14 @@ export default function DiagnosticScreen() {
         </View>
         <View style={{ height: 10 }} /><Button title="Retour" variant="secondary" onPress={() => { LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut); setStep(2); setSendStatus(null); }} />
       </View>}
-    </> : <View>
+    </> : <Animated.View style={{ opacity: submittedAnim, transform: [{ translateY: submittedAnim.interpolate({ inputRange: [0, 1], outputRange: [12, 0] }) }] }}>
       <Card style={{ marginBottom: 16, alignItems: 'center' }}>
         <Ionicons name="checkmark-circle" size={48} color={colors.success} style={{ marginBottom: 12 }} />
         <Text style={{ fontSize: 18, fontWeight: '600', color: colors.text, textAlign: 'center', fontFamily: fontFamily.serif }}>Diagnostic envoye</Text>
         <Text style={{ fontSize: 14, color: colors.textMuted, textAlign: 'center', marginTop: 8, lineHeight: 20 }}>Votre analyse detaillee a ete transmise. Vous recevrez le rapport par email et dans vos notifications.</Text>
       </Card>
       <Button title="Nouveau diagnostic" variant="secondary" onPress={() => { LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut); reset(); setStep(1); setCulture(''); setSympts([]); setVille(''); setEmail(''); setSendStatus(null); setSubmitted(false); setPendingDetailed(false); }} />
-    </View>}
+    </Animated.View>}
 
     {history.length > 0 && <View style={{ marginTop: 32 }}>
       <SectionTitle title="Historique" />

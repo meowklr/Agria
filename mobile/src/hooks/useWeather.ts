@@ -34,7 +34,7 @@ export function useWeather(initialCity: string) {
   }, []);
 
   const refresh = useCallback(async (c?: string) => { const t = c || city; setLoading(true); const [m, p] = await Promise.all([fetchMeteoActuelle(t), fetchPrevisions(t)]); setMeteo(m); setPrevisions(p); setLoading(false); }, [city]);
-  useEffect(() => { refresh(); }, [city]);
+  useEffect(() => { setLoading(true); Promise.all([fetchMeteoActuelle(city), fetchPrevisions(city)]).then(([m, p]) => { setMeteo(m); setPrevisions(p); }).finally(() => setLoading(false)); }, [city]);
   return { meteo, previsions, loading, city, setCity, refresh };
 }
 

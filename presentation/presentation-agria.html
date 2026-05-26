@@ -694,7 +694,7 @@
 
   <!-- NAVIGATION -->
   <nav id="mainNav">
-    <a class="nav-logo" href="#hero">Agria <span class="nav-sommaire-label">— Sommaire</span></a>
+    <a class="nav-logo" href="#hero">Agria</a>
     <div class="nav-center">
       <a href="#veille-intro">Veille</a>
       <a href="#intro">Aperçu</a>
@@ -745,8 +745,8 @@
       <div class="veille-findings">
         <div class="veille-section-head rs"><h3>Constats issus de la veille</h3><p>4 constats majeurs justifiant la création d'Agria.</p></div>
         <div class="findings-grid">
-          <div class="finding-card rs d1"><div class="finding-icon"><svg class="svg-icon"><use href="#svg-thermo"/></svg></div><h4>Climat instable</h4><p>Les cultures exposées aux épisodes de chaleur, gel, sécheresse ou fortes pluies.</p></div>
-          <div class="finding-card rs d2"><div class="finding-icon"><svg class="svg-icon"><use href="#svg-goutte"/></svg></div><h4>Stress hydrique</h4><p>Le manque d'eau impacte le rendement et oblige à anticiper l'irrigation.</p></div>
+          <div class="finding-card rs d1"><div class="finding-icon"><svg class="svg-icon"><use href="#svg-thermo"/></svg></div><h4>Climat instable</h4><p>Chaleur · Gel · Sécheresse · Fortes pluies</p></div>
+          <div class="finding-card rs d2"><div class="finding-icon"><svg class="svg-icon"><use href="#svg-goutte"/></svg></div><h4>Stress hydrique</h4><p>Baisse de rendement · Irrigation à anticiper</p></div>
           <div class="finding-card rs d3"><div class="finding-icon"><svg class="svg-icon"><use href="#svg-feuille"/></svg></div><h4>Maladies des cultures</h4><p>Maladies et ravageurs à repérer rapidement pour éviter des pertes.</p></div>
           <div class="finding-card rs d4"><div class="finding-icon"><i class="fa-solid fa-database"></i></div><h4>Données dispersées</h4><p>Météo, diagnostics et parcelles souvent séparés, compliquant la décision.</p></div>
         </div>
@@ -806,7 +806,7 @@
         <p class="section-body">Vue unifiée : météo dynamique, alertes prioritaires et état des parcelles — en un coup d'oeil.</p>
         <ul class="feature-list">
           <li class="feature-item r d1"><div class="feature-item-icon"><i class="fa-solid fa-cloud-sun"></i></div><div class="feature-item-text"><h4>Météo dynamique</h4><p>OpenWeatherMap en direct · Prévisions 5 jours.</p></div></li>
-          <li class="feature-item r d2"><div class="feature-item-icon"><i class="fa-solid fa-triangle-exclamation"></i></div><div class="feature-item-text"><h4>Alertes intelligentes</h4><p>Scoring multi-facteurs — Danger, Vigilance ou Info selon les conditions.</p></div></li>
+          <li class="feature-item r d2"><div class="feature-item-icon"><i class="fa-solid fa-triangle-exclamation"></i></div><div class="feature-item-text"><h4>Alertes intelligentes</h4><p>Scoring 7 facteurs → Danger · Vigilance · Info</p></div></li>
           <li class="feature-item r d3"><div class="feature-item-icon"><i class="fa-solid fa-seedling"></i></div><div class="feature-item-text"><h4>Aperçu des parcelles</h4><p>Champs · Cultures · État de santé — vue d'ensemble.</p></div></li>
         </ul>
       </div>
@@ -822,7 +822,7 @@
       <div class="rl">
         <p class="section-label">Système d'alertes</p>
         <h2 class="section-title">Alertes IA <em>enrichies</em></h2>
-        <p class="section-body">Scoring 7 facteurs météo local → envoi à Make.com → analyse par IA → recommandation agronomique personnalisée écrite dans Firebase RTDB et affichée en temps réel.</p>
+        <p class="section-body">7 facteurs météo → Make.com → IA → Firebase RTDB · Temps réel</p>
         <div class="score-grid">
           <div class="score-card sc-danger r d1"><div class="sc-val">≥ 5</div><div class="sc-desc">Risque élevé<br>Temp ≤ 2°C · Humidité ≥ 85%<br>Pluie · Neige · Gel</div></div>
           <div class="score-card sc-warning r d2"><div class="sc-val">≥ 3</div><div class="sc-desc">Vigilance<br>Temp ≤ 7°C · Humidité ≥ 70%<br>Conditions à surveiller</div></div>
@@ -1024,7 +1024,7 @@
       <div class="rl">
         <p class="section-label">Automatisation</p>
         <h2 class="section-title">Make.com — <em>Diagnostic &amp; Alertes IA</em></h2>
-        <p class="section-body">Deux scénarios automatisés : (1) Diagnostic culture → AI Agent agronome → rapport structuré. (2) Alerte météo → scoring local → AI Agent → recommandation écrite dans Firebase RTDB.</p>
+        <p class="section-body">Diagnostic culture · Alerte météo → AI Agent agronome → Firebase RTDB</p>
         <ul class="feature-list" style="margin-top:8px;">
           <li class="feature-item r d1"><div class="feature-item-icon"><i class="fa-solid fa-cloud-sun-rain"></i></div><div class="feature-item-text"><h4>Webhook Alerte météo</h4><p>Scoring 7 facteurs (température, humidité, gel, pluie, cultures sensibles) envoyé par l'app → traitement IA → alerte enrichie.</p></div></li>
           <li class="feature-item r d2"><div class="feature-item-icon"><i class="fa-solid fa-seedling"></i></div><div class="feature-item-text"><h4>Webhook Diagnostic</h4><p>Culture · Symptômes · Coordonnées GPS — envoyés par l'app Expo pour diagnostic agronomique.</p></div></li>
@@ -1371,10 +1371,10 @@
       navPersistent = active;
       if (active) {
         navEl.classList.add('nav-visible', 'nav-persistent');
-        navSommaireLabel.classList.add('show');
+        if (navSommaireLabel) navSommaireLabel.classList.add('show');
       } else {
         navEl.classList.remove('nav-persistent');
-        navSommaireLabel.classList.remove('show');
+        if (navSommaireLabel) navSommaireLabel.classList.remove('show');
         /* Hide after a moment if mouse is not over it */
         hideNavAfterDelay();
       }

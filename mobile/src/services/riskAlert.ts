@@ -78,14 +78,17 @@ export async function sendMorningRiskAlert(city: string, champs: Champ[]) {
 
   try {
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 10000);
-    await fetch(CONFIG.MAKE_WEBHOOK_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload),
-      signal: controller.signal,
-    });
-    clearTimeout(timeoutId);
+    const timeoutId = setTimeout(() => controller.abort(), 60000);
+    try {
+      await fetch(CONFIG.MAKE_WEBHOOK_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+        signal: controller.signal,
+      });
+    } finally {
+      clearTimeout(timeoutId);
+    }
   } catch {
     // Webhook delivery is non-critical
   }
