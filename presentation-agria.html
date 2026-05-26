@@ -1,0 +1,964 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#1C2116">
+  <title>Agr'IA — Présentation</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;0,700;1,300;1,400;1,600&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <style>
+    :root {
+      --cream: #F5F0E6;
+      --cream-dark: #EAE3D3;
+      --cream-mid: #EEE8D8;
+      --olive: #606E52;
+      --olive-dark: #3A4A2E;
+      --forest: #1C2116;
+      --forest-light: #232B1A;
+      --gold: #B8963E;
+      --sage: #8BA070;
+      --sage-light: #A8BC8C;
+      --text: #2A3020;
+      --text-light: #6A7860;
+    }
+
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    html { scroll-behavior: smooth; font-size: 16px; }
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background: var(--cream);
+      color: var(--text);
+      overflow-x: hidden;
+    }
+
+    /* ─── SCROLLBAR ─── */
+    ::-webkit-scrollbar { width: 4px; }
+    ::-webkit-scrollbar-track { background: var(--forest); }
+    ::-webkit-scrollbar-thumb { background: var(--olive); border-radius: 2px; }
+
+    /* ─── NAV ─── */
+    #mainNav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
+      padding: 24px 60px;
+      display: flex; align-items: center; justify-content: space-between;
+      transition: padding .4s, background .4s, border-color .4s;
+      border-bottom: 1px solid transparent;
+    }
+    #mainNav.solid {
+      background: rgba(22, 28, 17, .96);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      padding: 16px 60px;
+      border-bottom-color: rgba(255,255,255,.06);
+    }
+    .nav-logo {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 26px; font-weight: 700; color: #fff;
+      letter-spacing: .06em; text-decoration: none;
+    }
+    .nav-logo em { font-style: italic; color: var(--sage-light); }
+    .nav-center { display: flex; gap: 36px; }
+    .nav-center a {
+      font-size: 12px; font-weight: 600; letter-spacing: .1em;
+      color: rgba(255,255,255,.5); text-decoration: none;
+      text-transform: uppercase; transition: color .25s;
+    }
+    .nav-center a:hover { color: rgba(255,255,255,.9); }
+    .nav-cta {
+      background: var(--olive); color: #fff !important;
+      padding: 9px 22px; border-radius: 100px;
+      font-size: 12px; font-weight: 600; letter-spacing: .08em;
+      text-decoration: none; text-transform: uppercase;
+      transition: background .25s, transform .25s !important;
+    }
+    .nav-cta:hover { background: var(--sage) !important; transform: translateY(-1px); }
+
+    /* ─── HERO ─── */
+    #hero {
+      min-height: 100vh; position: relative;
+      background: var(--forest);
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      text-align: center; padding: 140px 40px 100px;
+      overflow: hidden;
+    }
+    .hero-bg-radial {
+      position: absolute; inset: 0;
+      background: radial-gradient(ellipse 80% 60% at 50% 65%, #2C3E22 0%, var(--forest) 70%);
+    }
+    .hero-ring {
+      position: absolute; border-radius: 50%; pointer-events: none;
+      border: 1px solid rgba(96,110,82,.18);
+      top: 50%; left: 50%; transform: translate(-50%, -50%);
+      animation: ringPulse 8s ease-in-out infinite;
+    }
+    .hero-ring:nth-child(2) { width: 500px; height: 500px; animation-delay: 0s; }
+    .hero-ring:nth-child(3) { width: 780px; height: 780px; animation-delay: 1.5s; border-color: rgba(96,110,82,.1); }
+    .hero-ring:nth-child(4) { width: 1060px; height: 1060px; animation-delay: 3s; border-color: rgba(96,110,82,.06); }
+    @keyframes ringPulse { 0%,100%{opacity:.5} 50%{opacity:1} }
+
+    .hero-content { position: relative; z-index: 2; max-width: 900px; }
+    .hero-eyebrow {
+      display: inline-flex; align-items: center; gap: 10px;
+      background: rgba(96,110,82,.15); border: 1px solid rgba(138,160,112,.3);
+      border-radius: 100px; padding: 8px 20px;
+      font-size: 11px; font-weight: 700; letter-spacing: .14em;
+      color: var(--sage-light); text-transform: uppercase; margin-bottom: 36px;
+    }
+    .hero-eyebrow-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--sage-light); animation: dotBlink 2s ease-in-out infinite; }
+    @keyframes dotBlink { 0%,100%{opacity:.4} 50%{opacity:1} }
+
+    .hero-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(88px, 14vw, 160px);
+      font-weight: 700; line-height: .88;
+      color: #fff; margin-bottom: 28px;
+      letter-spacing: -.02em;
+    }
+    .hero-title em { font-style: italic; color: var(--sage-light); }
+
+    .hero-tagline {
+      font-size: clamp(16px, 2vw, 20px); font-weight: 300;
+      color: rgba(255,255,255,.55); max-width: 520px;
+      margin: 0 auto 52px; line-height: 1.75; letter-spacing: .01em;
+    }
+    .hero-actions { display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; }
+    .hero-note {
+      margin: 20px auto 0;
+      font-size: 0.95rem;
+      color: rgba(255,255,255,0.75);
+      max-width: 560px;
+    }
+    .btn-hero-primary {
+      background: var(--olive); color: #fff;
+      font-size: 14px; font-weight: 600; letter-spacing: .06em;
+      padding: 15px 36px; border-radius: 100px;
+      text-decoration: none; text-transform: uppercase;
+      transition: all .3s;
+    }
+    .btn-hero-primary:hover { background: var(--sage); transform: translateY(-3px); box-shadow: 0 12px 30px rgba(96,110,82,.4); }
+    .btn-hero-ghost {
+      background: transparent; color: rgba(255,255,255,.65);
+      font-size: 14px; font-weight: 500; letter-spacing: .06em;
+      padding: 15px 36px; border-radius: 100px;
+      text-decoration: none; text-transform: uppercase;
+      border: 1px solid rgba(255,255,255,.18); transition: all .3s;
+    }
+    .btn-hero-ghost:hover { border-color: rgba(255,255,255,.5); color: #fff; }
+
+    .hero-scroll-hint {
+      position: absolute; bottom: 48px; left: 50%; transform: translateX(-50%);
+      display: flex; flex-direction: column; align-items: center; gap: 10px;
+      color: rgba(255,255,255,.25); font-size: 10px; letter-spacing: .16em; text-transform: uppercase;
+    }
+    .scroll-line { width: 1px; height: 44px; background: rgba(255,255,255,.18); animation: scrollFade 2.2s ease-in-out infinite; }
+    @keyframes scrollFade { 0%,100%{opacity:.15} 50%{opacity:.7} }
+
+    /* ─── STATS BAR ─── */
+    .stats-bar {
+      background: var(--olive-dark);
+      display: grid; grid-template-columns: repeat(4, 1fr);
+    }
+    .stat-item {
+      padding: 48px 32px; text-align: center;
+      border-right: 1px solid rgba(255,255,255,.1);
+      transition: background .3s;
+    }
+    .stat-item:hover { background: rgba(255,255,255,.04); }
+    .stat-item:last-child { border-right: none; }
+    .stat-value {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 60px; font-weight: 700; color: #fff;
+      line-height: 1; margin-bottom: 10px;
+    }
+    .stat-value sup { font-size: 28px; vertical-align: super; }
+    .stat-label {
+      font-size: 11px; font-weight: 600; letter-spacing: .12em;
+      color: rgba(255,255,255,.4); text-transform: uppercase;
+    }
+
+    /* ─── SECTIONS LAYOUT ─── */
+    section { position: relative; overflow: hidden; }
+    .container { max-width: 1180px; margin: 0 auto; }
+    .section-label {
+      font-size: 11px; font-weight: 700; letter-spacing: .16em;
+      text-transform: uppercase; color: var(--olive); margin-bottom: 18px;
+    }
+    .section-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(38px, 5vw, 62px);
+      font-weight: 600; line-height: 1.08; margin-bottom: 22px;
+    }
+    .section-title em { font-style: italic; color: var(--olive); }
+    .section-body {
+      font-size: 16px; font-weight: 300; color: var(--text-light);
+      line-height: 1.85; margin-bottom: 36px;
+    }
+
+    /* ─── INTRO SECTION ─── */
+    #intro { background: var(--cream); padding: 130px 60px; }
+    .intro-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 100px; align-items: center; }
+    .pills-row { display: flex; flex-wrap: wrap; gap: 10px; }
+    .pill {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: #fff; border: 1px solid var(--cream-dark);
+      border-radius: 100px; padding: 8px 18px;
+      font-size: 13px; font-weight: 500; color: var(--olive-dark);
+      transition: all .3s;
+    }
+    .pill:hover { background: var(--olive-dark); color: #fff; border-color: var(--olive-dark); }
+    .pill:hover i { color: rgba(255,255,255,.8); }
+    .pill i { font-size: 13px; color: var(--olive); transition: color .3s; }
+
+    /* ─── PHONE MOCKUP ─── */
+    .phone-wrap { display: flex; justify-content: center; align-items: center; position: relative; }
+    .phone-glow {
+      position: absolute; width: 300px; height: 300px; border-radius: 50%;
+      background: radial-gradient(circle, rgba(96,110,82,.18) 0%, transparent 70%);
+    }
+    .phone {
+      width: 260px; border-radius: 38px;
+      background: #0A1208;
+      border: 2px solid #1E2E18;
+      box-shadow: 0 50px 100px rgba(0,0,0,.5), 0 0 0 1px rgba(255,255,255,.04);
+      overflow: hidden; position: relative; z-index: 2;
+    }
+    .phone-notch {
+      background: #0A1208; height: 26px;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .notch-pill { width: 76px; height: 7px; background: #162010; border-radius: 4px; }
+    .phone-status {
+      padding: 3px 16px; display: flex; justify-content: space-between;
+      font-size: 9px; color: #4A8030; font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 500;
+    }
+
+    /* Mini App UI inside phones */
+    .mini-header {
+      background: #0A1208; padding: 8px 14px;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .mini-logo { font-family: 'Cormorant Garamond', serif; font-size: 18px; font-weight: 700; color: #B8D880; letter-spacing: .04em; }
+    .mini-content { background: #0C1A0A; padding: 12px 14px 6px; }
+    .mini-greeting-sub { font-size: 9px; color: #3A6020; font-family: 'Plus Jakarta Sans', sans-serif; margin-bottom: 2px; letter-spacing: .04em; }
+    .mini-greeting { font-family: 'Cormorant Garamond', serif; font-size: 18px; font-weight: 600; color: #C0E490; margin-bottom: 12px; }
+    .mini-card {
+      background: #122010; border: 1px solid #1A3018;
+      border-radius: 11px; padding: 10px 12px; margin-bottom: 8px;
+    }
+    .mini-card-label { font-size: 8px; color: #386020; font-family: 'Plus Jakarta Sans', sans-serif; text-transform: uppercase; letter-spacing: .1em; margin-bottom: 4px; }
+    .mini-temp { font-family: 'Cormorant Garamond', serif; font-size: 34px; font-weight: 600; color: #C0E490; line-height: 1; }
+    .mini-temp-sub { font-size: 9px; color: #507840; font-family: 'Plus Jakarta Sans', sans-serif; margin-top: 2px; }
+    .mini-alert { background: #180806; border: 1px solid #2A100A; border-radius: 10px; padding: 9px 12px; }
+    .mini-badge { font-size: 8px; font-weight: 700; color: #FF9070; background: #B02810; border-radius: 4px; padding: 1px 6px; display: inline-block; margin-bottom: 4px; letter-spacing: .06em; }
+    .mini-alert-text { font-size: 9px; color: #B06040; font-family: 'Plus Jakarta Sans', sans-serif; line-height: 1.5; }
+    .mini-nav {
+      background: #060E06; border-top: 1px solid #112010;
+      display: flex; padding: 7px 0 10px;
+    }
+    .mini-nav-item { flex: 1; text-align: center; }
+    .mini-nav-item i { display: block; font-size: 13px; }
+    .mini-nav-label { font-size: 7px; font-family: 'Plus Jakarta Sans', sans-serif; margin-top: 2px; }
+    .mini-nav-active i { color: #5A9030; }
+    .mini-nav-active .mini-nav-label { color: #5A9030; }
+    .mini-nav-inactive i { color: #223018; }
+    .mini-nav-inactive .mini-nav-label { color: #223018; }
+
+    /* ─── DASHBOARD SECTION ─── */
+    #dashboard { background: var(--forest); padding: 130px 60px; }
+    #dashboard .container { display: grid; grid-template-columns: 1fr 1fr; gap: 100px; align-items: center; }
+    #dashboard .section-label { color: var(--sage-light); }
+    #dashboard .section-title { color: #fff; }
+    #dashboard .section-body { color: rgba(255,255,255,.45); }
+    .feature-list { list-style: none; display: flex; flex-direction: column; gap: 16px; margin-top: 8px; }
+    .feature-item {
+      display: flex; align-items: flex-start; gap: 16px;
+      padding: 18px 20px; border-radius: 14px;
+      background: rgba(255,255,255,.03); border: 1px solid rgba(255,255,255,.05);
+      transition: all .35s; cursor: default;
+    }
+    .feature-item:hover { background: rgba(255,255,255,.07); border-color: rgba(96,110,82,.3); transform: translateX(4px); }
+    .feature-item-icon {
+      width: 40px; height: 40px; border-radius: 10px; flex-shrink: 0;
+      background: rgba(96,110,82,.2); display: flex; align-items: center; justify-content: center;
+      font-size: 17px; color: var(--sage-light);
+    }
+    .feature-item-text h4 { font-size: 14px; font-weight: 600; color: rgba(255,255,255,.9); margin-bottom: 4px; }
+    .feature-item-text p { font-size: 12px; color: rgba(255,255,255,.4); line-height: 1.65; }
+
+    /* ─── DIAGNOSTIC SECTION ─── */
+    #diagnostic { background: var(--cream); padding: 130px 60px; }
+    .diag-header { text-align: center; margin-bottom: 80px; }
+    .steps-grid {
+      display: grid; grid-template-columns: repeat(4, 1fr);
+      gap: 16px; max-width: 1000px; margin: 0 auto 60px;
+    }
+    .step-card {
+      background: #fff; border-radius: 22px; padding: 28px 22px;
+      border: 1px solid var(--cream-dark); text-align: center;
+      transition: all .4s ease;
+    }
+    .step-card:hover { transform: translateY(-10px); box-shadow: 0 24px 50px rgba(0,0,0,.08); border-color: var(--sage); }
+    .step-card.result { background: var(--olive-dark); border-color: var(--olive-dark); }
+    .step-num {
+      width: 34px; height: 34px; border-radius: 50%;
+      background: var(--olive); color: #fff;
+      font-size: 13px; font-weight: 700;
+      display: flex; align-items: center; justify-content: center;
+      margin: 0 auto 16px;
+    }
+    .step-card.result .step-num { background: rgba(255,255,255,.15); }
+    .step-icon { font-size: 30px; color: var(--olive); margin-bottom: 12px; }
+    .step-card.result .step-icon { color: #90D050; }
+    .step-card h4 { font-size: 14px; font-weight: 600; color: var(--forest); margin-bottom: 8px; }
+    .step-card.result h4 { color: #fff; }
+    .step-card p { font-size: 12px; color: var(--text-light); line-height: 1.65; }
+    .step-card.result p { color: rgba(255,255,255,.55); }
+
+    .result-panel {
+      max-width: 640px; margin: 0 auto;
+      background: var(--olive-dark); border-radius: 26px; padding: 44px;
+      text-align: center;
+    }
+    .result-badge {
+      display: inline-block; background: rgba(255,255,255,.12);
+      border-radius: 100px; padding: 6px 22px; margin-bottom: 22px;
+      font-size: 11px; font-weight: 700; letter-spacing: .12em;
+      text-transform: uppercase; color: #A0D870;
+    }
+    .result-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 38px; font-weight: 600; color: #fff; margin-bottom: 14px;
+    }
+    .result-body { font-size: 15px; color: rgba(255,255,255,.6); line-height: 1.75; margin-bottom: 28px; }
+    .reco-list { text-align: left; display: flex; flex-direction: column; gap: 10px; }
+    .reco-item {
+      display: flex; align-items: center; gap: 12px;
+      background: rgba(255,255,255,.07); border-radius: 12px; padding: 13px 16px;
+      font-size: 13px; color: rgba(255,255,255,.8);
+    }
+    .reco-item i { color: #88CC48; font-size: 14px; flex-shrink: 0; }
+
+    /* ─── CARTE SECTION ─── */
+    #carte { background: var(--forest-light); padding: 130px 60px; }
+    #carte .container { display: grid; grid-template-columns: 1fr 1fr; gap: 100px; align-items: center; }
+    #carte .section-label { color: var(--sage-light); }
+    #carte .section-title { color: #fff; }
+    #carte .section-body { color: rgba(255,255,255,.45); }
+    #carte .feature-item { background: rgba(255,255,255,.03); }
+
+    .map-mock {
+      background: #121E0E; border-radius: 24px; overflow: hidden;
+      border: 1px solid rgba(255,255,255,.08); height: 400px; position: relative;
+    }
+    .map-grid-bg {
+      position: absolute; inset: 0;
+      background-image: linear-gradient(rgba(255,255,255,.03) 1px, transparent 1px),
+                        linear-gradient(90deg, rgba(255,255,255,.03) 1px, transparent 1px);
+      background-size: 38px 38px;
+    }
+    .map-parcelle { position: absolute; border-radius: 7px; cursor: pointer; transition: filter .3s; }
+    .map-parcelle:hover { filter: brightness(1.4); }
+    .p1 { width: 150px; height: 104px; top: 55px; left: 55px; background: rgba(80,170,50,.3); border: 2px solid rgba(80,170,50,.7); }
+    .p2 { width: 106px; height: 85px; top: 95px; right: 70px; background: rgba(200,155,35,.3); border: 2px solid rgba(200,155,35,.7); }
+    .p3 { width: 95px; height: 125px; bottom: 55px; left: 115px; background: rgba(55,130,90,.3); border: 2px solid rgba(55,130,90,.7); }
+    .map-label {
+      position: absolute; background: rgba(5,12,5,.75); color: rgba(255,255,255,.8);
+      font-size: 9px; font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 600;
+      border-radius: 5px; padding: 3px 7px; pointer-events: none; line-height: 1.5;
+      backdrop-filter: blur(4px);
+    }
+    .map-tools {
+      position: absolute; bottom: 16px; right: 16px;
+      display: flex; flex-direction: column; gap: 5px;
+    }
+    .map-tool-btn {
+      width: 34px; height: 34px; border-radius: 8px;
+      background: rgba(0,0,0,.55); backdrop-filter: blur(8px);
+      display: flex; align-items: center; justify-content: center;
+      color: rgba(255,255,255,.65); font-size: 13px;
+      border: 1px solid rgba(255,255,255,.1); cursor: pointer;
+      transition: all .25s;
+    }
+    .map-tool-btn:hover { background: rgba(0,0,0,.8); color: #fff; }
+    .map-legend {
+      position: absolute; top: 16px; left: 16px;
+      background: rgba(0,0,0,.65); backdrop-filter: blur(8px);
+      border-radius: 10px; padding: 10px 14px;
+    }
+    .legend-item {
+      display: flex; align-items: center; gap: 7px; margin-bottom: 5px;
+      font-size: 10px; color: rgba(255,255,255,.65);
+      font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+    .legend-item:last-child { margin-bottom: 0; }
+    .legend-dot { width: 10px; height: 10px; border-radius: 3px; }
+
+    /* ─── PROFIL SECTION ─── */
+    #profil { background: var(--cream-mid); padding: 130px 60px; }
+    .profil-grid { display: grid; grid-template-columns: 1fr 2fr; gap: 80px; align-items: center; }
+    .profil-cards { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .profil-card {
+      background: #fff; border-radius: 18px; padding: 24px;
+      border: 1px solid var(--cream-dark); transition: all .35s;
+    }
+    .profil-card:hover { transform: translateY(-6px); box-shadow: 0 16px 36px rgba(0,0,0,.07); }
+    .profil-card-icon { font-size: 28px; margin-bottom: 14px; }
+    .profil-card h4 { font-size: 14px; font-weight: 600; color: var(--forest); margin-bottom: 7px; }
+    .profil-card p { font-size: 12px; color: var(--text-light); line-height: 1.65; }
+    .profil-card.highlight { background: var(--olive-dark); border-color: var(--olive-dark); }
+    .profil-card.highlight h4 { color: #fff; }
+    .profil-card.highlight p { color: rgba(255,255,255,.5); }
+    .profil-card.span2 { grid-column: 1 / -1; }
+
+    /* ─── TECH SECTION ─── */
+    #tech { background: var(--forest); padding: 130px 60px; }
+    #tech .section-label { color: var(--sage-light); }
+    #tech .section-title { color: #fff; }
+    .tech-header { text-align: center; margin-bottom: 80px; }
+    .tech-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; max-width: 960px; margin: 0 auto; }
+    .tech-card {
+      background: rgba(255,255,255,.04); border-radius: 20px; padding: 30px 28px;
+      border: 1px solid rgba(255,255,255,.07); transition: all .4s;
+    }
+    .tech-card:hover { background: rgba(255,255,255,.08); border-color: rgba(96,110,82,.35); transform: translateY(-6px); }
+    .tech-emoji { font-size: 34px; margin-bottom: 18px; }
+    .tech-card h4 { font-size: 16px; font-weight: 600; color: rgba(255,255,255,.9); margin-bottom: 10px; }
+    .tech-card p { font-size: 13px; color: rgba(255,255,255,.38); line-height: 1.7; }
+
+    /* ─── CTA SECTION ─── */
+    #cta {
+      background: var(--olive-dark); padding: 130px 60px;
+      text-align: center; position: relative; overflow: hidden;
+    }
+    .cta-bg {
+      position: absolute; inset: 0;
+      background: radial-gradient(ellipse 70% 70% at 50% 50%, rgba(96,110,82,.25) 0%, transparent 70%);
+    }
+    .cta-content { position: relative; z-index: 2; }
+    .cta-label { color: var(--sage-light); margin-bottom: 24px; }
+    .cta-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(54px, 8vw, 96px);
+      font-weight: 700; color: #fff; line-height: 1.0;
+      margin-bottom: 22px; letter-spacing: -.02em;
+    }
+    .cta-title em { font-style: italic; color: var(--sage-light); }
+    .cta-sub { font-size: 17px; color: rgba(255,255,255,.45); margin-bottom: 52px; font-weight: 300; letter-spacing: .02em; }
+    .cta-btns { display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; }
+    .btn-cta-white {
+      background: #fff; color: var(--olive-dark);
+      font-size: 14px; font-weight: 700; letter-spacing: .08em;
+      padding: 16px 40px; border-radius: 100px; text-decoration: none;
+      text-transform: uppercase; transition: all .3s;
+    }
+    .btn-cta-white:hover { background: var(--cream); transform: translateY(-3px); box-shadow: 0 16px 40px rgba(0,0,0,.25); }
+    .btn-cta-ghost {
+      background: transparent; color: rgba(255,255,255,.65);
+      font-size: 14px; font-weight: 500; letter-spacing: .08em;
+      padding: 16px 40px; border-radius: 100px; text-decoration: none;
+      border: 1px solid rgba(255,255,255,.22); text-transform: uppercase; transition: all .3s;
+    }
+    .btn-cta-ghost:hover { border-color: rgba(255,255,255,.6); color: #fff; }
+
+    /* ─── FOOTER ─── */
+    footer {
+      background: var(--forest); padding: 40px 60px;
+      display: flex; align-items: center; justify-content: space-between;
+      border-top: 1px solid rgba(255,255,255,.05);
+    }
+    .footer-logo {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 22px; font-weight: 700; color: rgba(255,255,255,.45); letter-spacing: .06em;
+    }
+    .footer-copy { font-size: 12px; color: rgba(255,255,255,.2); letter-spacing: .04em; }
+    .footer-nav { display: flex; gap: 28px; }
+    .footer-nav a {
+      font-size: 11px; font-weight: 600; letter-spacing: .1em; text-transform: uppercase;
+      color: rgba(255,255,255,.28); text-decoration: none; transition: color .25s;
+    }
+    .footer-nav a:hover { color: rgba(255,255,255,.7); }
+
+    /* ─── ANIMATIONS ─── */
+    .r { opacity: 0; transform: translateY(42px); transition: opacity .85s cubic-bezier(.16,1,.3,1), transform .85s cubic-bezier(.16,1,.3,1); }
+    .rl { opacity: 0; transform: translateX(-50px); transition: opacity .85s cubic-bezier(.16,1,.3,1), transform .85s cubic-bezier(.16,1,.3,1); }
+    .rr { opacity: 0; transform: translateX(50px); transition: opacity .85s cubic-bezier(.16,1,.3,1), transform .85s cubic-bezier(.16,1,.3,1); }
+    .vis { opacity: 1 !important; transform: none !important; }
+    .d1 { transition-delay: .1s; }
+    .d2 { transition-delay: .2s; }
+    .d3 { transition-delay: .3s; }
+    .d4 { transition-delay: .45s; }
+    .d5 { transition-delay: .6s; }
+
+    /* ─── RESPONSIVE ─── */
+    @media (max-width: 1024px) {
+      .intro-grid, #dashboard .container, #carte .container, .profil-grid { grid-template-columns: 1fr; gap: 60px; }
+      .steps-grid { grid-template-columns: repeat(2, 1fr); }
+      .tech-grid { grid-template-columns: repeat(2, 1fr); }
+      .stats-bar { grid-template-columns: repeat(2, 1fr); }
+      .stat-item { border-bottom: 1px solid rgba(255,255,255,.1); }
+    }
+    @media (max-width: 768px) {
+      #mainNav { padding: 16px 24px; }
+      #mainNav.solid { padding: 12px 24px; }
+      .nav-center, .nav-cta { display: none; }
+      #hero, #intro, #dashboard, #diagnostic, #carte, #profil, #tech, #cta { padding: 90px 24px; }
+      footer { flex-direction: column; gap: 20px; text-align: center; padding: 32px 24px; }
+      .steps-grid { grid-template-columns: 1fr; }
+      .tech-grid { grid-template-columns: 1fr; }
+      .profil-cards { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ── NAVIGATION ── -->
+  <nav id="mainNav">
+    <a class="nav-logo" href="#hero">Agr'<em>IA</em></a>
+    <div class="nav-center">
+      <a href="#intro">Aperçu</a>
+      <a href="#dashboard">Dashboard</a>
+      <a href="#diagnostic">Diagnostic</a>
+      <a href="#carte">Carte</a>
+      <a href="#tech">Stack</a>
+    </div>
+    <a href="login.html" class="nav-cta">Ouvrir l'app</a>
+  </nav>
+
+  <!-- ── HERO ── -->
+  <section id="hero">
+    <div class="hero-bg-radial"></div>
+    <div class="hero-ring"></div>
+    <div class="hero-ring"></div>
+    <div class="hero-ring"></div>
+    <div class="hero-content">
+      <div class="hero-eyebrow">
+        <span class="hero-eyebrow-dot"></span>
+        Application mobile · Agriculture &amp; Intelligence Artificielle
+      </div>
+      <h1 class="hero-title">Agr'<em>IA</em></h1>
+      <p class="hero-tagline">L'intelligence artificielle au service de l'agriculteur moderne. Gérez, diagnostiquez et optimisez vos cultures en temps réel.</p>
+      <div class="hero-actions">
+        <a href="#intro" class="btn-hero-primary">Découvrir l'application</a>
+        <a href="#tech" class="btn-hero-ghost">Stack technique →</a>
+      </div>
+      <p class="hero-note">Il existe une partie Application.</p>
+    </div>
+    <div class="hero-scroll-hint">
+      <span>Défiler</span>
+      <div class="scroll-line"></div>
+    </div>
+  </section>
+
+  <!-- ── STATS BAR ── -->
+  <div class="stats-bar">
+    <div class="stat-item r d1">
+      <div class="stat-value"><span data-count="4">0</span></div>
+      <div class="stat-label">Écrans principaux</div>
+    </div>
+    <div class="stat-item r d2">
+      <div class="stat-value"><span data-count="3">0</span></div>
+      <div class="stat-label">Étapes diagnostic IA</div>
+    </div>
+    <div class="stat-item r d3">
+      <div class="stat-value"><span data-count="100">0</span><sup>%</sup></div>
+      <div class="stat-label">Mobile First</div>
+    </div>
+    <div class="stat-item r d4">
+      <div class="stat-value"><span data-count="24">0</span><sup>h</sup></div>
+      <div class="stat-label">Données en temps réel</div>
+    </div>
+  </div>
+
+  <!-- ── INTRO ── -->
+  <section id="intro">
+    <div class="container">
+      <div class="intro-grid">
+        <div class="rl">
+          <p class="section-label">À propos</p>
+          <h2 class="section-title">L'IA au service de vos <em>cultures</em></h2>
+          <p class="section-body">Agr'IA est une application mobile pensée pour les agriculteurs d'aujourd'hui. Elle combine intelligence artificielle, données météo en temps réel et diagnostic agronomique pour vous aider à prendre les meilleures décisions pour votre exploitation.</p>
+          <div class="pills-row">
+            <span class="pill"><i class="fa-solid fa-cloud-sun"></i> Météo en direct</span>
+            <span class="pill"><i class="fa-solid fa-map"></i> Carte des parcelles</span>
+            <span class="pill"><i class="fa-solid fa-brain"></i> Diagnostic IA</span>
+            <span class="pill"><i class="fa-solid fa-bell"></i> Alertes intelligentes</span>
+            <span class="pill"><i class="fa-solid fa-user-tie"></i> Profil exploitation</span>
+            <span class="pill"><i class="fa-solid fa-database"></i> Backend Supabase</span>
+          </div>
+        </div>
+        <div class="rr">
+          <div class="phone-wrap">
+            <div class="phone-glow"></div>
+            <div class="phone">
+              <div class="phone-notch"><div class="notch-pill"></div></div>
+              <div class="phone-status"><span>9:41</span><span>▲ ●●●</span></div>
+              <div class="mini-header">
+                <span class="mini-logo">Agr'IA</span>
+                <i class="fa-solid fa-bell" style="font-size:13px;color:#4A7828;"></i>
+              </div>
+              <div class="mini-content">
+                <div class="mini-greeting-sub">Mardi 20 mai 2025</div>
+                <div class="mini-greeting">Bonjour, Jean-Luc</div>
+                <div class="mini-card">
+                  <div class="mini-card-label">Météo du jour — Paris</div>
+                  <div style="display:flex;align-items:center;justify-content:space-between;">
+                    <div class="mini-temp">17<small style="font-size:16px;font-family:'Cormorant Garamond',serif;">°C</small></div>
+                    <i class="fa-solid fa-cloud-sun" style="font-size:26px;color:#C8980A;"></i>
+                  </div>
+                  <div class="mini-temp-sub">Partiellement nuageux · Humidité 65%</div>
+                </div>
+                <div class="mini-alert">
+                  <div class="mini-badge">⚠ URGENT</div>
+                  <div class="mini-alert-text">Risque de gel prévu cette nuit. Protégez vos cultures sensibles.</div>
+                </div>
+              </div>
+              <div class="mini-nav">
+                <div class="mini-nav-item mini-nav-active"><i class="fa-solid fa-house"></i><div class="mini-nav-label">Accueil</div></div>
+                <div class="mini-nav-item mini-nav-inactive"><i class="fa-solid fa-map"></i><div class="mini-nav-label">Carte</div></div>
+                <div class="mini-nav-item mini-nav-inactive"><i class="fa-solid fa-magnifying-glass"></i><div class="mini-nav-label">Diagnostic</div></div>
+                <div class="mini-nav-item mini-nav-inactive"><i class="fa-solid fa-user"></i><div class="mini-nav-label">Profil</div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── DASHBOARD ── -->
+  <section id="dashboard">
+    <div class="container">
+      <div class="rl">
+        <p class="section-label">Tableau de bord</p>
+        <h2 class="section-title" style="color:#fff;">Un aperçu complet de votre <em style="color:var(--sage-light)">exploitation</em></h2>
+        <p class="section-body">Le tableau de bord centralise toutes les informations essentielles. En un coup d'œil, consultez la météo, les alertes prioritaires et l'état de vos parcelles.</p>
+        <ul class="feature-list">
+          <li class="feature-item r d1">
+            <div class="feature-item-icon"><i class="fa-solid fa-cloud-sun"></i></div>
+            <div class="feature-item-text">
+              <h4>Météo dynamique</h4>
+              <p>Consultez la météo de n'importe quelle ville. Prévisions 5 jours intégrées via API externe.</p>
+            </div>
+          </li>
+          <li class="feature-item r d2">
+            <div class="feature-item-icon"><i class="fa-solid fa-triangle-exclamation"></i></div>
+            <div class="feature-item-text">
+              <h4>Alertes intelligentes</h4>
+              <p>Gel, sécheresse, conditions favorables — priorités Urgent / Attention / Info en temps réel.</p>
+            </div>
+          </li>
+          <li class="feature-item r d3">
+            <div class="feature-item-icon"><i class="fa-solid fa-seedling"></i></div>
+            <div class="feature-item-text">
+              <h4>Aperçu des parcelles</h4>
+              <p>Visualisez vos champs, leur culture en cours et leur état de santé depuis le dashboard.</p>
+            </div>
+          </li>
+        </ul>
+      </div>
+      <div class="rr">
+        <div class="phone-wrap">
+          <div class="phone-glow"></div>
+          <div class="phone">
+            <div class="phone-notch"><div class="notch-pill"></div></div>
+            <div class="phone-status"><span>9:41</span><span>●●●</span></div>
+            <div class="mini-header">
+              <span class="mini-logo">Agr'IA</span>
+              <i class="fa-solid fa-bell" style="font-size:13px;color:#4A7828;"></i>
+            </div>
+            <div style="background:#0C1A0A;padding:10px 14px;">
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px;">
+                <div class="mini-card" style="margin:0;">
+                  <div class="mini-card-label">PARCELLES</div>
+                  <div style="font-family:'Cormorant Garamond',serif;font-size:30px;font-weight:700;color:#C0E490;">4</div>
+                </div>
+                <div class="mini-card" style="margin:0;">
+                  <div class="mini-card-label">SURFACE</div>
+                  <div style="font-family:'Cormorant Garamond',serif;font-size:30px;font-weight:700;color:#C0E490;">25<small style="font-size:14px">ha</small></div>
+                </div>
+              </div>
+              <div class="mini-card">
+                <div class="mini-card-label">Prévisions 5 jours</div>
+                <div style="display:flex;justify-content:space-between;margin-top:4px;">
+                  <div style="text-align:center;"><div style="font-size:8px;color:#507840;font-family:'Plus Jakarta Sans',sans-serif;">Lun</div><i class="fa-solid fa-sun" style="font-size:13px;color:#C49010;display:block;margin:3px 0;"></i><div style="font-size:9px;color:#B8D870;font-family:'Plus Jakarta Sans',sans-serif;">21°</div></div>
+                  <div style="text-align:center;"><div style="font-size:8px;color:#507840;font-family:'Plus Jakarta Sans',sans-serif;">Mar</div><i class="fa-solid fa-cloud" style="font-size:13px;color:#6A8A60;display:block;margin:3px 0;"></i><div style="font-size:9px;color:#B8D870;font-family:'Plus Jakarta Sans',sans-serif;">17°</div></div>
+                  <div style="text-align:center;"><div style="font-size:8px;color:#507840;font-family:'Plus Jakarta Sans',sans-serif;">Mer</div><i class="fa-solid fa-cloud-rain" style="font-size:13px;color:#4080B0;display:block;margin:3px 0;"></i><div style="font-size:9px;color:#B8D870;font-family:'Plus Jakarta Sans',sans-serif;">14°</div></div>
+                  <div style="text-align:center;"><div style="font-size:8px;color:#507840;font-family:'Plus Jakarta Sans',sans-serif;">Jeu</div><i class="fa-solid fa-sun" style="font-size:13px;color:#C49010;display:block;margin:3px 0;"></i><div style="font-size:9px;color:#B8D870;font-family:'Plus Jakarta Sans',sans-serif;">22°</div></div>
+                  <div style="text-align:center;"><div style="font-size:8px;color:#507840;font-family:'Plus Jakarta Sans',sans-serif;">Ven</div><i class="fa-solid fa-cloud-sun" style="font-size:13px;color:#C49010;display:block;margin:3px 0;"></i><div style="font-size:9px;color:#B8D870;font-family:'Plus Jakarta Sans',sans-serif;">19°</div></div>
+                </div>
+              </div>
+              <div class="mini-alert" style="margin-top:8px;">
+                <div class="mini-badge">⚠ URGENT</div>
+                <div class="mini-alert-text">Risque de gel prévu cette nuit. Protégez vos cultures sensibles.</div>
+              </div>
+            </div>
+            <div class="mini-nav">
+              <div class="mini-nav-item mini-nav-active"><i class="fa-solid fa-house"></i><div class="mini-nav-label">Accueil</div></div>
+              <div class="mini-nav-item mini-nav-inactive"><i class="fa-solid fa-map"></i><div class="mini-nav-label">Carte</div></div>
+              <div class="mini-nav-item mini-nav-inactive"><i class="fa-solid fa-magnifying-glass"></i><div class="mini-nav-label">Diagnostic</div></div>
+              <div class="mini-nav-item mini-nav-inactive"><i class="fa-solid fa-user"></i><div class="mini-nav-label">Profil</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── DIAGNOSTIC ── -->
+  <section id="diagnostic">
+    <div class="container">
+      <div class="diag-header">
+        <p class="section-label r">Fonctionnalité clé</p>
+        <h2 class="section-title r" style="text-align:center;">Diagnostic IA en <em>3 étapes</em></h2>
+        <p class="section-body r" style="text-align:center;max-width:580px;margin-left:auto;margin-right:auto;">Notre moteur IA croise les symptômes observés avec les données météo locales pour diagnostiquer et recommander des traitements en temps réel.</p>
+      </div>
+      <div class="steps-grid">
+        <div class="step-card r d1">
+          <div class="step-num">1</div>
+          <div class="step-icon"><i class="fa-solid fa-seedling"></i></div>
+          <h4>Choisir la culture</h4>
+          <p>Blé, maïs, tournesol, colza ou vigne — sélectionnez votre type de culture parmi les options.</p>
+        </div>
+        <div class="step-card r d2">
+          <div class="step-num">2</div>
+          <div class="step-icon"><i class="fa-solid fa-eye"></i></div>
+          <h4>Observer les symptômes</h4>
+          <p>Jaunissement, taches, flétrissement, insectes, pourriture — décrivez ce que vous observez.</p>
+        </div>
+        <div class="step-card r d3">
+          <div class="step-num">3</div>
+          <div class="step-icon"><i class="fa-solid fa-location-dot"></i></div>
+          <h4>Localiser la parcelle</h4>
+          <p>Renseignez votre ville pour enrichir le diagnostic avec les conditions météo locales en direct.</p>
+        </div>
+        <div class="step-card result r d4">
+          <div class="step-num" style="background:rgba(255,255,255,.15)">✓</div>
+          <div class="step-icon" style="color:#88D048;"><i class="fa-solid fa-brain"></i></div>
+          <h4>Résultat IA</h4>
+          <p>Diagnostic précis et recommandations de traitement personnalisées générées instantanément.</p>
+        </div>
+      </div>
+      <div class="result-panel r">
+        <div class="result-badge">Exemple de résultat IA</div>
+        <div class="result-title">Mildiou de la vigne détecté</div>
+        <p class="result-body">Conditions météo favorables au développement fongique. Humidité élevée (72%) combinée aux températures douces favorise la propagation du champignon.</p>
+        <div class="reco-list">
+          <div class="reco-item"><i class="fa-solid fa-check"></i>Traitement cuivre 4g/L recommandé avant 8h du matin</div>
+          <div class="reco-item"><i class="fa-solid fa-check"></i>Surveillance renforcée les 5 prochains jours</div>
+          <div class="reco-item"><i class="fa-solid fa-check"></i>Aérer le feuillage et éviter l'arrosage foliaire</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── CARTE ── -->
+  <section id="carte">
+    <div class="container">
+      <div class="rl">
+        <p class="section-label">Carte interactive</p>
+        <h2 class="section-title" style="color:#fff;">Visualisez vos parcelles sur une <em style="color:var(--sage-light)">carte</em></h2>
+        <p class="section-body">Tracez et gérez vos parcelles directement sur la carte interactive. Un code couleur intuitif révèle l'état de santé de chaque champ en un coup d'œil.</p>
+        <ul class="feature-list">
+          <li class="feature-item r d1" style="background:rgba(255,255,255,.03)">
+            <div class="feature-item-icon" style="background:rgba(80,170,50,.15)"><i class="fa-solid fa-map-location-dot" style="color:#50AA32;"></i></div>
+            <div class="feature-item-text">
+              <h4>Parcelles géolocalisées</h4>
+              <p>Délimitez vos champs directement sur la carte et retrouvez-les instantanément.</p>
+            </div>
+          </li>
+          <li class="feature-item r d2" style="background:rgba(255,255,255,.03)">
+            <div class="feature-item-icon" style="background:rgba(200,155,35,.15)"><i class="fa-solid fa-palette" style="color:#C89B23;"></i></div>
+            <div class="feature-item-text">
+              <h4>Code couleur santé</h4>
+              <p>Vert = bonne santé, orange = surveillance, rouge = intervention urgente requise.</p>
+            </div>
+          </li>
+          <li class="feature-item r d3" style="background:rgba(255,255,255,.03)">
+            <div class="feature-item-icon"><i class="fa-solid fa-layer-group"></i></div>
+            <div class="feature-item-text">
+              <h4>Données superposées</h4>
+              <p>Affichez la culture, la surface et le statut de chaque parcelle en surimpression.</p>
+            </div>
+          </li>
+        </ul>
+      </div>
+      <div class="rr">
+        <div class="map-mock">
+          <div class="map-grid-bg"></div>
+          <div class="map-parcelle p1"></div>
+          <div class="map-label" style="top:68px;left:88px">Champ Nord<br>Blé · 12 ha ✓</div>
+          <div class="map-parcelle p2"></div>
+          <div class="map-label" style="top:108px;right:72px">Vignes Est<br>Vigne · 3.5 ha ⚠</div>
+          <div class="map-parcelle p3"></div>
+          <div class="map-label" style="bottom:95px;left:124px">Prairie Sud<br>Maïs · 8 ha ✓</div>
+          <div class="map-tools">
+            <div class="map-tool-btn"><i class="fa-solid fa-plus"></i></div>
+            <div class="map-tool-btn"><i class="fa-solid fa-minus"></i></div>
+            <div class="map-tool-btn"><i class="fa-solid fa-location-arrow"></i></div>
+          </div>
+          <div class="map-legend">
+            <div class="legend-item"><div class="legend-dot" style="background:rgba(80,170,50,.8);"></div>Bonne santé</div>
+            <div class="legend-item"><div class="legend-dot" style="background:rgba(200,155,35,.8);"></div>Surveillance</div>
+            <div class="legend-item"><div class="legend-dot" style="background:rgba(190,70,40,.8);"></div>Intervention</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── PROFIL ── -->
+  <section id="profil">
+    <div class="container">
+      <div class="profil-grid">
+        <div class="rl">
+          <p class="section-label">Profil &amp; Exploitation</p>
+          <h2 class="section-title">Gérez votre <em>exploitation</em></h2>
+          <p class="section-body">Centralisez toutes les informations de votre exploitation : identité, SIRET, type d'agriculture, statistiques de parcelles et préférences d'alertes.</p>
+          <a href="profil.html" class="btn-hero-primary" style="display:inline-block;font-size:13px;">Voir le profil →</a>
+        </div>
+        <div class="rr">
+          <div class="profil-cards">
+            <div class="profil-card r d1">
+              <div class="profil-card-icon">👤</div>
+              <h4>Identité</h4>
+              <p>Prénom, nom, email et téléphone. Avatar avec initiales généré automatiquement.</p>
+            </div>
+            <div class="profil-card r d2">
+              <div class="profil-card-icon">🏡</div>
+              <h4>Exploitation</h4>
+              <p>Nom, SIRET, type d'agriculture (Bio, Raisonnée, Conventionnelle…).</p>
+            </div>
+            <div class="profil-card r d3">
+              <div class="profil-card-icon">📊</div>
+              <h4>Statistiques</h4>
+              <p>Nombre de champs, surface totale, cultures actives, dernier champ ajouté.</p>
+            </div>
+            <div class="profil-card highlight r d4">
+              <div class="profil-card-icon">🔔</div>
+              <h4 style="color:#fff;">Préférences</h4>
+              <p>Notifications, unités de surface, ville météo par défaut — tout configurable.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── TECH ── -->
+  <section id="tech">
+    <div class="container">
+      <div class="tech-header">
+        <p class="section-label r" style="text-align:center;color:var(--sage-light);">Stack technique</p>
+        <h2 class="section-title r" style="text-align:center;color:#fff;">Construit avec des technologies <em>robustes</em></h2>
+      </div>
+      <div class="tech-grid">
+        <div class="tech-card r d1">
+          <div class="tech-emoji">🗄️</div>
+          <h4>Supabase</h4>
+          <p>Backend as a service : authentification sécurisée, base PostgreSQL, stockage de fichiers et gestion complète des données d'exploitation.</p>
+        </div>
+        <div class="tech-card r d2">
+          <div class="tech-emoji">🧠</div>
+          <h4>Intelligence Artificielle</h4>
+          <p>Moteur de diagnostic expert croisant symptômes observés et données météo locales pour des recommandations agronomiques précises.</p>
+        </div>
+        <div class="tech-card r d3">
+          <div class="tech-emoji">🌤️</div>
+          <h4>API Météo</h4>
+          <p>Intégration d'une API météo externe : température, humidité, prévisions 5 jours, recherche par ville en temps réel.</p>
+        </div>
+        <div class="tech-card r d1">
+          <div class="tech-emoji">🗺️</div>
+          <h4>Cartographie</h4>
+          <p>Carte interactive pour visualiser, délimiter et gérer les parcelles avec géolocalisation et tracé de zones personnalisé.</p>
+        </div>
+        <div class="tech-card r d2">
+          <div class="tech-emoji">📱</div>
+          <h4>PWA Mobile First</h4>
+          <p>Progressive Web App avec meta theme-color, bottom navigation, viewport adapté et design 100% responsive dès 320px.</p>
+        </div>
+        <div class="tech-card r d3">
+          <div class="tech-emoji">🎨</div>
+          <h4>Design System</h4>
+          <p>Cormorant Garamond + Plus Jakarta Sans. Palette naturelle, animations reveal, cartes glassmorphism pour une expérience premium.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── CTA ── -->
+  <section id="cta">
+    <div class="cta-bg"></div>
+    <div class="container cta-content">
+      <p class="section-label cta-label r">Prêt à démarrer ?</p>
+      <h2 class="cta-title r">Cultivez avec <em>intelligence</em></h2>
+      <p class="cta-sub r">Agr'IA — L'agriculture du futur, disponible aujourd'hui.</p>
+      <div class="cta-btns r">
+        <a href="login.html" class="btn-cta-white">Ouvrir l'application</a>
+        <a href="dashboard.html" class="btn-cta-ghost">Voir le dashboard →</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── FOOTER ── -->
+  <footer>
+    <span class="footer-logo">Agr'IA</span>
+    <span class="footer-copy">L'agriculture intelligente &copy; 2025</span>
+    <nav class="footer-nav">
+      <a href="dashboard.html">Dashboard</a>
+      <a href="carte.html">Carte</a>
+      <a href="diagnostic.html">Diagnostic</a>
+      <a href="profil.html">Profil</a>
+    </nav>
+  </footer>
+
+  <script>
+    // ── Sticky nav
+    const nav = document.getElementById('mainNav');
+    window.addEventListener('scroll', () => {
+      nav.classList.toggle('solid', window.scrollY > 60);
+    }, { passive: true });
+
+    // ── Intersection Observer: reveal + count-up
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (!entry.isIntersecting) return;
+        entry.target.classList.add('vis');
+
+        // Count-up for stat numbers
+        const counter = entry.target.querySelector('[data-count]');
+        if (counter && !counter.dataset.done) {
+          counter.dataset.done = '1';
+          const target = parseInt(counter.dataset.count, 10);
+          let current = 0;
+          const increment = Math.ceil(target / 35);
+          const timer = setInterval(() => {
+            current = Math.min(current + increment, target);
+            counter.textContent = current;
+            if (current >= target) clearInterval(timer);
+          }, 38);
+        }
+      });
+    }, { threshold: 0.18 });
+
+    document.querySelectorAll('.r, .rl, .rr').forEach(el => io.observe(el));
+
+    // ── Smooth active nav link highlighting
+    const sections = document.querySelectorAll('section[id]');
+    const navLinks = document.querySelectorAll('.nav-center a');
+    window.addEventListener('scroll', () => {
+      let current = '';
+      sections.forEach(s => {
+        if (window.scrollY >= s.offsetTop - 200) current = s.id;
+      });
+      navLinks.forEach(a => {
+        a.style.color = a.getAttribute('href') === '#' + current
+          ? 'rgba(255,255,255,.9)' : '';
+      });
+    }, { passive: true });
+  </script>
+</body>
+</html>
