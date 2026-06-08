@@ -1,6 +1,7 @@
 import { Champ } from './champs';
 import { CONFIG } from '../data/config';
 import { fetchMeteoActuelle, fetchPrevisions, MeteoData, Prevision } from './weather';
+import { getUserId } from './auth';
 
 type RiskLevel = 'danger' | 'warning' | 'info';
 
@@ -50,7 +51,11 @@ export async function sendMorningRiskAlert(city: string, champs: Champ[]) {
   const previsions = await fetchPrevisions(city);
   const risk = computeRiskLevel(meteo, champs);
   const message = buildMessage(city, meteo, champs, risk.level);
+  const ts = Date.now().toString();
+  const uid = await getUserId();
   const payload = {
+    timestamp: ts,
+    uid,
     date: new Date().toISOString(),
     city,
     weather: meteo,
@@ -73,20 +78,24 @@ export async function sendMorningRiskAlert(city: string, champs: Champ[]) {
 
   try {
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 10000);
-    await fetch(CONFIG.MAKE_WEBHOOK_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload),
-      signal: controller.signal,
-    });
-    clearTimeout(timeoutId);
+    const timeoutId = setTimeout(() => controller.abort(), 60000);
+    try {
+      await fetch(CONFIG.MAKE_WEBHOOK_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+        signal: controller.signal,
+      });
+    } finally {
+      clearTimeout(timeoutId);
+    }
   } catch {
-    // Webhook delivery is non-critical — the user still gets local alert
+    // Webhook delivery is non-critical
   }
 
   return {
-    title: `Alerte météo du jour — ${risk.label}`,
+    title: `Alerte meteo du jour — ${risk.label}`,
     body: message,
+    timestamp: ts,
   };
 }

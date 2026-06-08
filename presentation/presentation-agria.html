@@ -49,8 +49,12 @@
       padding: 24px 60px;
       display: flex; align-items: center; justify-content: space-between;
       background: transparent;
-      transition: padding .3s var(--ease-out), background .3s var(--ease-out), box-shadow .3s var(--ease-out);
+      transform: translateY(-105%);
+      transition: padding .3s var(--ease-out), background .3s var(--ease-out), box-shadow .3s var(--ease-out), transform .35s var(--ease-out);
     }
+    #mainNav.nav-visible { transform: translateY(0); }
+    #mainNav.nav-persistent { transform: translateY(0); }
+    #nav-hotspot { position: fixed; top: 0; left: 0; right: 0; height: 10px; z-index: 1001; }
     #mainNav .nav-logo { transition: color .5s ease; }
     #mainNav .nav-center a { transition: color .2s ease, color .5s ease; }
     #mainNav.solid {
@@ -69,6 +73,8 @@
     body[data-theme="light"] #mainNav .nav-center a:hover { color: var(--ink); }
     .nav-logo { font-family: 'Fraunces', serif; font-size: 26px; font-weight: 700; letter-spacing: .02em; text-decoration: none; }
     .nav-logo em { font-style: italic; color: var(--gold); }
+    .nav-sommaire-label { font-size: 11px; font-weight: 600; letter-spacing: .1em; color: var(--gold); text-transform: uppercase; margin-left: 12px; opacity: 0; transition: opacity .35s var(--ease-out); }
+    .nav-sommaire-label.show { opacity: 1; }
     .nav-center { display: flex; gap: 36px; }
     .nav-center a { font-size: 12px; font-weight: 600; letter-spacing: .1em; text-decoration: none; text-transform: uppercase; }
 
@@ -442,16 +448,49 @@
     /* ===========================================
        ROADMAP — horizontal timeline
        =========================================== */
-    .roadmap-header { text-align: center; margin-bottom: 36px; }
-    .roadmap-timeline { display: flex; justify-content: space-between; position: relative; max-width: 1000px; margin: 0 auto; padding: 0 20px; }
-    .roadmap-timeline::before { content: ''; position: absolute; top: 26px; left: 10%; right: 10%; height: 2px; background: var(--border); z-index: 0; }
-    .roadmap-milestone { display: flex; flex-direction: column; align-items: center; gap: 12px; position: relative; z-index: 1; flex: 1; max-width: 200px; }
-    .rm-dot { width: 16px; height: 16px; border-radius: 50%; background: var(--gold); flex-shrink: 0; box-shadow: 0 0 0 6px var(--gold-light); }
-    .rm-dot.future { background: var(--border); box-shadow: 0 0 0 6px var(--bg); }
-    .rm-label { font-size: 10px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--gold); }
-    .rm-title { font-family: 'Fraunces', serif; font-size: 15px; font-weight: 600; color: var(--ink); text-align: center; line-height: 1.3; }
+    .roadmap-header { text-align: center; margin-bottom: 48px; }
+    .roadmap-timeline { display: flex; justify-content: center; gap: 40px; position: relative; max-width: 1100px; margin: 0 auto; padding: 0 20px; }
+    .roadmap-timeline::before { content: ''; position: absolute; top: 30px; left: 8%; right: 8%; height: 4px; background: linear-gradient(90deg, var(--gold) 0%, var(--gold) 22%, rgba(235,227,211,.5) 22%, var(--border) 28%, var(--border) 100%); z-index: 0; border-radius: 4px; }
+    .roadmap-milestone { display: flex; flex-direction: column; align-items: center; gap: 28px; position: relative; z-index: 1; flex: 1; max-width: 240px; }
+    .rm-dot { width: 18px; height: 18px; border-radius: 50%; background: var(--gold); flex-shrink: 0; position: relative; box-shadow: 0 0 0 3px var(--surface), 0 0 0 5px var(--gold), 0 0 16px rgba(232,184,75,.18); }
+    .rm-dot.future { background: var(--border); box-shadow: 0 0 0 3px var(--surface), 0 0 0 5px var(--border); }
+    .rm-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 28px 20px 26px; text-align: center; width: 100%; transition: transform .3s var(--ease-out), box-shadow .3s var(--ease-out), border-color .3s var(--ease-out); }
+    .rm-card:hover { transform: translateY(-6px); box-shadow: 0 16px 40px rgba(45,36,22,.1); border-color: var(--gold); }
+    .rm-icon { font-size: 22px; color: var(--gold); margin-bottom: 10px; display: block; }
+    .rm-label { font-size: 12px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--gold); margin-bottom: 8px; }
+    .rm-title { font-family: 'Fraunces', serif; font-size: 22px; font-weight: 600; color: var(--ink); text-align: center; line-height: 1.2; margin-bottom: 14px; }
     .rm-items { list-style: none; text-align: center; }
-    .rm-items li { font-size: 11px; color: var(--ink-muted); line-height: 1.7; }
+    .rm-items li { font-size: 13px; color: var(--ink-mid); line-height: 2.1; }
+
+    /* Dot pulse ring — V1 active */
+    .roadmap-milestone:first-child .rm-dot::after { content: ''; position: absolute; inset: -6px; border-radius: 50%; border: 1px solid rgba(232,184,75,.35); animation: rmPulse 3s ease-in-out infinite; }
+    @keyframes rmPulse { 0%,100% { opacity: .3; transform: scale(1); } 50% { opacity: 1; transform: scale(1.08); } }
+
+    /* ===========================================
+       ROADMAP ENTRANCE ANIMATION
+       =========================================== */
+    /* Line draws from left to right */
+    .roadmap-timeline::before { transform: scaleX(0); transform-origin: left center; }
+    .roadmap-timeline.vis::before { animation: lineDraw .65s .3s var(--ease-out) forwards; }
+    @keyframes lineDraw { to { transform: scaleX(1); } }
+
+    /* Dots pop in with spring */
+    .roadmap-timeline .rm-dot { transform: scale(0); transition: transform .45s cubic-bezier(.34,1.56,.64,1); }
+    .roadmap-timeline.vis .rm-dot { transform: scale(1); }
+
+    /* Cards rise from below */
+    .roadmap-timeline .rm-card { opacity: 0; transform: translateY(24px); transition: opacity .5s var(--ease-out), transform .5s var(--ease-out); }
+    .roadmap-timeline.vis .rm-card { opacity: 1; transform: translateY(0); }
+
+    /* Staggered delays — left to right wave */
+    .roadmap-milestone:nth-child(1) .rm-dot { transition-delay: .35s; }
+    .roadmap-milestone:nth-child(1) .rm-card { transition-delay: .42s; }
+    .roadmap-milestone:nth-child(2) .rm-dot { transition-delay: .50s; }
+    .roadmap-milestone:nth-child(2) .rm-card { transition-delay: .57s; }
+    .roadmap-milestone:nth-child(3) .rm-dot { transition-delay: .65s; }
+    .roadmap-milestone:nth-child(3) .rm-card { transition-delay: .72s; }
+    .roadmap-milestone:nth-child(4) .rm-dot { transition-delay: .80s; }
+    .roadmap-milestone:nth-child(4) .rm-card { transition-delay: .87s; }
 
     /* ===========================================
        CRUMPLED PAPER TEXTURE
@@ -559,9 +598,9 @@
       .tech-grid { grid-template-columns: repeat(2, 1fr); }
       .phones-row { flex-direction: column; gap: 16px; }
       .api-brief, .api-decision-grid { grid-template-columns: 1fr; }
-      .roadmap-timeline { flex-wrap: wrap; gap: 24px; justify-content: center; }
+      .roadmap-timeline { flex-wrap: wrap; gap: 20px; justify-content: center; }
       .roadmap-timeline::before { display: none; }
-      .roadmap-milestone { max-width: 160px; }
+      .roadmap-milestone { max-width: 260px; flex: none; width: calc(50% - 20px); }
     }
     @media (max-width: 768px) {
       #mainNav { padding: 14px 20px; }
@@ -580,6 +619,10 @@
       .hero-scroll-hint { bottom: 24px; }
       .parcelle-steps, .carte-features, .score-grid { gap: 12px; }
       .roadmap-timeline { margin-bottom: 0; }
+      .rm-card { padding: 18px 14px 16px; }
+      .rm-title { font-size: 17px; }
+      .rm-items li { font-size: 11px; line-height: 1.7; }
+      .rm-icon { font-size: 18px; }
     }
 
     @media (max-height: 600px) {
@@ -596,6 +639,10 @@
       .hero-scroll-hint { display: none; }
       .mini-phone { width: 175px; height: 360px; }
       .parcelle-step-screen { width: 150px; height: 305px; }
+      .rm-card { padding: 14px 10px 12px; }
+      .rm-title { font-size: 15px; margin-bottom: 8px; }
+      .rm-items li { font-size: 10px; line-height: 1.5; }
+      .rm-icon { font-size: 16px; }
     }
 
     @media (prefers-reduced-motion: reduce) {
@@ -642,6 +689,9 @@
     </div>
   </div>
 
+  <!-- NAV HOTSPOT (trigger zone for hover reveal) -->
+  <div id="nav-hotspot"></div>
+
   <!-- NAVIGATION -->
   <nav id="mainNav">
     <a class="nav-logo" href="#hero">Agria</a>
@@ -669,8 +719,7 @@
     <div class="hero-content">
       <div class="hero-eyebrow"><span class="hero-eyebrow-dot"></span>Application mobile · Agriculture &amp; Intelligence Artificielle</div>
       <h1 class="hero-title">Agria</h1>
-      <p class="hero-tagline">L'intelligence artificielle au service de l'agriculteur moderne. Gérez, diagnostiquez et optimisez vos cultures en temps réel.</p>
-      <div class="hero-actions"><a href="#intro" class="btn-hero">Découvrir l'application</a><a href="#tech" class="btn-hero-ghost">Stack technique →</a></div>
+        <p class="hero-tagline">Diagnostic IA · Météo temps réel · Cartographie · Alertes · Firebase — l'agriculteur a tout dans sa poche.</p>
       <div class="hero-stats r d1">
         <div class="stat-item"><div class="stat-value"><span data-count="5">0</span></div><div class="stat-label">Onglets principaux</div></div>
         <div class="stat-item"><div class="stat-value"><span data-count="3">0</span></div><div class="stat-label">Étapes diagnostic IA</div></div>
@@ -683,10 +732,10 @@
   <!-- ═══════════════ VEILLE TECHNOLOGIQUE ═══════════════ -->
   <section class="tex" id="veille-intro">
     <div class="veille-container">
-      <div class="veille-header rf"><p class="veille-label">Veille technologique</p><h2 class="veille-title">Comprendre les enjeux agricoles avant de concevoir <em>Agria</em></h2><p class="veille-subtitle">Avant de définir notre solution, nous avons étudié les usages de l'intelligence artificielle dans l'agriculture, les problématiques rencontrées sur le terrain et les solutions existantes.</p></div>
+      <div class="veille-header rf"><p class="veille-label">Veille technologique</p><h2 class="veille-title">Comprendre les enjeux agricoles avant de concevoir <em>Agria</em></h2>        <p class="veille-subtitle">Sources croisées : INRAE · Météo-France · Ministère Agriculture · Plantix · e-Phytia · MesParcelles</p></div>
       <div class="veille-method">
-        <div class="veille-method-card rf d1"><i class="fa-solid fa-magnifying-glass-chart"></i><h3>Notre démarche</h3><p>Nous avons croisé des sources institutionnelles, scientifiques et applicatives : ministère de l'Agriculture, INRAE, Météo-France, FAO, outils agricoles existants et applications de diagnostic.</p></div>
-        <div class="veille-method-card dark rf d2"><i class="fa-solid fa-seedling"></i><h3>Objectif de la veille</h3><p>Identifier un besoin réel du secteur agricole, puis imaginer une application mobile simple intégrant de l'IA, de la météo, une carte interactive et des alertes utiles à la prise de décision.</p></div>
+        <div class="veille-method-card rf d1"><i class="fa-solid fa-magnifying-glass-chart"></i><h3>Notre démarche</h3><p>Ministère Agriculture · INRAE · Météo-France · FAO · Plantix · e-Phytia — croisement de sources institutionnelles, scientifiques et applicatives.</p></div>
+        <div class="veille-method-card dark rf d2"><i class="fa-solid fa-seedling"></i><h3>Objectif de la veille</h3><p>Besoin terrain → Application mobile : IA · Météo · Carte · Alertes → Aide à la décision agricole.</p></div>
       </div>
     </div>
   </section>
@@ -694,10 +743,10 @@
   <section class="tex" id="veille-constats">
     <div class="veille-container">
       <div class="veille-findings">
-        <div class="veille-section-head rs"><h3>Constats issus de la veille</h3><p>Plusieurs enjeux ressortent et justifient la création d'un outil d'aide à la décision.</p></div>
+        <div class="veille-section-head rs"><h3>Constats issus de la veille</h3><p>4 constats majeurs justifiant la création d'Agria.</p></div>
         <div class="findings-grid">
-          <div class="finding-card rs d1"><div class="finding-icon"><svg class="svg-icon"><use href="#svg-thermo"/></svg></div><h4>Climat instable</h4><p>Les cultures exposées aux épisodes de chaleur, gel, sécheresse ou fortes pluies.</p></div>
-          <div class="finding-card rs d2"><div class="finding-icon"><svg class="svg-icon"><use href="#svg-goutte"/></svg></div><h4>Stress hydrique</h4><p>Le manque d'eau impacte le rendement et oblige à anticiper l'irrigation.</p></div>
+          <div class="finding-card rs d1"><div class="finding-icon"><svg class="svg-icon"><use href="#svg-thermo"/></svg></div><h4>Climat instable</h4><p>Chaleur · Gel · Sécheresse · Fortes pluies</p></div>
+          <div class="finding-card rs d2"><div class="finding-icon"><svg class="svg-icon"><use href="#svg-goutte"/></svg></div><h4>Stress hydrique</h4><p>Baisse de rendement · Irrigation à anticiper</p></div>
           <div class="finding-card rs d3"><div class="finding-icon"><svg class="svg-icon"><use href="#svg-feuille"/></svg></div><h4>Maladies des cultures</h4><p>Maladies et ravageurs à repérer rapidement pour éviter des pertes.</p></div>
           <div class="finding-card rs d4"><div class="finding-icon"><i class="fa-solid fa-database"></i></div><h4>Données dispersées</h4><p>Météo, diagnostics et parcelles souvent séparés, compliquant la décision.</p></div>
         </div>
@@ -710,7 +759,7 @@
 
   <section class="tex" id="veille-sources">
     <div class="veille-container">
-      <div class="veille-sources-inner rb d1"><h3>Sources étudiées</h3><p>La veille s'appuie sur des sources institutionnelles, scientifiques et applicatives.</p>
+      <div class="veille-sources-inner rb d1"><h3>Sources étudiées</h3><p>8 sources croisées : institutionnelles · scientifiques · applicatives.</p>
         <div class="sources-grid">
           <div class="source-card"><span>Institutionnel</span><h4>Ministère de l'Agriculture</h4><p>Usages de l'IA pour la performance des exploitations.</p><a href="https://agriculture.gouv.fr" target="_blank">Voir <i class="fa-solid fa-arrow-up-right-from-square"></i></a></div>
           <div class="source-card"><span>Scientifique</span><h4>INRAE</h4><p>Impacts du changement climatique, rendements, modélisation.</p><a href="https://www.inrae.fr" target="_blank">Voir <i class="fa-solid fa-arrow-up-right-from-square"></i></a></div>
@@ -731,7 +780,7 @@
       <div class="rl">
         <p class="section-label">À propos</p>
         <h2 class="section-title">L'IA au service de vos <em>cultures</em></h2>
-        <p class="section-body">Agria est une application mobile pensée pour les agriculteurs d'aujourd'hui. Elle combine intelligence artificielle, données météo en temps réel et diagnostic agronomique pour vous aider à prendre les meilleures décisions.</p>
+        <p class="section-body">Diagnostic IA · Météo temps réel · Cartographie satellite · Alertes intelligentes · Firebase + AsyncStorage — le tout dans une seule application mobile.</p>
         <div class="pills-row">
           <span class="pill"><svg class="svg-icon sm"><use href="#svg-thermo"/></svg> Météo en direct</span>
           <span class="pill"><svg class="svg-icon sm"><use href="#svg-carte"/></svg> Carte des parcelles</span>
@@ -754,11 +803,11 @@
       <div class="rl">
         <p class="section-label">Tableau de bord</p>
         <h2 class="section-title">Un aperçu complet de votre <em>exploitation</em></h2>
-        <p class="section-body">Le tableau de bord centralise toutes les informations essentielles. En un coup d'œil, consultez la météo, les alertes prioritaires et l'état de vos parcelles.</p>
+        <p class="section-body">Vue unifiée : météo dynamique, alertes prioritaires et état des parcelles — en un coup d'oeil.</p>
         <ul class="feature-list">
-          <li class="feature-item r d1"><div class="feature-item-icon"><i class="fa-solid fa-cloud-sun"></i></div><div class="feature-item-text"><h4>Météo dynamique</h4><p>Température en direct via OpenWeatherMap. Prévisions 5 jours intégrées.</p></div></li>
-          <li class="feature-item r d2"><div class="feature-item-icon"><i class="fa-solid fa-triangle-exclamation"></i></div><div class="feature-item-text"><h4>Alertes intelligentes</h4><p>Scoring multi-facteurs — Danger, Vigilance ou Info selon les conditions.</p></div></li>
-          <li class="feature-item r d3"><div class="feature-item-icon"><i class="fa-solid fa-seedling"></i></div><div class="feature-item-text"><h4>Aperçu des parcelles</h4><p>Visualisez vos champs, leur culture et leur état de santé depuis le dashboard.</p></div></li>
+          <li class="feature-item r d1"><div class="feature-item-icon"><i class="fa-solid fa-cloud-sun"></i></div><div class="feature-item-text"><h4>Météo dynamique</h4><p>OpenWeatherMap en direct · Prévisions 5 jours.</p></div></li>
+          <li class="feature-item r d2"><div class="feature-item-icon"><i class="fa-solid fa-triangle-exclamation"></i></div><div class="feature-item-text"><h4>Alertes intelligentes</h4><p>Scoring 7 facteurs → Danger · Vigilance · Info</p></div></li>
+          <li class="feature-item r d3"><div class="feature-item-icon"><i class="fa-solid fa-seedling"></i></div><div class="feature-item-text"><h4>Aperçu des parcelles</h4><p>Champs · Cultures · État de santé — vue d'ensemble.</p></div></li>
         </ul>
       </div>
       <div class="rr" style="display:flex;justify-content:center;">
@@ -772,8 +821,8 @@
     <div class="container"><div class="dark-grid">
       <div class="rl">
         <p class="section-label">Système d'alertes</p>
-        <h2 class="section-title">Des alertes <em>intelligentes</em></h2>
-        <p class="section-body">Notre système évalue 7 facteurs météo en parallèle et calcule un score de risque. Rafraîchissement manuel (automatique envisagé via webhook Make.com).</p>
+        <h2 class="section-title">Alertes IA <em>enrichies</em></h2>
+        <p class="section-body">7 facteurs météo → Make.com → IA → Firebase RTDB · Temps réel</p>
         <div class="score-grid">
           <div class="score-card sc-danger r d1"><div class="sc-val">≥ 5</div><div class="sc-desc">Risque élevé<br>Temp ≤ 2°C · Humidité ≥ 85%<br>Pluie · Neige · Gel</div></div>
           <div class="score-card sc-warning r d2"><div class="sc-val">≥ 3</div><div class="sc-desc">Vigilance<br>Temp ≤ 7°C · Humidité ≥ 70%<br>Conditions à surveiller</div></div>
@@ -795,11 +844,11 @@
       <div class="rr">
         <p class="section-label">Notifications</p>
         <h2 class="section-title">Rapports IA &amp; alertes <em>dans votre poche</em></h2>
-        <p class="section-body">Toutes vos analyses et alertes centralisées. Recevez les rapports détaillés de l'IA directement sur votre téléphone via les notifications.</p>
+        <p class="section-body">Rapports IA · Badge non-lus · Swipe to delete · Historique consultable — tout centralisé.</p>
         <ul class="feature-list" style="margin-top:8px;">
-          <li class="feature-item r d1"><div class="feature-item-icon" style="background:rgba(232,184,75,.1);border-color:rgba(232,184,75,.2);"><i class="fa-solid fa-bell" style="color:var(--gold);"></i></div><div class="feature-item-text"><h4 style="color:var(--ink);">Badge non-lus</h4><p style="color:var(--ink-muted);">Compteur visible dans le header de l'app pour ne rien manquer.</p></div></li>
-          <li class="feature-item r d2"><div class="feature-item-icon" style="background:rgba(232,184,75,.1);border-color:rgba(232,184,75,.2);"><i class="fa-solid fa-arrow-right" style="color:var(--gold);"></i></div><div class="feature-item-text"><h4 style="color:var(--ink);">Swipe → supprimer</h4><p style="color:var(--ink-muted);">Glissez une notification vers la gauche pour la supprimer.</p></div></li>
-          <li class="feature-item r d3"><div class="feature-item-icon" style="background:rgba(232,184,75,.1);border-color:rgba(232,184,75,.2);"><i class="fa-solid fa-file-lines" style="color:var(--gold);"></i></div><div class="feature-item-text"><h4 style="color:var(--ink);">Rapport IA complet</h4><p style="color:var(--ink-muted);">Développez pour lire le diagnostic détaillé envoyé par l'IA.</p></div></li>
+          <li class="feature-item r d1"><div class="feature-item-icon" style="background:rgba(232,184,75,.1);border-color:rgba(232,184,75,.2);"><i class="fa-solid fa-bell" style="color:var(--gold);"></i></div><div class="feature-item-text"><h4 style="color:var(--ink);">Badge non-lus</h4><p style="color:var(--ink-muted);">Compteur visible dans le header. Ne ratez aucune alerte.</p></div></li>
+          <li class="feature-item r d2"><div class="feature-item-icon" style="background:rgba(232,184,75,.1);border-color:rgba(232,184,75,.2);"><i class="fa-solid fa-arrow-right" style="color:var(--gold);"></i></div><div class="feature-item-text"><h4 style="color:var(--ink);">Swipe → supprimer</h4><p style="color:var(--ink-muted);">Swipe gauche = suppression. Simple et rapide.</p></div></li>
+          <li class="feature-item r d3"><div class="feature-item-icon" style="background:rgba(232,184,75,.1);border-color:rgba(232,184,75,.2);"><i class="fa-solid fa-file-lines" style="color:var(--gold);"></i></div><div class="feature-item-text"><h4 style="color:var(--ink);">Rapport IA complet</h4><p style="color:var(--ink-muted);">Diagnostic détaillé de l'IA. Développez pour tout lire.</p></div></li>
         </ul>
       </div>
     </div></div>
@@ -809,7 +858,7 @@
   <section class="tex" id="diagnostic">
     <div class="bg-diag-deco"></div>
     <div class="container">
-      <div class="diag-header"><p class="section-label rr">Fonctionnalité clé</p><h2 class="section-title r">Diagnostic IA en <em>3 étapes</em></h2><p class="section-body r">Notre système combiné à Make.com croise les symptômes observés avec les données météo locales pour diagnostiquer et recommander des traitements.</p></div>
+      <div class="diag-header"><p class="section-label rr">Fonctionnalité clé</p><h2 class="section-title r">Diagnostic IA en <em>3 étapes</em></h2>        <p class="section-body r">Culture → Symptômes → Localisation : l'IA croise observations + météo locale → diagnostic + recommandations.</p></div>
       <div class="diag-flow">
         <div class="diag-step rs d1">
           <div class="diag-step-badge">1</div>
@@ -838,7 +887,7 @@
   <!-- ═══════════════ CARTE ═══════════════ -->
   <section class="tex" id="carte">
     <div class="container">
-      <div class="carte-header"><p class="section-label rr">Carte interactive</p><h2 class="section-title r">Créez et gérez vos parcelles <em>sur la carte</em></h2><p class="section-body r">En quelques gestes, délimitez vos champs directement sur la vue satellite. Chaque parcelle est géolocalisée.</p></div>
+        <div class="carte-header"><p class="section-label rr">Carte interactive</p><h2 class="section-title r">Créez et gérez vos parcelles <em>sur la carte</em></h2><p class="section-body r">Vue satellite · Tracé polygonale · Surface auto-calculée · Géolocalisation — chaque parcelle enregistrée.</p></div>
       <div class="parcelle-steps">
         <div class="parcelle-step rb d1"><div class="parcelle-step-screen"><img src="assets/carte-vue.png" alt="Carte"></div><div class="parcelle-step-info"><h4>Ouvrir la carte</h4><p>Vue satellite de France. Zoomez ou recherchez par nom.</p></div></div>
         <div class="parcelle-step rb d2"><div class="parcelle-step-screen"><img src="assets/carte-creation.png" alt="Création"></div><div class="parcelle-step-info"><h4>Tracer la parcelle</h4><p>Cliquez point par point. Surface calculée automatiquement.</p></div></div>
@@ -855,18 +904,18 @@
   <!-- ═══════════════ PROFIL ═══════════════ -->
   <section class="tex" id="profil">
     <div class="container">
-      <div class="profile-header r"><p class="section-label">Profil &amp; Exploitation</p><h2 class="section-title">Une fiche exploitation <em>complète</em></h2><p class="section-body" style="max-width:620px;margin:0 auto 28px;">Avatar, statistiques de parcelles, cultures actives et sections repliables. Édition du profil, changement d'email et de mot de passe intégrés.</p></div>
+      <div class="profile-header r"><p class="section-label">Profil &amp; Exploitation</p><h2 class="section-title">Une fiche exploitation <em>complète</em></h2>        <p class="section-body" style="max-width:620px;margin:0 auto 28px;">Avatar · Stats exploitation · Cultures actives · SIRET · Édition email &amp; mot de passe</p></div>
       <div class="profile-showcase">
         <div class="profile-card r d1">
           <div class="profile-card-label"><span class="profile-dot"></span>Vue d'ensemble</div>
-          <div class="profile-card-phone"><div class="screenshot-phone" style="width:235px;height:480px;border-radius:40px;"><img src="assets/profil-replie.webp" alt="Profil"></div></div>
-          <div class="profile-card-legend">Statistiques de l'exploitation, cultures actives et sections repliables</div>
+          <div class="profile-card-phone"><div class="screenshot-phone" style="width:235px;height:480px;border-radius:40px;"><img src="assets/profil-replie.png" alt="Profil"></div></div>
+          <div class="profile-card-legend">Stats exploitation · Cultures · Sections repliables</div>
         </div>
         <div class="profile-arrow rs d2"><i class="fa-solid fa-arrow-right"></i></div>
         <div class="profile-card r d2">
           <div class="profile-card-label accent"><span class="profile-dot accent"></span>Édition</div>
           <div class="profile-card-phone"><div class="screenshot-phone" style="width:235px;height:480px;border-radius:40px;"><img src="assets/profil-deplie.webp" alt="Profil déplié"></div></div>
-          <div class="profile-card-legend">Modification du SIRET, de l'email et du mot de passe</div>
+          <div class="profile-card-legend">Édition SIRET · Email · Mot de passe</div>
         </div>
       </div>
     </div>
@@ -879,7 +928,7 @@
       <div class="rl">
         <p class="section-label">Back-office</p>
         <h2 class="section-title">Gestion &amp; <em>Maintenance</em></h2>
-        <p class="section-body">Un panneau d'administration complet pour superviser l'application : statistiques, gestion des parcelles, utilisateurs et logs d'actions.</p>
+        <p class="section-body">Stats · CRUD parcelles · Gestion utilisateurs · Purge · Logs — supervision complète de l'application.</p>
         <div class="admin-feature r d1"><i class="fa-solid fa-chart-pie"></i><div><strong>Dashboard stats</strong> — Utilisateurs, parcelles, hectares et top culture.</div></div>
         <div class="admin-feature r d2"><i class="fa-solid fa-list-check"></i><div><strong>CRUD parcelles</strong> — Recherche, tri (nom/surface/email), édition et suppression.</div></div>
         <div class="admin-feature r d3"><i class="fa-solid fa-users"></i><div><strong>Gestion utilisateurs</strong> — Fiche détaillée, déconnexion forcée, suppression de compte.</div></div>
@@ -913,7 +962,7 @@
   <section class="tex" id="apis-meteo">
     <div class="bg-grid" style="opacity:.15;"></div>
     <div class="container">
-      <div class="api-header"><p class="section-label rr">Architecture technique</p><h2 class="section-title r">Choix des <em>APIs &amp; services</em></h2><p class="section-body r">Chaque intégration a été sélectionnée pour sa fiabilité et sa richesse de données.</p></div>
+      <div class="api-header"><p class="section-label rr">Architecture technique</p><h2 class="section-title r">Choix des <em>APIs &amp; services</em></h2><p class="section-body r">3 critères : usage terrain · rapport effort / valeur · veille concurrentielle</p></div>
       <div class="api-brief r">
         <div class="api-brief-card"><span><i class="fa-solid fa-bullseye"></i> Critère 1</span><h4>Usage terrain</h4><p>L'API doit servir un besoin direct : météo, géolocalisation, synchronisation ou diagnostic.</p></div>
         <div class="api-brief-card"><span><i class="fa-solid fa-scale-balanced"></i> Critère 2</span><h4>Rapport effort / valeur</h4><p>On privilégie les solutions rapides à intégrer, fiables et riches.</p></div>
@@ -954,7 +1003,7 @@
       <div class="rl">
         <p class="section-label">Base de données</p>
         <h2 class="section-title">Firebase <em>Realtime Database</em></h2>
-        <p class="section-body">Toutes les données de l'application sont synchronisées en temps réel via Firebase RTDB. Structure hiérarchique claire par utilisateur : profil, parcelles, diagnostics, alertes et sessions.</p>
+        <p class="section-body">Synchro temps réel · Arborescence /agriaData/ par userId · Profil · Parcelles · Diagnostics · Alertes · Sessions</p>
         <ul class="feature-list">
           <li class="feature-item r d1"><div class="feature-item-icon"><i class="fa-solid fa-tree"></i></div><div class="feature-item-text"><h4>Arborescence /agriaData/</h4><p>Clés organisées par userId : profil, champs, diagnostics, alertes, sessions et credentials.</p></div></li>
           <li class="feature-item r d2"><div class="feature-item-icon"><i class="fa-solid fa-sync"></i></div><div class="feature-item-text"><h4>Synchro temps réel</h4><p>Chaque modification est instantanément propagée à tous les clients connectés via WebSockets.</p></div></li>
@@ -974,12 +1023,13 @@
     <div class="container"><div class="intro-grid">
       <div class="rl">
         <p class="section-label">Automatisation</p>
-        <h2 class="section-title">Make.com — <em>Diagnostic IA</em></h2>
-        <p class="section-body">Le scénario Make.com orchestre le diagnostic intelligent. L'application envoie les données (culture, symptômes, localisation) via webhook, un AI Agent expert agronome analyse et retourne un diagnostic détaillé avec recommandations.</p>
+        <h2 class="section-title">Make.com — <em>Diagnostic &amp; Alertes IA</em></h2>
+        <p class="section-body">Diagnostic culture · Alerte météo → AI Agent agronome → Firebase RTDB</p>
         <ul class="feature-list" style="margin-top:8px;">
-          <li class="feature-item r d1"><div class="feature-item-icon"><i class="fa-solid fa-plug"></i></div><div class="feature-item-text"><h4>Webhook d'entrée</h4><p>L'app Expo envoie culture, symptômes et coordonnées GPS de la parcelle.</p></div></li>
-          <li class="feature-item r d2"><div class="feature-item-icon"><i class="fa-solid fa-robot"></i></div><div class="feature-item-text"><h4>AI Agent expert agronome</h4><p>Prompt en français : agit comme un expert, croise symptômes observés + météo locale → diagnostic.</p></div></li>
-          <li class="feature-item r d3"><div class="feature-item-icon"><i class="fa-solid fa-code"></i></div><div class="feature-item-text"><h4>Parse JSON + Webhook Respond</h4><p>Le JSON structuré (severity, text, recommendation) est renvoyé à l'app et stocké dans Firebase.</p></div></li>
+          <li class="feature-item r d1"><div class="feature-item-icon"><i class="fa-solid fa-cloud-sun-rain"></i></div><div class="feature-item-text"><h4>Webhook Alerte météo</h4><p>Scoring 7 facteurs (température, humidité, gel, pluie, cultures sensibles) envoyé par l'app → traitement IA → alerte enrichie.</p></div></li>
+          <li class="feature-item r d2"><div class="feature-item-icon"><i class="fa-solid fa-seedling"></i></div><div class="feature-item-text"><h4>Webhook Diagnostic</h4><p>Culture · Symptômes · Coordonnées GPS — envoyés par l'app Expo pour diagnostic agronomique.</p></div></li>
+          <li class="feature-item r d3"><div class="feature-item-icon"><i class="fa-solid fa-robot"></i></div><div class="feature-item-text"><h4>AI Agent expert agronome</h4><p>Prompt en français : agit comme un expert, croise symptômes observés + météo locale + facteurs de risque → recommandations.</p></div></li>
+          <li class="feature-item r d4"><div class="feature-item-icon"><i class="fa-solid fa-database"></i></div><div class="feature-item-text"><h4>Firebase RTDB — écriture directe</h4><p>HTTP PUT vers Firebase : les alertes IA et diagnostics sont écrits dans /agriaData/ et affichés instantanément dans l'app.</p></div></li>
         </ul>
       </div>
       <div class="rr" style="display:flex;flex-direction:column;align-items:center;gap:16px;">
@@ -993,7 +1043,7 @@
   <section class="tex-dark" id="concurrents">
     <div class="bg-field" style="background-image:url('https://images.unsplash.com/photo-1552664730-d307ca884978?w=1600&q=80');opacity:.10;"></div>
     <div class="container">
-      <div class="concurrents-header rb"><p class="section-label">Positionnement</p><h2 class="section-title">Agria face aux <em>solutions existantes</em></h2><p class="section-body" style="max-width:700px;margin:0 auto 20px;">Aucune solution gratuite et mobile ne combine à la fois cartographie, diagnostic IA, météo et gestion multi-utilisateurs. C'est le positionnement unique d'Agria.</p></div>
+      <div class="concurrents-header rb"><p class="section-label">Positionnement</p><h2 class="section-title">Agria face aux <em>solutions existantes</em></h2><p class="section-body" style="max-width:700px;margin:0 auto 20px;">Cartographie + Diagnostic IA + Météo + Multi-utilisateurs — gratuit. Aucun concurrent ne réunit les 4.</p></div>
       <div class="comp-table-wrapper rb d1">
         <table class="comp-table">
           <thead><tr><th>Fonctionnalité</th><th class="hl">Agria</th><th>Plantix</th><th>MesParcelles</th></tr></thead>
@@ -1013,12 +1063,12 @@
   <!-- ═══════════════ ROADMAP ═══════════════ -->
   <section class="tex" id="roadmap">
     <div class="container">
-      <div class="roadmap-header rs"><p class="section-label">Feuille de route</p><h2 class="section-title">Les <em>prochaines étapes</em></h2><p class="section-body" style="max-width:600px;margin:0 auto 32px;">Agria évolue pour répondre aux besoins croissants des agriculteurs et des coopératives.</p></div>
-      <div class="roadmap-timeline rs d1">
-        <div class="roadmap-milestone"><div class="rm-dot"></div><div class="rm-label">V1 · Actuelle</div><div class="rm-title">Lancement</div><ul class="rm-items"><li>Diagnostic IA</li><li>Carto &amp; météo</li><li>Alertes scoring</li></ul></div>
-        <div class="roadmap-milestone"><div class="rm-dot"></div><div class="rm-label">V2 · 2026</div><div class="rm-title">Prédictions</div><ul class="rm-items"><li>Rendement par parcelle</li><li>Plus de cultures</li><li>Export des données</li></ul></div>
-        <div class="roadmap-milestone"><div class="rm-dot future"></div><div class="rm-label">V3 · 2027</div><div class="rm-title">Communauté</div><ul class="rm-items"><li>Marketplace intrants</li><li>Forum agriculteurs</li><li>API publique</li></ul></div>
-        <div class="roadmap-milestone"><div class="rm-dot future"></div><div class="rm-label">V4 · Vision</div><div class="rm-title">Jumeau numérique</div><ul class="rm-items"><li>Imagerie satellite NDVI</li><li>Drones</li><li>Irrigation IA</li></ul></div>
+      <div class="roadmap-header rs"><p class="section-label">Feuille de route</p><h2 class="section-title">Les <em>prochaines étapes</em></h2><p class="section-body" style="max-width:600px;margin:0 auto 42px;">Diagnostic → Prédiction → Décision → Précision</p></div>
+      <div class="roadmap-timeline rf">
+        <div class="roadmap-milestone"><div class="rm-dot"></div><div class="rm-card"><i class="fa-solid fa-microscope rm-icon"></i><div class="rm-label">V1 · Actuelle</div><div class="rm-title">Diagnostic</div><ul class="rm-items"><li>Diagnostic des maladies</li><li>Carte interactive</li><li>Météo &amp; alertes</li></ul></div></div>
+        <div class="roadmap-milestone"><div class="rm-dot"></div><div class="rm-card"><i class="fa-solid fa-camera rm-icon"></i><div class="rm-label">V2 · 2027</div><div class="rm-title">Prédiction</div><ul class="rm-items"><li>Photo-diagnostic</li><li>Plus de cultures</li><li>Anticiper les maladies</li></ul></div></div>
+        <div class="roadmap-milestone"><div class="rm-dot future"></div><div class="rm-card"><i class="fa-solid fa-chart-line rm-icon"></i><div class="rm-label">V3 · 2028</div><div class="rm-title">Décision</div><ul class="rm-items"><li>Prévision de rendement</li><li>Conseils de traitement</li><li>Alertes météo avancées</li></ul></div></div>
+        <div class="roadmap-milestone"><div class="rm-dot future"></div><div class="rm-card"><i class="fa-solid fa-satellite rm-icon"></i><div class="rm-label">V4 · 2029</div><div class="rm-title">Précision</div><ul class="rm-items"><li>Images satellite</li><li>Bilan environnemental</li><li>Module coopérative</li></ul></div></div>
       </div>
     </div>
   </section>
@@ -1035,7 +1085,7 @@
     <div class="merci-content">
       <div class="merci-badge rs"><span class="merci-badge-dot"></span>Fin de présentation</div>
       <h2 class="merci-title rs d1">Merci <em>!</em></h2>
-      <p class="merci-sub rf d2">Nous espérons qu'Agria vous a convaincu du potentiel de l'intelligence artificielle au service de l'agriculture de demain.</p>
+      <p class="merci-sub rf d2">IA + Agriculture = Agria. Disponible aujourd'hui.</p>
       <div class="merci-team rs d3"><div class="merci-member"><span class="merci-member-dot"></span>B1-A - Projet d'étude 2026</div><div class="merci-member"><span class="merci-member-dot"></span>Application mobile · Agriculture &amp; IA</div></div>
       <p class="merci-agria rf d4">Agria · <span>L'agriculture intelligente</span></p>
     </div>
@@ -1220,6 +1270,7 @@
       document.getElementById('si-next').disabled = (idx === SLIDES.length - 1);
       document.getElementById('slide-progress').style.width = (SLIDES.length > 1 ? (idx / (SLIDES.length - 1)) * 100 : 100) + '%';
       if (SLIDES[idx]) { document.body.setAttribute('data-theme', darkSlides.includes(SLIDES[idx].name) ? 'dark' : 'light'); }
+      setNavHeroMode(idx === 0);
     }
 
     function goTo(idx) {
@@ -1285,8 +1336,60 @@
       goTo(0);
     }
 
+    /* ===========================================
+       NAV AUTO-HIDE (Windows taskbar style)
+       =========================================== */
+    const navEl = document.getElementById('mainNav');
+    const navHotspot = document.getElementById('nav-hotspot');
+    const navSommaireLabel = navEl.querySelector('.nav-sommaire-label');
+    let navHideTimer = null;
+    let navPersistent = false;
+
+    function showNav() {
+      clearTimeout(navHideTimer);
+      navHideTimer = null;
+      navEl.classList.add('nav-visible');
+    }
+
+    function hideNavAfterDelay() {
+      if (navPersistent) return;
+      clearTimeout(navHideTimer);
+      navHideTimer = setTimeout(() => {
+        if (!navPersistent) navEl.classList.remove('nav-visible');
+      }, 400);
+    }
+
+    navHotspot.addEventListener('mouseenter', showNav);
+    navHotspot.addEventListener('mouseleave', hideNavAfterDelay);
+    navEl.addEventListener('mouseenter', showNav);
+    navEl.addEventListener('mouseleave', hideNavAfterDelay);
+
+    /* Persist navbar on hero (slide 0), show sommaire label */
+    function setNavHeroMode(active) {
+      clearTimeout(navHideTimer);
+      navHideTimer = null;
+      navPersistent = active;
+      if (active) {
+        navEl.classList.add('nav-visible', 'nav-persistent');
+        if (navSommaireLabel) navSommaireLabel.classList.add('show');
+      } else {
+        navEl.classList.remove('nav-persistent');
+        if (navSommaireLabel) navSommaireLabel.classList.remove('show');
+        /* Hide after a moment if mouse is not over it */
+        hideNavAfterDelay();
+      }
+    }
+
+    /* Override hideNavAfterDelay when nav is persistent */
+    const origHideNavAfterDelay = hideNavAfterDelay;
+    hideNavAfterDelay = function() {
+      if (navPersistent) return;
+      return origHideNavAfterDelay();
+    };
+
     updateIndicator(0);
     document.body.setAttribute('data-theme', 'dark');
+    setNavHeroMode(true);  /* Start on hero */
 
     /* ===========================================
        SOMMAIRE OVERLAY (touche M)

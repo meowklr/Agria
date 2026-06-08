@@ -1,6 +1,6 @@
-import React, { useState, useCallback } from 'react'; import { View, Text, ScrollView, TouchableOpacity, Alert, LayoutAnimation, Platform, UIManager } from 'react-native'; import { router, useFocusEffect } from 'expo-router'; import { Ionicons } from '@expo/vector-icons'; import { useSafeAreaInsets } from 'react-native-safe-area-context'; import { colors, radius, fontFamily } from '../../src/theme'; import { Card } from '../../src/components/Card'; import { Badge } from '../../src/components/Badge'; import { Input } from '../../src/components/Input'; import { SectionTitle } from '../../src/components/Typography'; import { LoaderBar } from '../../src/components/LoaderBar'; import { useWeather, useCitySearch } from '../../src/hooks/useWeather'; import { useChamps } from '../../src/hooks/useChamps'; import { deleteChamp, Champ } from '../../src/services/champs';
+import React, { useState, useCallback, useRef } from 'react'; import { View, Text, ScrollView, TouchableOpacity, Alert, LayoutAnimation, Platform, UIManager } from 'react-native'; import { router, useFocusEffect } from 'expo-router'; import { Ionicons } from '@expo/vector-icons'; import { useSafeAreaInsets } from 'react-native-safe-area-context'; import { colors, radius, fontFamily } from '../../src/theme'; import { Card } from '../../src/components/Card'; import { Badge } from '../../src/components/Badge'; import { Input } from '../../src/components/Input'; import { SectionTitle } from '../../src/components/Typography'; import { LoaderBar } from '../../src/components/LoaderBar'; import { useWeather, useCitySearch } from '../../src/hooks/useWeather'; import { useChamps } from '../../src/hooks/useChamps'; import { deleteChamp, Champ } from '../../src/services/champs';
 import { useAlerts } from '../../src/hooks/useAlerts';
-import { addAlert, dismissAlert } from '../../src/services/alerts';
+import { dismissAlert } from '../../src/services/alerts';
 import { sendMorningRiskAlert } from '../../src/services/riskAlert';
 import { NotificationBell } from '../../src/components/NotificationBell';
 import { ScreenFade } from '../../src/components/ScreenFade';
@@ -13,13 +13,27 @@ export default function DashboardScreen() {
   const { alerts, loading: alertsLoading, refresh: refreshAlerts } = useAlerts();
   const { results, query, setQuery } = useCitySearch();
   const [refreshingRisk, setRefreshingRisk] = useState(false);
+  const [waitingAI, setWaitingAI] = useState(false);
+  const [rateLimitMsg, setRateLimitMsg] = useState('');
+  const lastRefreshRef = useRef(0);
+  const REFRESH_COOLDOWN = 60000;
 
   const handleRefreshRisk = async () => {
+    const now = Date.now();
+    if (now - lastRefreshRef.current < REFRESH_COOLDOWN) {
+      const remaining = Math.ceil((REFRESH_COOLDOWN - (now - lastRefreshRef.current)) / 1000);
+      setRateLimitMsg(`Patientez ${remaining}s avant de rafraichir a nouveau.`);
+      setTimeout(() => setRateLimitMsg(''), 3000);
+      return;
+    }
+    lastRefreshRef.current = now;
+    setRateLimitMsg('');
     setRefreshingRisk(true);
+    setWaitingAI(true);
     try {
       const result = await sendMorningRiskAlert(city, champs);
-      await addAlert({ title: result.title, body: result.body, date: new Date().toISOString(), alert: { level: 'info', label: 'Manuel' }, city });
       await refreshAlerts();
+      setTimeout(() => { refreshAlerts(); setWaitingAI(false); }, 15000);
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       if (Notifications) {
         await Notifications.scheduleNotificationAsync({
@@ -28,7 +42,12 @@ export default function DashboardScreen() {
         });
       }
     } catch (e: any) {
-      Alert.alert('Erreur', 'Impossible de rafraichir les alertes.');
+      setWaitingAI(false);
+      const msg = (e?.message || '').includes('Session') || (e?.message || '').includes('connecter')
+        ? 'Session expiree. Veuillez vous reconnecter.'
+        : 'Service d\'alertes momentanement indisponible. Reessayez dans quelques instants.';
+      setRateLimitMsg(msg);
+      setTimeout(() => setRateLimitMsg(''), 5000);
     } finally {
       setRefreshingRisk(false);
     }
@@ -120,39 +139,32 @@ export default function DashboardScreen() {
       )}
     </View>
     {showAlerts && <View style={{ marginBottom: 24, gap: 10 }}>
-      {/* TODO: remove after screenshot — example alerts */}
-      {(() => {
-        const EXAMPLE_ALERTS = [
-          { id: 'example-danger', title: 'Gel tardif — Risque élevé', body: 'Des températures inférieures à -2°C sont prévues cette nuit sur vos parcelles de colza. Protégez vos cultures sensibles.', date: new Date().toISOString(), level: 'danger' },
-          { id: 'example-warning', title: 'Vent fort — Vigilance orange', body: 'Rafales attendues jusqu\'à 80 km/h en fin de journée. Risque de verse sur les céréales hautes. Évitez les traitements phytosanitaires.', date: new Date().toISOString(), level: 'warning' },
-        ];
-        return EXAMPLE_ALERTS.map((a) => {
-          const ls = a.level === 'danger' ? { backgroundColor: '#FEF3F0', title: colors.danger, body: '#8B4A3A' } : { backgroundColor: '#FDF4E8', title: colors.accent, body: '#8B5E3A' };
-          return <View key={a.id} style={{ backgroundColor: ls.backgroundColor, borderRadius: radius.lg, padding: 16 }}>
+
+      {rateLimitMsg ? <Card style={{ backgroundColor: '#FDF4E8', borderColor: colors.accent }}><View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}><Ionicons name="time-outline" size={16} color={colors.accent} /><Text style={{ fontSize: 13, color: colors.accent, fontWeight: '500', flex: 1, fontFamily: fontFamily.sans }}>{rateLimitMsg}</Text></View></Card> : null}
+
+      {waitingAI ? (
+        <Card><View style={{ alignItems: 'center', paddingVertical: 12 }}><LoaderBar /><Text style={{ fontSize: 12, color: colors.textMuted, marginTop: 8, fontFamily: fontFamily.sans }}>Actualisations des alertes en cours...</Text></View></Card>
+      ) : (() => {
+        const filtered = alerts.filter(a => !a.city || a.city.toLowerCase() === city.toLowerCase());
+        if (filtered.length === 0) {
+          return <Card><Text style={{ fontSize: 14, color: colors.textMuted, textAlign: 'center' }}>Aucune alerte pour {city}. Appuyez sur le bouton refresh pour en generer une.</Text></Card>;
+        }
+        return filtered.map((alert) => {
+          const levelStyle = alert.level === 'danger' ? { backgroundColor: '#FEF3F0', title: colors.danger, body: '#8B4A3A' }
+            : alert.level === 'warning' ? { backgroundColor: '#FDF4E8', title: colors.accent, body: '#8B5E3A' }
+            : { backgroundColor: '#EEF5FA', title: '#5a8aa8', body: '#4A6A7A' };
+          return <View key={alert.id} style={{ backgroundColor: levelStyle.backgroundColor, borderRadius: radius.lg, padding: 16 }}>
             <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-              <Text style={{ fontSize: 13, fontWeight: '600', color: ls.title, marginBottom: 3, fontFamily: fontFamily.sans, flex: 1 }}>{a.title}</Text>
-              <Ionicons name="close" size={14} color={ls.title} style={{ opacity: 0.4, padding: 2, marginLeft: 8 }} />
+              <Text style={{ fontSize: 13, fontWeight: '600', color: levelStyle.title, marginBottom: 3, fontFamily: fontFamily.sans, flex: 1 }}>{alert.title}</Text>
+              <TouchableOpacity onPress={async () => { await dismissAlert(alert.id); refreshAlerts(); }} style={{ padding: 2, marginLeft: 8 }} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
+                <Ionicons name="close" size={14} color={levelStyle.title} style={{ opacity: 0.4 }} />
+              </TouchableOpacity>
             </View>
-            <Text style={{ fontSize: 13, color: ls.body, lineHeight: 18, fontFamily: fontFamily.sans }}>{a.body}</Text>
-            <Text style={{ fontSize: 11, color: colors.textMuted, marginTop: 8, fontFamily: fontFamily.sans }}>{new Date(a.date).toLocaleString()}</Text>
+            <Text style={{ fontSize: 13, color: levelStyle.body, lineHeight: 18, fontFamily: fontFamily.sans }}>{alert.body}</Text>
+            <Text style={{ fontSize: 11, color: colors.textMuted, marginTop: 8, fontFamily: fontFamily.sans }}>{new Date(alert.date).toLocaleString()}</Text>
           </View>;
         });
       })()}
-      {alertsLoading ? <Card><LoaderBar /></Card> : alerts.length === 0 ? <Card><Text style={{ fontSize: 14, color: colors.textMuted, textAlign: 'center' }}>Aucune alerte récente. Les alertes météo reçues via Make apparaîtront ici.</Text></Card> : alerts.slice(0, 4).map((alert) => {
-        const levelStyle = alert.level === 'danger' ? { backgroundColor: '#FEF3F0', title: colors.danger, body: '#8B4A3A' }
-          : alert.level === 'warning' ? { backgroundColor: '#FDF4E8', title: colors.accent, body: '#8B5E3A' }
-          : { backgroundColor: '#EEF5FA', title: '#5a8aa8', body: '#4A6A7A' };
-        return <View key={alert.id} style={{ backgroundColor: levelStyle.backgroundColor, borderRadius: radius.lg, padding: 16 }}>
-          <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-            <Text style={{ fontSize: 13, fontWeight: '600', color: levelStyle.title, marginBottom: 3, fontFamily: fontFamily.sans, flex: 1 }}>{alert.title}</Text>
-            <TouchableOpacity onPress={async () => { await dismissAlert(alert.id); refreshAlerts(); }} style={{ padding: 2, marginLeft: 8 }} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
-              <Ionicons name="close" size={14} color={levelStyle.title} style={{ opacity: 0.4 }} />
-            </TouchableOpacity>
-          </View>
-          <Text style={{ fontSize: 13, color: levelStyle.body, lineHeight: 18, fontFamily: fontFamily.sans }}>{alert.body}</Text>
-          <Text style={{ fontSize: 11, color: colors.textMuted, marginTop: 8, fontFamily: fontFamily.sans }}>{new Date(alert.date).toLocaleString()}</Text>
-        </View>;
-      })}
     </View>}
 
     <View style={{ marginBottom: 24 }}>

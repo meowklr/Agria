@@ -7,7 +7,7 @@ export interface DiagnosticResult {
 }
 
 export async function fetchOpenMeteo(lat: number, lon: number) {
-  try { const r = await fetch(`${CONFIG.OPENMETEO_BASE_URL}/forecast?latitude=${lat}&longitude=${lon}&daily=precipitation_sum,temperature_2m_max,temperature_2m_min&timezone=Europe/Paris&past_days=7&forecast_days=1`); const d = await r.json(); return { precipitations7j: d.daily.precipitation_sum.slice(0,7), tempMax: d.daily.temperature_2m_max.slice(0,7), tempMin: d.daily.temperature_2m_min.slice(0,7) }; }
+  try { const controller = new AbortController(); const id = setTimeout(() => controller.abort(), 10000); const r = await fetch(`${CONFIG.OPENMETEO_BASE_URL}/forecast?latitude=${lat}&longitude=${lon}&daily=precipitation_sum,temperature_2m_max,temperature_2m_min&timezone=Europe/Paris&past_days=7&forecast_days=1`, { signal: controller.signal }); clearTimeout(id); const d = await r.json(); return { precipitations7j: d.daily.precipitation_sum.slice(0,7), tempMax: d.daily.temperature_2m_max.slice(0,7), tempMin: d.daily.temperature_2m_min.slice(0,7) }; }
   catch { return OPENMETEO_FALLBACK; }
 }
 

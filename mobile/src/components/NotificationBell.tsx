@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { TouchableOpacity, View, Text } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
@@ -7,11 +7,13 @@ import { useNotifications } from '../hooks/useNotifications';
 
 export function NotificationBell() {
   const { unreadCount, reload } = useNotifications();
+  const reloadRef = useRef(reload);
+  reloadRef.current = reload;
 
   useEffect(() => {
-    const id = setInterval(reload, 5000);
+    const id = setInterval(() => reloadRef.current(), 5000);
     return () => clearInterval(id);
-  }, [reload]);
+  }, []);
 
   return (
     <TouchableOpacity onPress={() => router.push('/notifications')} style={{ position: 'relative', padding: 4 }}>

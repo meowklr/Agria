@@ -19,15 +19,13 @@ function labelCulture(culture: string) {
   return map[culture] || culture || 'Culture';
 }
 
-function buildDiagTitle(culture: string, nom: string) {
-  return `Analyse ${labelCulture(culture)} - ${nom}`;
-}
-
 function s(v: any): string { return typeof v === 'string' ? v : String(v ?? ''); }
 
 export default function DiagnosticScreen() {
   const { result, history, loading, analyse, reset, removeFromHistory, loadHistory } = useDiagnostic();
   const [step, setStep] = useState(1); const [culture, setCulture] = useState(''); const [sympts, setSympts] = useState<string[]>([]); const [ville, setVille] = useState('');
+  const [submitted, setSubmitted] = useState(false);
+  const [pendingDetailed, setPendingDetailed] = useState(false);
   const [expanded, setExpanded] = useState<number | null>(null);
   const [errVille, setErrVille] = useState(false);
   const [errCulture, setErrCulture] = useState(false);
@@ -41,6 +39,7 @@ export default function DiagnosticScreen() {
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const statusOpacity = useRef(new Animated.Value(0)).current;
   const emailErrOpacity = useRef(new Animated.Value(0)).current;
+  const submittedAnim = useRef(new Animated.Value(0)).current;
   const insets = useSafeAreaInsets();
   if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
     UIManager.setLayoutAnimationEnabledExperimental(true);
@@ -48,6 +47,15 @@ export default function DiagnosticScreen() {
   useEffect(() => { 
     loadHistory(); 
   }, []);
+  useEffect(() => {
+    Animated.timing(submittedAnim, { toValue: submitted ? 1 : 0, duration: 320, useNativeDriver: true }).start();
+  }, [submitted]);
+  useEffect(() => {
+    if (pendingDetailed && result) {
+      setPendingDetailed(false);
+      handleSendDetailedDiagnostic();
+    }
+  }, [pendingDetailed, result]);
   const { add } = useNotifications();
   const ts = (s: string) => setSympts(p => p.includes(s) ? p.filter(x => x !== s) : [...p, s]);
 
@@ -81,15 +89,23 @@ export default function DiagnosticScreen() {
     try {
       const webhookUrl = CONFIG.MAKE_DIAGNOSTIC_WEBHOOK_URL;
       const payload = { culture, symptomes: sympts, ville, email: email.trim(), diagnostic: result.nom, gravite: result.gravite, explication: result.explication, recommandations: result.recommandations, meteo: result.meteo };
-      
-      const res = await fetch(webhookUrl, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
-      });
+
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 60000);
+      let res: Response;
+      try {
+        res = await fetch(webhookUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+          signal: controller.signal,
+        });
+      } finally {
+        clearTimeout(timeoutId);
+      }
 
       const responseText = await res.text();
-      const notificationTitle = buildDiagTitle(culture, result.nom);
+      const notificationTitle = `Analyse ${labelCulture(culture)} - ${result.nom}`;
 
       await Notifications.scheduleNotificationAsync({
         content: {
@@ -103,13 +119,16 @@ export default function DiagnosticScreen() {
       try { await add(notificationTitle, responseText); } catch (e) { console.warn('Erreur en sauvegardant la notif interne', e); }
 
       setSendStatus('success');
+      LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+      setSubmitted(true);
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       statusOpacity.setValue(0);
       Animated.timing(statusOpacity, { toValue: 1, duration: 220, useNativeDriver: true }).start();
       setTimeout(() => {
         Animated.timing(statusOpacity, { toValue: 0, duration: 200, useNativeDriver: true }).start(() => setSendStatus(null));
       }, 3000);
-    } catch (e) {
-      console.error(e);
+    } catch (e: any) {
+      if (e?.name !== 'AbortError') console.error(e);
       setSendStatus('error');
       statusOpacity.setValue(0);
       Animated.timing(statusOpacity, { toValue: 1, duration: 220, useNativeDriver: true }).start();
@@ -125,7 +144,7 @@ export default function DiagnosticScreen() {
     <View style={{ paddingVertical: 8, marginBottom: 16 }}><Text style={{ fontSize: 22, fontWeight: '600', color: colors.primary, fontFamily: fontFamily.serif }}>Diagnostic</Text></View>
     {loading && <View style={{ marginBottom: 16 }}><LoaderBar /></View>}
 
-    {!result ? <>
+    {!submitted ? <>
       <View style={{ flexDirection: 'row', justifyContent: 'center', alignItems: 'center', marginBottom: 24 }}>
         {[1,2,3].map((s, i) => <React.Fragment key={s}><View style={[{ width: 38, height: 38, borderRadius: 19, borderWidth: 2, borderColor: colors.border, justifyContent: 'center', alignItems: 'center', backgroundColor: colors.surface }, s <= step && { backgroundColor: colors.primary, borderColor: colors.primary }]}><Text style={[{ fontSize: 14, fontWeight: '600', color: colors.textMuted }, s <= step && { color: colors.text }]}>{s}</Text></View>{i < 2 && <View style={[{ width: 44, height: 2, backgroundColor: colors.border }, s <= step && { backgroundColor: colors.primary }]} />}</React.Fragment>)}
       </View>
@@ -167,40 +186,24 @@ export default function DiagnosticScreen() {
         </View>
         {errVille && <Text style={{ fontSize: 12, color: colors.danger, marginTop: 6 }}>Veuillez entrer une ville pour continuer.</Text>}
         <Text style={{ fontSize: 13, color: colors.textMuted, marginVertical: 16 }}>Pour enrichir le diagnostic avec la meteo locale.</Text>
-        <Button title="Analyser" onPress={async () => { if (!ville.trim()) { setErrVille(true); return; } Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium); await analyse(culture, sympts, ville.trim()); }} />
-        <View style={{ height: 10 }} /><Button title="Retour" variant="secondary" onPress={() => { LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut); setStep(2); }} />
-      </View>}
-    </> : <View>
-      <Card style={{ marginBottom: 16 }}>
-        <View style={{ marginBottom: 12 }}><Badge text={result.gravite === 'danger' ? 'Urgent' : result.gravite === 'warning' ? 'Attention' : 'Info'} variant={result.gravite} /></View>
-        <Text style={{ fontSize: 20, fontWeight: '600', color: colors.text, marginBottom: 10, fontFamily: fontFamily.serif }}>{buildDiagTitle(s(culture), s(result.nom))}</Text>
-        <Text style={{ fontSize: 14, color: colors.textSecondary, lineHeight: 22 }}>{s(result.explication)}</Text>
-      </Card>
-      <Card style={{ marginBottom: 16 }}>
-        <SectionTitle title="Meteo locale" />
-        <View style={{ flexDirection: 'row', gap: 10 }}>
-          <View style={{ flex: 1, padding: 14, backgroundColor: colors.bg, borderRadius: radius.md, alignItems: 'center' }}><Text style={{ fontSize: 12, color: colors.textSecondary }}>Precip. 7j</Text><Text style={{ fontSize: 16, fontWeight: '700', color: colors.text, marginTop: 4 }}>{result.meteo.precipitations7j.reduce((a,b)=>a+b,0).toFixed(1)} mm</Text></View>
-          <View style={{ flex: 1, padding: 14, backgroundColor: colors.bg, borderRadius: radius.md, alignItems: 'center' }}><Text style={{ fontSize: 12, color: colors.textSecondary }}>T max</Text><Text style={{ fontSize: 16, fontWeight: '700', color: colors.text, marginTop: 4 }}>{(result.meteo.tempMax.reduce((a,b)=>a+b,0)/7).toFixed(1)}°C</Text></View>
-          <View style={{ flex: 1, padding: 14, backgroundColor: colors.bg, borderRadius: radius.md, alignItems: 'center' }}><Text style={{ fontSize: 12, color: colors.textSecondary }}>T min</Text><Text style={{ fontSize: 16, fontWeight: '700', color: colors.text, marginTop: 4 }}>{(result.meteo.tempMin.reduce((a,b)=>a+b,0)/7).toFixed(1)}°C</Text></View>
-        </View>
-      </Card>
-      <Card style={{ marginBottom: 16 }}>
-        <SectionTitle title="Recommandations" />
-        {(Array.isArray(result.recommandations) ? result.recommandations : []).map((r: string, i: number) => <View key={i} style={{ flexDirection: 'row', alignItems: 'flex-start', gap: 12, paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: colors.border }}><Ionicons name="checkmark-circle" size={14} color={colors.success} style={{ marginTop: 3 }} /><Text style={{ flex: 1, fontSize: 14, color: colors.textSecondary, lineHeight: 20 }}>{s(r)}</Text></View>)}
-      </Card>
-      <View style={{ marginBottom: 16 }}>
         <Input value={email} onChangeText={t => { setEmail(t); setErrEmail(null); setSendStatus(null); }} placeholder="Votre adresse email (obligatoire)" keyboardType="email-address" autoCapitalize="none" />
         <Text style={{ fontSize: 12, color: colors.textMuted, marginTop: 6, marginLeft: 2 }}>Pour recevoir le rapport detaille de l'IA.</Text>
         {errEmail && <Animated.View style={{ marginTop: 8, backgroundColor: '#FEF3F0', borderRadius: 10, padding: 8, flexDirection: 'row', alignItems: 'center', gap: 6, opacity: emailErrOpacity }}><Ionicons name="alert-circle" size={14} color={colors.danger} /><Text style={{ fontSize: 12, color: colors.danger, fontWeight: '500', fontFamily: fontFamily.sans }}>{errEmail}</Text></Animated.View>}
-      </View>
-      <View style={{ marginBottom: 12 }}>
-        {sendStatus === 'success' && <Animated.View style={{ marginBottom: 10, backgroundColor: '#EAF3E0', borderRadius: 10, padding: 8, flexDirection: 'row', alignItems: 'center', gap: 6, opacity: statusOpacity }}><Ionicons name="checkmark-circle" size={14} color={colors.success} /><Text style={{ fontSize: 12, color: colors.success, fontWeight: '500', fontFamily: fontFamily.sans }}>L'analyse a été effectuée et envoyée avec succès.</Text></Animated.View>}
-        {sendStatus === 'error' && <Animated.View style={{ marginBottom: 10, backgroundColor: '#FEF3F0', borderRadius: 10, padding: 8, flexDirection: 'row', alignItems: 'center', gap: 6, opacity: statusOpacity }}><Ionicons name="alert-circle" size={14} color={colors.danger} /><Text style={{ fontSize: 12, color: colors.danger, fontWeight: '500', fontFamily: fontFamily.sans }}>Impossible d'envoyer le diagnostic. Réesayez.</Text></Animated.View>}
-        {sendingDetailed && <View style={{ marginBottom: 10 }}><LoaderBar /></View>}
-        <Button title={sendingDetailed ? "Analyse en cours..." : "Analyse detaillee par mail (IA)"} onPress={async () => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium); await handleSendDetailedDiagnostic(); }} style={{ backgroundColor: colors.accent }} disabled={sendingDetailed} />
-      </View>
-      <Button title="Nouveau diagnostic" variant="secondary" onPress={() => { LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut); reset(); setStep(1); setCulture(''); setSympts([]); setVille(''); setEmail(''); }} />
-    </View>}
+        {sendStatus === 'error' && <Animated.View style={{ marginTop: 8, backgroundColor: '#FEF3F0', borderRadius: 10, padding: 8, flexDirection: 'row', alignItems: 'center', gap: 6, opacity: statusOpacity }}><Ionicons name="alert-circle" size={14} color={colors.danger} /><Text style={{ fontSize: 12, color: colors.danger, fontWeight: '500', fontFamily: fontFamily.sans }}>Impossible d'envoyer le diagnostic. Reessayez.</Text></Animated.View>}
+        {sendingDetailed && <View style={{ marginTop: 10 }}><LoaderBar /></View>}
+        <View style={{ marginTop: 16 }}>
+          <Button title={sendingDetailed ? "Analyse en cours..." : "Analyse detaillee par IA"} onPress={async () => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium); await analyse(culture, sympts, ville.trim()); loadHistory(); setPendingDetailed(true); }} disabled={sendingDetailed} />
+        </View>
+        <View style={{ height: 10 }} /><Button title="Retour" variant="secondary" onPress={() => { LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut); setStep(2); setSendStatus(null); }} />
+      </View>}
+    </> : <Animated.View style={{ opacity: submittedAnim, transform: [{ translateY: submittedAnim.interpolate({ inputRange: [0, 1], outputRange: [12, 0] }) }] }}>
+      <Card style={{ marginBottom: 16, alignItems: 'center' }}>
+        <Ionicons name="checkmark-circle" size={48} color={colors.success} style={{ marginBottom: 12 }} />
+        <Text style={{ fontSize: 18, fontWeight: '600', color: colors.text, textAlign: 'center', fontFamily: fontFamily.serif }}>Diagnostic envoye</Text>
+        <Text style={{ fontSize: 14, color: colors.textMuted, textAlign: 'center', marginTop: 8, lineHeight: 20 }}>Votre analyse detaillee a ete transmise. Vous recevrez le rapport par email et dans vos notifications.</Text>
+      </Card>
+      <Button title="Nouveau diagnostic" variant="secondary" onPress={() => { LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut); reset(); setStep(1); setCulture(''); setSympts([]); setVille(''); setEmail(''); setSendStatus(null); setSubmitted(false); setPendingDetailed(false); }} />
+    </Animated.View>}
 
     {history.length > 0 && <View style={{ marginTop: 32 }}>
       <SectionTitle title="Historique" />
