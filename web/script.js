@@ -1,23 +1,26 @@
 /* ---------- CONFIG ---------- */
 
+var USER_CONFIG = window.AGRIA_CONFIG || {};
+
 var CONFIG = {
-  OPENWEATHER_API_KEY: "REMOVED_OPENWEATHER_KEY",
+  OPENWEATHER_API_KEY: USER_CONFIG.OPENWEATHER_API_KEY || "",
   OPENWEATHER_BASE_URL: "https://api.openweathermap.org/data/2.5",
   OPENMETEO_BASE_URL: "https://api.open-meteo.com/v1",
   NOMINATIM_BASE_URL: "https://nominatim.openstreetmap.org",
-  NOMINATIM_SEARCH_URL: "https://nominatim.openstreetmap.org/search"
+  NOMINATIM_SEARCH_URL: "https://nominatim.openstreetmap.org/search",
+  MAKE_DIAGNOSTIC_WEBHOOK_URL: USER_CONFIG.MAKE_DIAGNOSTIC_WEBHOOK_URL || ""
 };
 
 /* ---------- FIREBASE CONFIG ---------- */
 
-var FIREBASE_CONFIG = {
-  apiKey: "REMOVED_FIREBASE_API_KEY",
-  authDomain: "projet-etude-2026-256f3.firebaseapp.com",
-  databaseURL: "https://projet-etude-2026-256f3-default-rtdb.europe-west1.firebasedatabase.app",
-  projectId: "projet-etude-2026-256f3",
-  storageBucket: "projet-etude-2026-256f3.firebasestorage.app",
-  messagingSenderId: "733207661064",
-  appId: "1:733207661064:web:d9256d9310d0b15e469fbd"
+var FIREBASE_CONFIG = USER_CONFIG.FIREBASE_CONFIG || {
+  apiKey: "",
+  authDomain: "",
+  databaseURL: "",
+  projectId: "",
+  storageBucket: "",
+  messagingSenderId: "",
+  appId: ""
 };
 
 /* ---------- CROP_DATA ---------- */
@@ -1026,7 +1029,11 @@ function initDiagnostic() {
       var emailUser = prompt("A quelle adresse email souhaitez-vous envoyer l'analyse detaillee ?");
       if (!emailUser || emailUser.trim() === '') return;
       
-      var webhookUrl = 'REMOVED_MAKE_WEBHOOK_URL';
+      var webhookUrl = CONFIG.MAKE_DIAGNOSTIC_WEBHOOK_URL;
+      if (!webhookUrl) {
+        showToast('Webhook Make non configure dans web/config.js.', 'warning');
+        return;
+      }
       var oldHtml = btnDetailedDiag.innerHTML;
       
       // On rajoute l'email dans l'objet envoye

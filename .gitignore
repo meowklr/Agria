@@ -1,14 +1,45 @@
 # Dependencies
 node_modules/
 
+# Expo / React Native
+.expo/
+web-build/
+*.jks
+*.p8
+*.p12
+*.key
+*.mobileprovision
+*.orig.*
+
 # Build output
 dist/
 build/
+
+# Android / Gradle
+mobile/android/.gradle/
+mobile/android/app/build/
+mobile/android/build/
+mobile/android/local.properties
+*.apk
+*.aab
 
 # Environment
 .env
 .env.local
 .env.*.local
+.env.production
+web/config.js
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# Logs and temporary files
+*.log
+npm-debug.log*
+.tmp
 
 # OS files
 .DS_Store
@@ -21,5 +52,7 @@ desktop.ini
 *.swp
 *.swo
 
-# Superpowers brainstorm sessions
+# Tooling / local artifacts
 .superpowers/
+.opencode/
+graphify-out/
