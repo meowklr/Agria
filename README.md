@@ -127,4 +127,4 @@ Agria/
 
 ## Licence
 
-Ce projet est distribué sous licence MIT. Voir le fichier [LICENSE](LICENSE) pour plus de détails.
+Tous droits réservés. Le code de ce dépôt est partagé à des fins de consultation uniquement et ne peut être ni copié, ni modifié, ni redistribué sans autorisation des auteurs.
